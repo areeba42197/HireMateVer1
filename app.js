@@ -172,11 +172,7 @@ function handleRegister(e) {
   if (!email || !email.value.trim()) { setFieldError('reg-email','reg-email-err','Email is required'); valid = false; }
   else if (!isValidEmail(email.value)) { setFieldError('reg-email','reg-email-err','Enter a valid email (e.g. user@example.com)'); valid = false; }
   else setFieldValid('reg-email','reg-email-err');
-  if (!pw || pw.value.length < 8) { setFieldError('reg-pw','reg-pw-err','Password must be at least 8 characters'); valid = false; }
-  else if (!/[A-Z]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Password must contain at least one uppercase letter'); valid = false; }
-  else if (!/[a-z]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Password must contain at least one lowercase letter'); valid = false; }
-  else if (!/[0-9]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Password must contain at least one number'); valid = false; }
-  else if (!/[^A-Za-z0-9]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Password must contain at least one special character (!@#$...)'); valid = false; }
+  if (!pw || pw.value.length < 8 || !/[A-Za-z]/.test(pw.value) || !/[0-9]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Choose a stronger password.'); valid = false; }
   else setFieldValid('reg-pw','reg-pw-err');
   if (!cookie || !cookie.value.trim()) { setFieldError('reg-cookie','reg-cookie-err','LinkedIn session cookie is required'); valid = false; }
   else if (!cookie.value.startsWith('li_at=')) { setFieldError('reg-cookie','reg-cookie-err','Paste a valid LinkedIn session cookie value.'); valid = false; }
@@ -686,8 +682,7 @@ async function handleRegister(e) {
   if (!lname || !lname.value.trim()) { setFieldError('reg-lname','reg-lname-err','Last name is required'); valid = false; } else setFieldValid('reg-lname','reg-lname-err');
   if (!email || !email.value.trim()) { setFieldError('reg-email','reg-email-err','Email is required'); valid = false; }
   else if (!isValidEmail(email.value)) { setFieldError('reg-email','reg-email-err','Enter a valid email'); valid = false; } else setFieldValid('reg-email','reg-email-err');
-  if (!pw || pw.value.length < 8) { setFieldError('reg-pw','reg-pw-err','Password must be at least 8 characters'); valid = false; }
-  else if (!/[A-Z]/.test(pw.value) || !/[a-z]/.test(pw.value) || !/[0-9]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Password must include uppercase, lowercase and number'); valid = false; } else setFieldValid('reg-pw','reg-pw-err');
+  if (!pw || pw.value.length < 8 || !/[A-Za-z]/.test(pw.value) || !/[0-9]/.test(pw.value)) { setFieldError('reg-pw','reg-pw-err','Choose a stronger password.'); valid = false; } else setFieldValid('reg-pw','reg-pw-err');
   if (cookie && cookie.value.trim()) {
     const cv = cookie.value.trim();
     const okCookie = cv.includes('li_at=') || (!cv.includes('=') && cv.length >= 20);

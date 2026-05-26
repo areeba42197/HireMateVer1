@@ -95,16 +95,13 @@
           </div>
 
           <span class="form-error-msg" id="login-email-err"></span>
-          <span class="form-hint">
-            Must include @ and a valid domain (e.g. name@gmail.com)
-          </span>
         </div>
 
         <div class="form-group">
           <label class="form-label">Password</label>
 
           <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x1F512;</span>
+            <span class="input-icon hm-auth-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;"></span>
 
             <input class="form-input"
               id="login-pw"
@@ -117,15 +114,11 @@
               id="toggle-lpw"
               onclick="togglePw('toggle-lpw','login-pw')"
               style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">
-              &#x1F441;
+              Show
             </button>
           </div>
 
           <span class="form-error-msg" id="login-pw-err"></span>
-
-          <span class="form-hint">
-            Must be at least 8 characters with uppercase, lowercase &amp; number
-          </span>
         </div>
 
         <div style="display:flex;justify-content:flex-end;margin-top:-8px;">
@@ -154,10 +147,9 @@
   onclick="toggleTheme()"
   style="position:fixed;top:18px;right:18px;z-index:999;"
   title="Toggle theme">
-  ??
 </button>
 
-<script src="app.js"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>
 

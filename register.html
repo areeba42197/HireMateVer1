@@ -69,26 +69,19 @@
             <input class="form-input" id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" style="padding-left:42px;">
           </div>
           <span class="form-error-msg" id="reg-email-err"></span>
-          <span class="form-hint">Must include @ and a valid domain</span>
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
           <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x1F512;</span>
+            <span class="input-icon hm-auth-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;"></span>
             <input class="form-input" id="reg-pw" type="password" placeholder="Create a strong password" autocomplete="new-password" oninput="onPwInput(this.value)" style="padding-left:42px;padding-right:44px;">
-            <button type="button" id="toggle-rpw" onclick="togglePw('toggle-rpw','reg-pw')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">&#x1F441;</button>
+            <button type="button" id="toggle-rpw" onclick="togglePw('toggle-rpw','reg-pw')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;font-weight:700;">Show</button>
           </div>
           <div style="margin-top:8px;">
             <div class="strength-bar-wrap"><div class="strength-bar-fill" id="strength-bar" style="width:0%;"></div></div>
             <div class="strength-label" id="strength-label" style="color:var(--text3);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-top:4px;"></div>
           </div>
-          <ul class="validation-checks" id="pw-checks" style="margin-top:8px;">
-            <li id="chk-len">Minimum 8 characters</li>
-            <li id="chk-upper">At least one uppercase letter (A-Z)</li>
-            <li id="chk-lower">At least one lowercase letter (a-z)</li>
-            <li id="chk-num">At least one number (0-9)</li>
-            <li id="chk-special">At least one special character (!@#$%^&amp;*)</li>
-          </ul>
+          <div class="form-hint">Use 8 or more characters with a mix of letters and numbers.</div>
           <span class="form-error-msg" id="reg-pw-err"></span>
         </div>
           <div style="display:flex;gap:10px;">
@@ -108,7 +101,7 @@
           <span class="form-hint">Optional. If you provide it, HireMate can find more relevant LinkedIn opportunities. your session cookie is encrypted and saved securely.</span>
         </div>
         <div class="info-box">
-          <span>&#x1F512;</span>
+          <span class="hm-auth-icon"></span>
           <span>You can skip this now and add it later from Settings or Profile. Without it, HireMate will still use public job results.</span>
         </div>
           <div style="display:flex;gap:10px;">
@@ -141,8 +134,8 @@ function signupPrev() {
   renderSignupStep();
 }
 </script>
-<button class="theme-toggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:18px;z-index:999;" title="Toggle theme">??</button>
-<script src="app.js"></script>
+<button class="theme-toggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:18px;z-index:999;" title="Toggle theme"></button>
+<script src="app.js?v=20"></script>
 </body>
 </html>
 
