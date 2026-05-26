@@ -60,7 +60,10 @@ def protect_text(value: str) -> str:
 
 
 def reveal_text(value: str) -> str:
-    cipher = base64.urlsafe_b64decode(value.encode("ascii"))
-    stream = _keystream(len(cipher))
-    raw = bytes(a ^ b for a, b in zip(cipher, stream))
-    return raw.decode("utf-8")
+    try:
+        cipher = base64.urlsafe_b64decode(value.encode("ascii"))
+        stream = _keystream(len(cipher))
+        raw = bytes(a ^ b for a, b in zip(cipher, stream))
+        return raw.decode("utf-8")
+    except Exception:
+        return ""
