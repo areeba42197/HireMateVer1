@@ -1,6 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "excludeFiles": "{backend/data/**,backend/secure/**,secure/**,installers/**,**/__pycache__/**,**/*.db,**/*.log}"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.py?hm_path=:path*"
+    },
     {
       "source": "/",
       "destination": "/landing.html"
