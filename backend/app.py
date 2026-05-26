@@ -213,7 +213,7 @@ class HireMateHandler(BaseHTTPRequestHandler):
         query = parse_qs(parsed.query)
         try:
             if path == "/api/health":
-                return json_response(self, 200, {"ok": True, "service": "HireMate API"})
+                return json_response(self, 200, {"ok": True, "service": "HireMate API", "version": "vercel-cookie-fix"})
             if path == "/api/me":
                 user = require_user(self)
                 if user:
