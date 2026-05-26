@@ -30,6 +30,8 @@ class handler(HireMateHandler):
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
         hm_path = (query.pop("hm_path", [""])[0] or "").strip("/")
+        if not hm_path and parsed.path.startswith("/api/"):
+            hm_path = parsed.path[len("/api/"):].strip("/")
         if hm_path:
             self.path = "/api/" + hm_path
             if query:
