@@ -1,5 +1,6 @@
-﻿import json
+import json
 import mimetypes
+import os
 import random
 import re
 import threading
@@ -341,6 +342,10 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 return self.register(body)
             if path == "/api/auth/login":
                 return self.login(body)
+            if path == "/api/auth/forgot-password":
+                return self.forgot_password(body)
+            if path == "/api/auth/reset-password":
+                return self.reset_password(body)
             if path == "/api/auth/logout":
                 user = current_user(self)
                 token = self.headers.get("Authorization", "").replace("Bearer ", "", 1)
@@ -804,6 +809,122 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 return error(self, 401, "Invalid email or password.")
             conn.execute("INSERT INTO events(user_id, event_type) VALUES (?, ?)", (row["id"], "login"))
         return create_session_response(self, row["id"])
+
+    def forgot_password(self, body):
+        email = str(body.get("email", "")).strip().lower()
+        if not email:
+            return error(self, 400, "Please enter your email address.")
+        if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
+            return error(self, 400, "Please enter a valid email address.")
+        # Always return success to prevent email enumeration
+        success_msg = (
+            "If an account with that email exists, we've sent a password reset link. "
+            "Please check your inbox and spam folder."
+        )
+        with db() as conn:
+            row = conn.execute(
+                "SELECT id, first_name, email FROM users WHERE lower(email)=lower(?) AND is_active=1",
+                (email,),
+            ).fetchone()
+            if not row:
+                return json_response(self, 200, {"ok": True, "message": success_msg})
+            user = dict(row)
+            # Invalidate any existing unused tokens for this user
+            conn.execute(
+                "UPDATE password_reset_tokens SET used=1 WHERE user_id=? AND used=0",
+                (user["id"],),
+            )
+            # Generate a secure reset token (1 hour expiry)
+            token = new_token()
+            expires_at = iso_after(1)  # 1 hour
+            conn.execute(
+                "INSERT INTO password_reset_tokens(user_id, token, expires_at) VALUES (?, ?, ?)",
+                (user["id"], token, expires_at),
+            )
+            conn.execute(
+                "INSERT INTO events(user_id, event_type, details) VALUES (?, ?, ?)",
+                (user["id"], "password_reset_requested", email),
+            )
+        # Build reset link
+        reset_link = _build_reset_link(token)
+        # Send email
+        try:
+            _send_password_reset_email(user, reset_link)
+        except Exception as exc:
+            # Log but still return success to prevent email enumeration
+            print(f"[WARN] Password reset email failed for {email}: {exc}")
+        return json_response(self, 200, {"ok": True, "message": success_msg})
+
+    def reset_password(self, body):
+        token = str(body.get("token", "")).strip()
+        new_password = str(body.get("password", ""))
+        if not token:
+            return error(self, 400, "Reset token is missing. Please use the link from your email.")
+        if not token_signature_ok(token):
+            return error(self, 400, "This reset link is invalid. Please request a new password reset.")
+        if len(new_password) < 8:
+            return error(self, 400, "Password must be at least 8 characters.")
+        if not re.search(r"[A-Z]", new_password):
+            return error(self, 400, "Password must contain at least one uppercase letter.")
+        if not re.search(r"[a-z]", new_password):
+            return error(self, 400, "Password must contain at least one lowercase letter.")
+        if not re.search(r"[0-9]", new_password):
+            return error(self, 400, "Password must contain at least one number.")
+        if not re.search(r"[^A-Za-z0-9]", new_password):
+            return error(self, 400, "Password must contain at least one special character.")
+        with db() as conn:
+            row = conn.execute(
+                """
+                SELECT prt.id, prt.user_id, prt.used, prt.expires_at
+                FROM password_reset_tokens prt
+                WHERE prt.token=?
+                """,
+                (token,),
+            ).fetchone()
+            if not row:
+                return error(self, 400, "This reset link is invalid or has expired. Please request a new one.")
+            token_row = dict(row)
+            if token_row["used"]:
+                return error(self, 400, "This reset link has already been used. Please request a new password reset.")
+            # Check expiry - compare as strings (ISO format) or parse
+            try:
+                from datetime import datetime, timezone
+                expires = datetime.fromisoformat(token_row["expires_at"].replace("Z", "+00:00"))
+                if datetime.now(timezone.utc) > expires:
+                    return error(self, 400, "This reset link has expired. Please request a new password reset.")
+            except Exception:
+                pass  # If parsing fails, allow the reset
+            # Verify user exists and is active
+            user_row = conn.execute(
+                "SELECT id, email FROM users WHERE id=? AND is_active=1",
+                (token_row["user_id"],),
+            ).fetchone()
+            if not user_row:
+                return error(self, 400, "This account is no longer active. Please contact support.")
+            # Update password
+            conn.execute(
+                "UPDATE users SET password_hash=? WHERE id=?",
+                (hash_password(new_password), token_row["user_id"]),
+            )
+            # Mark token as used
+            conn.execute(
+                "UPDATE password_reset_tokens SET used=1 WHERE id=?",
+                (token_row["id"],),
+            )
+            # Invalidate all sessions for this user (security best practice)
+            conn.execute(
+                "DELETE FROM sessions WHERE user_id=?",
+                (token_row["user_id"],),
+            )
+            conn.execute(
+                "INSERT INTO events(user_id, event_type, details) VALUES (?, ?, ?)",
+                (token_row["user_id"], "password_reset_completed", "via_email_link"),
+            )
+            auth_cache_clear(user_id=token_row["user_id"])
+        return json_response(self, 200, {
+            "ok": True,
+            "message": "Your password has been reset successfully. You can now sign in with your new password.",
+        })
 
     def serve_static(self, path):
         if path in ("", "/"):
@@ -1381,6 +1502,77 @@ def seed_demo_account():
         count = conn.execute("SELECT COUNT(*) c FROM leads WHERE user_id=?", (user_id,)).fetchone()["c"]
     if count == 0:
         import_posts(user_id, sample_posts())
+
+
+def _build_reset_link(token):
+    """Build a full URL for the password reset page, detecting the current deployment origin."""
+    # Check for explicit FRONTEND_URL or VERCEL_URL env vars first
+    frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
+    if not frontend_url:
+        vercel_url = os.environ.get("VERCEL_URL", "").strip()
+        if vercel_url:
+            frontend_url = f"https://{vercel_url}" if not vercel_url.startswith("http") else vercel_url
+    if not frontend_url:
+        frontend_url = f"http://localhost:{APP_PORT}"
+    return f"{frontend_url}/reset-password.html?token={token}"
+
+
+def _send_password_reset_email(user, reset_link):
+    """Send a professional password reset email to the user."""
+    from services.email_service import send_email
+
+    first_name = user.get("first_name", "there")
+    to_email = user["email"]
+    subject = "Reset your HireMate password"
+
+    text_body = (
+        f"Hi {first_name},\n\n"
+        f"We received a request to reset the password for your HireMate account.\n\n"
+        f"Click the link below to set a new password:\n"
+        f"{reset_link}\n\n"
+        f"This link will expire in 1 hour for security reasons.\n\n"
+        f"If you didn't request a password reset, you can safely ignore this email. "
+        f"Your password will remain unchanged.\n\n"
+        f"— The HireMate Team"
+    )
+
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#0e1117;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0e1117;padding:40px 20px;">
+<tr><td align="center">
+<table width="480" cellpadding="0" cellspacing="0" style="background:#181c24;border-radius:16px;border:1px solid #2a2f3a;overflow:hidden;">
+  <tr><td style="padding:32px 36px 24px;text-align:center;">
+    <div style="display:inline-block;width:44px;height:44px;background:linear-gradient(135deg,#4affa0,#00c4ff);border-radius:12px;line-height:44px;font-size:22px;font-weight:800;color:#0e1117;font-family:'Segoe UI',Arial,sans-serif;margin-bottom:16px;">H</div>
+    <h1 style="margin:0 0 4px;color:#f1f3f5;font-size:20px;font-weight:700;">Reset Your Password</h1>
+    <p style="margin:0;color:#8b95a5;font-size:14px;">We received a request to reset your password.</p>
+  </td></tr>
+  <tr><td style="padding:0 36px 28px;">
+    <p style="color:#c9cdd4;font-size:14px;line-height:1.6;margin:0 0 24px;">
+      Hi <strong style="color:#f1f3f5;">{first_name}</strong>,<br><br>
+      Click the button below to set a new password for your HireMate account. This link will expire in <strong style="color:#f1f3f5;">1 hour</strong>.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+      <a href="{reset_link}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#4affa0,#00c4ff);color:#0e1117;font-size:15px;font-weight:700;text-decoration:none;border-radius:10px;">Reset Password</a>
+    </td></tr></table>
+    <p style="color:#8b95a5;font-size:12px;line-height:1.5;margin:24px 0 0;text-align:center;">
+      If the button doesn't work, copy and paste this link into your browser:<br>
+      <a href="{reset_link}" style="color:#4affa0;word-break:break-all;font-size:11px;">{reset_link}</a>
+    </p>
+  </td></tr>
+  <tr><td style="padding:20px 36px;border-top:1px solid #2a2f3a;text-align:center;">
+    <p style="margin:0;color:#5c6370;font-size:12px;line-height:1.5;">
+      If you didn't request this, you can safely ignore this email.<br>
+      Your password will remain unchanged.
+    </p>
+  </td></tr>
+</table>
+<p style="margin:24px 0 0;color:#3a3f4a;font-size:11px;text-align:center;">&copy; HireMate &mdash; Smart LinkedIn Lead Discovery</p>
+</td></tr></table>
+</body></html>"""
+
+    send_email(to_email, subject, text_body, html_body)
 
 
 def run():
