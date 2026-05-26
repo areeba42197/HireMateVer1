@@ -41,7 +41,6 @@
         </div>
       </div>
       <div class="auth-title">Create your account</div>
-      <div class="auth-subtitle">A few guided steps, similar to setting up a professional profile.</div>
       <form class="auth-form" onsubmit="handleRegister(event)" novalidate>
         <div class="signup-progress"><span class="signup-dot active"></span><span class="signup-dot"></span><span class="signup-dot"></span></div>
 
@@ -125,6 +124,36 @@ function onPwInput(pw) {
   renderStrength(pw, 'strength-bar', 'strength-label');
   var checks = {'chk-len': pw.length>=8,'chk-upper':/[A-Z]/.test(pw),'chk-lower':/[a-z]/.test(pw),'chk-num':/[0-9]/.test(pw),'chk-special':/[^A-Za-z0-9]/.test(pw)};
   Object.entries(checks).forEach(function([id,ok]){var el=document.getElementById(id);if(el)el.classList.toggle('ok',ok);});
+  if (pw && Object.values(checks).every(Boolean)) {
+    setFieldValid('reg-pw','reg-pw-err');
+  }
+}
+function validateSignupStep(step) {
+  if (step === 0) {
+    var fname = document.getElementById('reg-fname');
+    var lname = document.getElementById('reg-lname');
+    var okName = true;
+    if (!fname || !fname.value.trim()) { setFieldError('reg-fname','reg-fname-err','First name is required'); okName = false; } else setFieldValid('reg-fname','reg-fname-err');
+    if (!lname || !lname.value.trim()) { setFieldError('reg-lname','reg-lname-err','Last name is required'); okName = false; } else setFieldValid('reg-lname','reg-lname-err');
+    return okName;
+  }
+  if (step === 1) {
+    var email = document.getElementById('reg-email');
+    var pw = document.getElementById('reg-pw');
+    var ok = true;
+    if (!email || !email.value.trim()) { setFieldError('reg-email','reg-email-err','Email is required'); ok = false; }
+    else if (!isValidEmail(email.value)) { setFieldError('reg-email','reg-email-err','Enter a valid email address.'); ok = false; }
+    else setFieldValid('reg-email','reg-email-err');
+    var passwordReady = pw && pw.value.length >= 8 && /[A-Z]/.test(pw.value) && /[a-z]/.test(pw.value) && /[0-9]/.test(pw.value) && /[^A-Za-z0-9]/.test(pw.value);
+    if (!passwordReady) {
+      setFieldError('reg-pw','reg-pw-err','Please complete the password checklist.');
+      ok = false;
+    } else {
+      setFieldValid('reg-pw','reg-pw-err');
+    }
+    return ok;
+  }
+  return true;
 }
 let signupStep = 0;
 function renderSignupStep() {
@@ -132,6 +161,7 @@ function renderSignupStep() {
   document.querySelectorAll('.signup-dot').forEach((dot, index) => dot.classList.toggle('active', index <= signupStep));
 }
 function signupNext() {
+  if (!validateSignupStep(signupStep)) return;
   signupStep = Math.min(2, signupStep + 1);
   renderSignupStep();
 }
