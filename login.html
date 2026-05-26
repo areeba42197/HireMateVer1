@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<!-- Prevent theme flicker -->
+<script>
+(function () {
+  const savedTheme = localStorage.getItem("hiremate-theme");
+  if (savedTheme === "light") {
+    document.documentElement.classList.add("light-mode");
+    document.body?.classList?.add("light-mode");
+  }
+})();
+</script>
+
+</head>
+<body>
+<div class="toast-container" id="toasts"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" id="confirm-no">Cancel</button>
+      <button class="btn" id="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="page active">
+  <div class="auth-page">
+    
+    <div class="auth-brand-mark nav-logo" onclick="window.location.href='landing.html'">
+      <div class="nav-logo-icon">H</div>HireMate
+    </div>
+
+    <!-- Added Back + Close Buttons -->
+    <div class="auth-top-actions"></div>
+    <div class="auth-bg">
+      <div class="auth-glow" style="width:500px;height:500px;background:rgba(74,255,160,0.07);top:-120px;left:50%;transform:translateX(-50%);"></div>
+      <div class="auth-glow" style="width:300px;height:300px;background:rgba(0,196,255,0.04);bottom:-60px;right:60px;"></div>
+    </div>
+
+    <div class="auth-card login-card">
+      <div class="auth-logo">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
+          <div class="nav-logo-icon">H</div>
+          <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">HireMate</span>
+        </div>
+      </div>
+
+      <div class="auth-title">Welcome back</div>
+
+      <div class="auth-subtitle">
+        Sign in to continue discovering hiring opportunities on LinkedIn.
+      </div>
+
+      <form class="auth-form" onsubmit="handleLogin(event)" novalidate>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+
+          <div class="input-wrap" style="position:relative;">
+            <span class="input-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x2709;</span>
+
+            <input class="form-input"
+              id="login-email"
+              type="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              style="padding-left:42px;">
+          </div>
+
+          <span class="form-error-msg" id="login-email-err"></span>
+          <span class="form-hint">
+            Must include @ and a valid domain (e.g. name@gmail.com)
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+
+          <div style="position:relative;">
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x1F512;</span>
+
+            <input class="form-input"
+              id="login-pw"
+              type="password"
+              placeholder="Your password"
+              autocomplete="current-password"
+              style="padding-left:42px;padding-right:44px;">
+
+            <button type="button"
+              id="toggle-lpw"
+              onclick="togglePw('toggle-lpw','login-pw')"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">
+              &#x1F441;
+            </button>
+          </div>
+
+          <span class="form-error-msg" id="login-pw-err"></span>
+
+          <span class="form-hint">
+            Must be at least 8 characters with uppercase, lowercase &amp; number
+          </span>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:-8px;">
+          <a href="forgot-password.html"
+            style="font-size:13px;color:var(--accent);font-weight:600;text-decoration:none;">
+            Forgot password?
+          </a>
+        </div>
+
+        <button class="btn btn-primary" type="submit" style="width:100%;padding:15px;">
+          Sign In &#x2192;
+        </button>
+
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account?
+        <a href="register.html">Create one free &#x2192;</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<button class="theme-toggle"
+  onclick="toggleTheme()"
+  style="position:fixed;top:18px;right:18px;z-index:999;"
+  title="Toggle theme">
+  ??
+</button>
+
+<script src="app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

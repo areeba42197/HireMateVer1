@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body class="hm-data-booting">
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+
+<div class="page active">
+  <nav class="navbar">
+    <div class="nav-logo" onclick="window.location.href='dashboard.html'">
+      <div class="nav-logo-icon">H</div>HireMate
+    </div>
+    <div class="nav-links"><button class="nav-link active" onclick="window.location.href='dashboard.html'">Dashboard</button><button class="nav-link" onclick="window.location.href='leads.html'">Leads</button><button class="nav-link" onclick="window.location.href='drafts.html'">Drafts</button><button class="nav-link" onclick="window.location.href='analytics.html'">Analytics</button></div>
+    <div class="nav-actions"><button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">Profile</button>
+      <div class="avatar" onclick="window.location.href='profile.html'">AS</div>
+      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><button class="sidebar-item active" onclick="window.location.href='dashboard.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"></path><path d="M5.5 10.2V21h13V10.2"></path><path d="M9.5 21v-6h5v6"></path></svg></span>Home</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></span>Hot Leads <span class="sidebar-badge">3</span></button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x1F321;</span>Warm Leads</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x2744;</span>Cold Leads</button><div class="sidebar-section">Drafts</div><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon">&#x2709;</span>Message Drafts</button><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path><path d="M8 10h8"></path><path d="M8 13h5"></path></svg></span>Comment Drafts</button><div class="sidebar-section">Account</div><button class="sidebar-item" onclick="window.location.href='profile.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Profile</button><button class="sidebar-item" onclick="window.location.href='analytics.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-3"></path></svg></span>Analytics</button><button class="sidebar-item" onclick="window.location.href='settings.html'"><span class="icon">&#x2699;</span>Settings</button><button class="sidebar-item" onclick="confirmLogout()" style="margin-top:auto;"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M21 4v16"></path></svg></span>Logout</button></aside>
+    <main class="main-content">
+      <div style="margin-bottom:28px;">
+        <h1 class="page-title">Welcome back</h1>
+        <p class="page-sub">Here is your lead summary for today.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card s1 hm-loading-card"><div class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"></circle><path d="M14.5 14.5 21 21"></path><circle cx="8" cy="9" r="1.4"></circle><circle cx="12" cy="9" r="1.4"></circle><path d="M6.8 13c1.8-1.5 4.6-1.5 6.4 0"></path></svg></div><div class="stat-value"><span class="hm-skeleton hm-skeleton-number"></span></div><div class="stat-label">Total Leads Today</div><div class="stat-change"><span class="hm-skeleton hm-skeleton-line"></span></div></div>
+        <div class="stat-card s2 hm-loading-card"><div class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></div><div class="stat-value"><span class="hm-skeleton hm-skeleton-number"></span></div><div class="stat-label">Hot Leads</div><div class="stat-change"><span class="hm-skeleton hm-skeleton-line"></span></div></div>
+        <div class="stat-card s3 hm-loading-card"><div class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M6 16 17.5 4.5a2.1 2.1 0 0 1 3 3L9 19l-4 1 1-4Z"></path><path d="M15.5 6.5l3 3"></path></svg></div><div class="stat-value"><span class="hm-skeleton hm-skeleton-number"></span></div><div class="stat-label">Drafts Pending</div><div class="stat-change"><span class="hm-skeleton hm-skeleton-line"></span></div></div>
+        <div class="stat-card s4 hm-loading-card"><div class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="m7.5 12.5 3 3 6-7"></path></svg></div><div class="stat-value"><span class="hm-skeleton hm-skeleton-number"></span></div><div class="stat-label">Approved This Week</div><div class="stat-change"><span class="hm-skeleton hm-skeleton-line"></span></div></div>
+      </div>
+      <div class="leads-header">
+        <div class="leads-title">Recent Leads</div>
+        <button class="btn btn-outline btn-sm" onclick="window.location.href='leads.html'">View All &#x2192;</button>
+      </div>
+      <div class="leads-grid"><div class="hm-skeleton-card"></div><div class="hm-skeleton-card"></div><div class="hm-skeleton-card"></div></div>
+    </main>
+  </div>
+</div>
+<script src="app.js?v=18"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

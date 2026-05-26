@@ -1,0 +1,9 @@
+.env
+backend/.env
+backend/data/*.db
+backend/secure/
+secure/
+__pycache__/
+*/__pycache__/
+*.pyc
+*.log

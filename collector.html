@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate — LinkedIn Post Collector</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="toast-container" id="toasts"></div>
+<main class="main-content" style="max-width:900px;margin:0 auto;padding:40px 20px;">
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-title">LinkedIn Post Collector</div>
+    </div>
+    <p style="color:var(--text2);line-height:1.7;margin-bottom:18px;">
+      Server-side LinkedIn post scraping can return blocked or unreadable HTML even with a cookie. This collector runs inside your already logged-in LinkedIn tab, reads visible hiring posts, and saves them to HireMate.
+    </p>
+    <div class="info-box" style="margin-bottom:18px;">
+      <span>&#x1F512;</span>
+      <span>The script sends only visible post text, visible counts, and visible post links to your localhost backend. It does not send your LinkedIn password or session cookie.</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+      <button class="btn btn-primary" onclick="copyCollector()">Copy Collector Script</button>
+      <button class="btn btn-outline" onclick="window.location.href='leads.html'">Back to Leads</button>
+    </div>
+    <ol style="color:var(--text2);line-height:1.8;margin-left:18px;margin-bottom:18px;">
+      <li>Login to LinkedIn in your browser.</li>
+      <li>Search LinkedIn posts for your target role, for example: <strong>frontend developer hiring</strong>.</li>
+      <li>Open browser DevTools Console on LinkedIn.</li>
+      <li>Paste the copied script and press Enter.</li>
+      <li>Keep the LinkedIn tab open. It collects visible posts every 2 minutes while you scroll.</li>
+    </ol>
+    <textarea class="form-textarea" id="collector-code" readonly style="min-height:260px;font-family:Consolas,monospace;font-size:12px;"></textarea>
+  </div>
+</main>
+<script src="app.js"></script>
+<script>
+function buildCollectorScript() {
+  var token = localStorage.getItem('hm_token') || '';
+  if (!token) return '// Please login to HireMate first, then reload this page.';
+  return `(function(){
+  const API = 'http://localhost:8000';
+  const TOKEN = '${token.replace(/'/g, "\\'")}';
+  const HIRING = /(hiring|we are hiring|we're hiring|looking for|job opening|vacancy|internship|developer|engineer|remote|apply|send your cv|dm me)/i;
+  const seen = window.__hiremateSeenPosts || new Set();
+  window.__hiremateSeenPosts = seen;
+  function clean(s){ return (s || '').replace(/\\s+/g, ' ').trim(); }
+  function clickSeeMore(card){
+    const buttons = card.querySelectorAll('.feed-shared-inline-show-more-text, .feed-shared-inline-show-more-text__see-more-less-toggle, button[aria-label*="see more" i], button[aria-label*="Show more" i]');
+    buttons.forEach(function(btn){ try { btn.click(); } catch(e) {} });
+  }
+  function countNear(text, word){
+    const m = text.match(new RegExp('(\\\\d[\\\\d,]*)\\\\s+' + word, 'i'));
+    return m ? Number(m[1].replace(/,/g,'')) : 0;
+  }
+  function postUrl(card){
+    const a = card.querySelector('a[href*="/feed/update/"], a[href*="activity-"], a[href*="/posts/"]');
+    return a ? a.href.split('?')[0] : '';
+  }
+  function companyOrAuthor(card){
+    const el = card.querySelector('.update-components-actor__name, .update-components-actor__title, .feed-shared-actor__title, .feed-shared-actor__name, [data-test-id*="actor"]');
+    return clean(el ? el.innerText : '') || 'LinkedIn Post';
+  }
+  function actorTitle(card){
+    const el = card.querySelector('.update-components-actor__description, .feed-shared-actor__description, .update-components-actor__sub-description');
+    return clean(el ? el.innerText : '');
+  }
+  function postText(card){
+    const el = card.querySelector('.feed-shared-update-v2__description-wrapper, .update-components-text, .feed-shared-text, [data-test-id*="main-feed-activity-card"]');
+    return clean(el ? el.innerText : card.innerText);
+  }
+  async function collect(){
+    const cards = Array.from(document.querySelectorAll('[data-urn*="activity"], .feed-shared-update-v2, article, div[data-id*="activity"]'));
+    const posts = [];
+    for (const card of cards) {
+      clickSeeMore(card);
+      const text = postText(card);
+      if (text.length < 90 || !HIRING.test(text)) continue;
+      const url = postUrl(card);
+      const key = url || text.slice(0, 180);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const author = companyOrAuthor(card);
+      posts.push({
+        source_post_id: 'linkedin-browser-' + btoa(unescape(encodeURIComponent(key))).replace(/[^a-zA-Z0-9]/g,'').slice(0,24),
+        lead_kind: 'post',
+        company: author,
+        role_title: '',
+        author_name: author,
+        author_title: actorTitle(card),
+        post_text: text,
+        post_url: url,
+        likes: countNear(text, 'reactions?') || countNear(text, 'likes?'),
+        comments: countNear(text, 'comments?'),
+        reposts: countNear(text, 'reposts?'),
+        posted_at: new Date().toISOString(),
+        comment_items: []
+      });
+    }
+    if (!posts.length) { console.log('[HireMate] No new visible hiring posts found. Scroll LinkedIn and it will try again.'); return; }
+    const res = await fetch(API + '/api/linkedin/collect-visible', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ posts })
+    });
+    const data = await res.json();
+    console.log('[HireMate] Imported visible LinkedIn posts:', data);
+  }
+  collect();
+  clearInterval(window.__hiremateCollectorTimer);
+  window.__hiremateCollectorTimer = setInterval(collect, 120000);
+  alert('HireMate collector is running. Scroll LinkedIn posts; visible hiring posts will sync every 2 minutes.');
+})();`;
+}
+function copyCollector(){
+  var code = document.getElementById('collector-code').value;
+  navigator.clipboard.writeText(code).then(function(){ showToast('success','Collector script copied. Paste it in LinkedIn Console.'); });
+}
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('collector-code').value = buildCollectorScript();
+});
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Saved Leads</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body class="hm-data-booting">
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+
+<div class="page active">
+  <nav class="navbar">
+    <div class="nav-logo" onclick="window.location.href='dashboard.html'"><div class="nav-logo-icon">H</div>HireMate</div>
+    <div class="nav-links"><button class="nav-link" onclick="window.location.href='dashboard.html'">Dashboard</button><button class="nav-link active" onclick="window.location.href='leads.html'">Leads</button><button class="nav-link" onclick="window.location.href='drafts.html'">Drafts</button><button class="nav-link" onclick="window.location.href='analytics.html'">Analytics</button></div>
+    <div class="nav-actions"><button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button><button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">Profile</button><div class="avatar" onclick="window.location.href='profile.html'">AS</div><button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Logout</button></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><button class="sidebar-item" onclick="window.location.href='dashboard.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"></path><path d="M5.5 10.2V21h13V10.2"></path><path d="M9.5 21v-6h5v6"></path></svg></span>Home</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></span>Hot Leads</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x1F321;</span>Warm Leads</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x2744;</span>Cold Leads</button><button class="sidebar-item active" onclick="window.location.href='saved-leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v16l-7-4-7 4V5a1 1 0 0 1 1-1Z"></path></svg></span>Saved Leads</button><div class="sidebar-section">Drafts</div><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon">&#x2709;</span>Message Drafts</button><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path><path d="M8 10h8"></path><path d="M8 13h5"></path></svg></span>Comment Drafts</button><div class="sidebar-section">Account</div><button class="sidebar-item" onclick="window.location.href='profile.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Profile</button><button class="sidebar-item" onclick="window.location.href='analytics.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-3"></path></svg></span>Analytics</button><button class="sidebar-item" onclick="window.location.href='settings.html'"><span class="icon">&#x2699;</span>Settings</button><button class="sidebar-item" onclick="confirmLogout()" style="margin-top:auto;"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M21 4v16"></path></svg></span>Logout</button></aside>
+    <main class="main-content leads-main">
+      <h1 class="page-title">Saved Leads</h1>
+      <p class="page-sub">Saved opportunities from your list</p>
+      <div class="leads-header" style="margin-bottom:16px;">
+        <div class="filter-row">
+          <button class="filter-btn active" id="filter-all" onclick="filterLeads('all')">All</button>
+          <button class="filter-btn" id="filter-hot" onclick="filterLeads('hot')">&#x1F525; Hot</button>
+          <button class="filter-btn" id="filter-warm" onclick="filterLeads('warm')">&#x1F321; Warm</button>
+          <button class="filter-btn" id="filter-cold" onclick="filterLeads('cold')">&#x2744; Cold</button>
+          <div class="lead-filter-control">
+            <label for="lead-kind-filter">Filter by</label>
+            <select id="lead-kind-filter" class="lead-kind-dropdown" onchange="filterLeadKind(this.value)">
+              <option value="all">Jobs + Posts</option>
+              <option value="job">Jobs</option>
+              <option value="post">Posts</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="leads-grid"></div>
+      <aside class="saved-leads-panel">
+        <div class="saved-panel-header">
+          <div>
+            <div class="section-title">Saved Leads</div>
+            <div class="saved-panel-sub" id="saved-panel-sub">All saved opportunities</div>
+          </div>
+        </div>
+        <div class="saved-panel-list" id="saved-leads-panel-list"></div>
+      </aside>
+    </main>
+  </div>
+</div>
+<script src="app.js?v=17"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

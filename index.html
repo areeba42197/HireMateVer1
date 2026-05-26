@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireMate</title>
+  <meta http-equiv="refresh" content="0; url=landing.html">
+  <script>
+    window.location.replace('landing.html');
+  </script>
+</head>
+<body>
+  <p>Redirecting to HireMate...</p>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

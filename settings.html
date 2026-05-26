@@ -1,0 +1,361 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body class="hm-data-booting">
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+
+<div class="page active">
+  <nav class="navbar"><div class="nav-logo" onclick="window.location.href='dashboard.html'"><div class="nav-logo-icon">H</div>HireMate</div><div class="nav-links"><button class="nav-link" onclick="window.location.href='dashboard.html'">Dashboard</button><button class="nav-link" onclick="window.location.href='leads.html'">Leads</button><button class="nav-link" onclick="window.location.href='drafts.html'">Drafts</button><button class="nav-link" onclick="window.location.href='analytics.html'">Analytics</button></div><div class="nav-actions"><button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button><button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">Profile</button><div class="avatar" onclick="window.location.href='profile.html'">AS</div><button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Logout</button></div></nav>
+  <div class="app-layout">
+    <aside class="sidebar"><button class="sidebar-item" onclick="window.location.href='dashboard.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"></path><path d="M5.5 10.2V21h13V10.2"></path><path d="M9.5 21v-6h5v6"></path></svg></span>Home</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></span>Hot Leads <span class="sidebar-badge">3</span></button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x1F321;</span>Warm Leads</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x2744;</span>Cold Leads</button><div class="sidebar-section">Drafts</div><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon">&#x2709;</span>Message Drafts</button><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path><path d="M8 10h8"></path><path d="M8 13h5"></path></svg></span>Comment Drafts</button><div class="sidebar-section">Account</div><button class="sidebar-item" onclick="window.location.href='profile.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Profile</button><button class="sidebar-item" onclick="window.location.href='analytics.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-3"></path></svg></span>Analytics</button><button class="sidebar-item active" onclick="window.location.href='settings.html'"><span class="icon">&#x2699;</span>Settings</button><button class="sidebar-item" onclick="confirmLogout()" style="margin-top:auto;"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M21 4v16"></path></svg></span>Logout</button></aside>
+    <main class="main-content">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-sub">Manage your account, privacy, and preferences</p>
+      <div class="settings-layout">
+        <div class="settings-nav">
+          <button class="settings-nav-item active" id="sn-info" onclick="showSettingsPanel('info')"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Personal Info</button>
+          <button class="settings-nav-item" id="sn-pw" onclick="showSettingsPanel('pw')"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>Change Password</button>
+          <button class="settings-nav-item" id="sn-cookie" onclick="showSettingsPanel('cookie')"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"></path></svg></span>LinkedIn session cookie</button>
+          <button class="settings-nav-item" id="sn-notif" onclick="showSettingsPanel('notif')"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg></span>Notifications</button>
+          <button class="settings-nav-item" id="sn-danger" onclick="showSettingsPanel('danger')" style="color:var(--hot);"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></span>Account Deletion</button>
+        </div>
+        <div>
+          <!-- Personal Info Panel -->
+          <div class="settings-panel active" id="sp-info">
+            <div class="section-card">
+              <div class="section-card-header"><div class="section-title"><svg class="settings-title-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>Personal Information</div></div>
+              <form onsubmit="savePersonalInfo(event)" novalidate style="display:flex;flex-direction:column;gap:18px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                  <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="set-fname" placeholder="First name"><span class="form-error-msg" id="set-fname-err"></span></div>
+                  <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="set-lname" placeholder="Last name"><span class="form-error-msg" id="set-lname-err"></span></div>
+                </div>
+                <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" id="set-email" type="email" placeholder="Email address"><span class="form-error-msg" id="set-email-err"></span></div>
+                <div class="form-group"><label class="form-label">Headline / Bio</label><input class="form-input" id="set-headline" placeholder="Headline or bio"></div>
+                <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="set-location" placeholder="Location"></div>
+                <div class="form-group"><label class="form-label">Portfolio Website</label><input class="form-input" id="set-website" placeholder="https://yourwebsite.com"></div>
+                <div><button class="btn btn-primary" type="submit">Save Changes</button></div>
+              </form>
+            </div>
+          </div>
+          <!-- Change Password Panel -->
+          <div class="settings-panel" id="sp-pw">
+            <div class="section-card">
+              <div class="section-card-header"><div class="section-title"><svg class="settings-title-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>Change Password</div></div>
+              <form onsubmit="savePassword(event)" novalidate style="display:flex;flex-direction:column;gap:18px;">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <div style="position:relative;"><input class="form-input" id="curr-pw" type="password" placeholder="Your current password" style="padding-right:44px;"><button type="button" id="tgl-curr" onclick="togglePw('tgl-curr','curr-pw')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">&#x1F441;</button></div>
+                  <span class="form-error-msg" id="curr-pw-err"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <div style="position:relative;"><input class="form-input" id="new-pw" type="password" placeholder="Create a new strong password" oninput="onNewPw(this.value)" style="padding-right:44px;"><button type="button" id="tgl-new" onclick="togglePw('tgl-new','new-pw')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">&#x1F441;</button></div>
+                  <div class="strength-bar-wrap" style="margin-top:8px;"><div class="strength-bar-fill" id="set-str-bar" style="width:0%;"></div></div>
+                  <div class="strength-label" id="set-str-lbl" style="color:var(--text3);font-family:Syne,sans-serif;font-size:11px;font-weight:700;margin-top:4px;"></div>
+                  <ul class="validation-checks" style="margin-top:8px;">
+                    <li id="sp-chk-len">Minimum 8 characters</li>
+                    <li id="sp-chk-upper">Uppercase letter (A-Z)</li>
+                    <li id="sp-chk-lower">Lowercase letter (a-z)</li>
+                    <li id="sp-chk-num">Number (0-9)</li>
+                    <li id="sp-chk-special">Special character (!@#$...)</li>
+                  </ul>
+                  <span class="form-error-msg" id="new-pw-err"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <div style="position:relative;"><input class="form-input" id="conf-pw" type="password" placeholder="Repeat your new password" style="padding-right:44px;"><button type="button" id="tgl-conf" onclick="togglePw('tgl-conf','conf-pw')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">&#x1F441;</button></div>
+                  <span class="form-error-msg" id="conf-pw-err"></span>
+                </div>
+                <div><button class="btn btn-primary" type="submit">Update Password</button></div>
+              </form>
+            </div>
+          </div>
+          <!-- Cookie Panel -->
+          <div class="settings-panel" id="sp-cookie">
+            <div class="section-card">
+              <div class="section-card-header"><div class="section-title"><svg class="settings-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"></path></svg>LinkedIn session cookie</div></div>
+              <div class="info-box" style="margin-bottom:20px;" id="cookie-status-box"><span>&#x26A0;</span><div><strong style="color:var(--warm)">LinkedIn session cookie not added yet</strong><br>Add your LinkedIn session cookie so HireMate can look for posts and jobs that match your profile.</div></div>
+              <div style="padding:18px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;">
+                <div style="font-weight:700;font-family:Syne,sans-serif;margin-bottom:8px;color:var(--text);">How to connect LinkedIn</div>
+                <div style="color:var(--text2);font-size:13.5px;line-height:1.55;margin-bottom:12px;">This lets HireMate find opportunities from your signed-in LinkedIn account. Your session cookie value is encrypted and saved securely.</div>
+                <div style="display:grid;gap:10px;color:var(--text2);font-size:13.5px;line-height:1.55;">
+                  <div><strong style="color:var(--text);">1.</strong> Open LinkedIn in Chrome or Edge and make sure you are logged in.</div>
+                  <div><strong style="color:var(--text);">2.</strong> Press <strong>F12</strong>, or right click the page and choose <strong>Inspect</strong>.</div>
+                  <div><strong style="color:var(--text);">3.</strong> Open the <strong>Application</strong> tab. If you do not see it, click the <strong>&gt;&gt;</strong> menu.</div>
+                  <div><strong style="color:var(--text);">4.</strong> On the left, open <strong>Cookies</strong>, then choose <strong>https://www.linkedin.com</strong>.</div>
+                  <div><strong style="color:var(--text);">5.</strong> Find the row named <strong>li_at</strong>. Copy its <strong>Value</strong>.</div>
+                  <div><strong style="color:var(--text);">6.</strong> Paste that value below and click <strong>Save LinkedIn session cookie</strong>.</div>
+                </div>
+                <div class="form-hint" style="margin-top:12px;">HireMate only shows a hidden version after saving, so your session cookie stays private.</div>
+              </div>
+              <div class="form-group" id="saved-cookie-row" style="display:none;margin-bottom:18px;">
+                <label class="form-label">Saved LinkedIn session cookie</label>
+                <div style="position:relative;">
+                  <input class="form-input" id="saved-cookie-mask" type="password" readonly value="" style="padding-right:44px;">
+                  <button type="button" onclick="togglePw('saved-cookie-eye','saved-cookie-mask')" id="saved-cookie-eye" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">&#x1F441;</button>
+                </div>
+                <span class="form-hint">Encrypted and hidden for your privacy.</span>
+              </div>
+              <form onsubmit="updateCookieSettings(event)" novalidate style="display:flex;flex-direction:column;gap:18px;">
+                <div class="form-group">
+                  <label class="form-label">LinkedIn session cookie</label>
+                  <div style="position:relative;">
+                    <input class="form-input" id="set-cookie" type="password" placeholder="Paste your LinkedIn session cookie here" autocomplete="off" style="padding-right:44px;">
+                    <button type="button" onclick="togglePw('set-cookie-eye','set-cookie')" id="set-cookie-eye" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">&#x1F441;</button>
+                  </div>
+                  <span class="form-error-msg" id="set-cookie-err"></span>
+                  <span class="form-hint">Paste the value copied from LinkedIn. It will be encrypted and saved securely.</span>
+                </div>
+                <div class="warning-box"><span>!</span><span>Use your own LinkedIn account only. If LinkedIn asks you to sign in again later, come back here and update your session cookie.</span></div>
+                <div><button class="btn btn-primary" type="submit">Save LinkedIn session cookie</button></div>
+              </form>
+            </div>
+          </div>
+          <!-- Notifications Panel -->
+          <div class="settings-panel" id="sp-notif">
+            <div class="section-card">
+              <div class="section-card-header"><div class="section-title"><svg class="settings-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>Notification Preferences</div></div>
+              <div style="display:flex;flex-direction:column;gap:20px;">
+                <div class="info-box" id="notif-email-status"><span>i</span><div><strong>Email notifications</strong><br>These alerts will be sent to your signed-in account email.</div></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+                  <div><div style="font-weight:600;font-family:Syne,sans-serif;margin-bottom:4px;">New Hot Lead Alerts</div><div style="font-size:13px;color:var(--text2);">Get notified immediately when a hot lead is detected</div></div>
+                  <label class="settings-switch"><input type="checkbox" checked id="notif-hot"><span></span></label>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+                  <div><div style="font-weight:600;font-family:Syne,sans-serif;margin-bottom:4px;">Daily Summary</div><div style="font-size:13px;color:var(--text2);">Receive a daily digest of new leads and pending drafts</div></div>
+                  <label class="settings-switch"><input type="checkbox" checked id="notif-daily"><span></span></label>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+                  <div><div style="font-weight:600;font-family:Syne,sans-serif;margin-bottom:4px;">Draft Approved Confirmation</div><div style="font-size:13px;color:var(--text2);">Confirmation toast when you approve a draft</div></div>
+                  <label class="settings-switch"><input type="checkbox" checked id="notif-drafts"><span></span></label>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button class="btn btn-primary" onclick="saveNotificationPreferences()">Save Preferences</button>
+                  <button class="btn btn-ghost" onclick="sendTestNotificationEmail()">Check Notifications</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Account deletion panel -->
+          <div class="settings-panel" id="sp-danger">
+            <div class="section-card" style="border-color:rgba(255,107,107,0.2);">
+              <div class="section-card-header"><div class="section-title" style="color:var(--hot);"><svg class="settings-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>Account Deletion</div></div>
+              <div style="display:flex;flex-direction:column;gap:20px;">
+                <div style="padding:20px;background:rgba(255,179,71,0.06);border:1px solid rgba(255,179,71,0.2);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                  <div style="display:flex;align-items:flex-start;gap:12px;"><span class="settings-action-icon warn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"></path></svg></span><div><div style="font-weight:600;font-family:Syne,sans-serif;margin-bottom:4px;">Disconnect LinkedIn</div><div style="font-size:13px;color:var(--text2);">Removes your LinkedIn session cookie. You will need to reconnect to discover leads.</div></div></div>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('success','LinkedIn disconnected.')">Disconnect</button>
+                </div>
+                <div style="padding:20px;background:rgba(255,107,107,0.06);border:1px solid rgba(255,107,107,0.25);border-radius:12px;">
+                  <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;"><span class="settings-action-icon danger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></span><div><div style="font-weight:600;font-family:Syne,sans-serif;margin-bottom:4px;color:var(--hot);">Delete Account</div><div style="font-size:13px;color:var(--text2);">Permanently delete your HireMate account. This action cannot be undone. All leads, drafts, and settings will be erased forever.</div></div></div>
+                  <button class="btn btn-danger" onclick="showDeleteModal()">Delete My Account</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+function showSettingsPanel(id) {
+  document.querySelectorAll('.settings-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.settings-nav-item').forEach(function(i){i.classList.remove('active');});
+  var p = document.getElementById('sp-'+id), n = document.getElementById('sn-'+id);
+  if(p) p.classList.add('active');
+  if(n) n.classList.add('active');
+}
+function savePersonalInfo(e) {
+  e.preventDefault();
+  var fname = document.getElementById('set-fname'), lname = document.getElementById('set-lname'), email = document.getElementById('set-email');
+  var valid = true;
+  if(!fname.value.trim()){document.getElementById('set-fname-err').textContent='First name required';fname.classList.add('is-error');valid=false;}else{document.getElementById('set-fname-err').textContent='';fname.classList.remove('is-error');fname.classList.add('is-valid');}
+  if(!lname.value.trim()){document.getElementById('set-lname-err').textContent='Last name required';lname.classList.add('is-error');valid=false;}else{document.getElementById('set-lname-err').textContent='';lname.classList.remove('is-error');}
+  if(!email.value||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)){document.getElementById('set-email-err').textContent='Enter a valid email address';email.classList.add('is-error');valid=false;}else{document.getElementById('set-email-err').textContent='';email.classList.remove('is-error');}
+  if(!valid){showToast('error','Please fix the errors above.');return;}
+  showToast('success','Personal information saved!');
+}
+async function savePassword(e) {
+  e.preventDefault();
+  var curr=document.getElementById('curr-pw'), nw=document.getElementById('new-pw'), conf=document.getElementById('conf-pw');
+  var valid=true;
+  if(!curr.value){document.getElementById('curr-pw-err').textContent='Current password is required';curr.classList.add('is-error');valid=false;}else{document.getElementById('curr-pw-err').textContent='';curr.classList.remove('is-error');}
+  if(!nw.value||nw.value.length<8){document.getElementById('new-pw-err').textContent='Password must be at least 8 characters';nw.classList.add('is-error');valid=false;}
+  else if(!/[A-Z]/.test(nw.value)){document.getElementById('new-pw-err').textContent='Add at least one uppercase letter';nw.classList.add('is-error');valid=false;}
+  else if(!/[a-z]/.test(nw.value)){document.getElementById('new-pw-err').textContent='Add at least one lowercase letter';nw.classList.add('is-error');valid=false;}
+  else if(!/[0-9]/.test(nw.value)){document.getElementById('new-pw-err').textContent='Add at least one number';nw.classList.add('is-error');valid=false;}
+  else if(!/[^A-Za-z0-9]/.test(nw.value)){document.getElementById('new-pw-err').textContent='Add at least one special character';nw.classList.add('is-error');valid=false;}
+  else{document.getElementById('new-pw-err').textContent='';nw.classList.remove('is-error');}
+  if(!conf.value||conf.value!==nw.value){document.getElementById('conf-pw-err').textContent='Passwords do not match';conf.classList.add('is-error');valid=false;}else{document.getElementById('conf-pw-err').textContent='';conf.classList.remove('is-error');}
+  if(!valid){showToast('error','Please fix the errors above.');return;}
+  try {
+    await hmApi('/api/account/password', {
+      method: 'PATCH',
+      body: JSON.stringify({ current_password: curr.value, new_password: nw.value })
+    });
+    showToast('success','Password updated successfully!');
+    curr.value='';nw.value='';conf.value='';
+    onNewPw('');
+  } catch (ex) {
+    var msg = ex.message || 'Unable to update password.';
+    if (ex.status === 403 || msg.toLowerCase().includes('current password')) {
+      document.getElementById('curr-pw-err').textContent = msg;
+      curr.classList.add('is-error');
+      curr.focus();
+      showToast('error','Current password is incorrect.');
+      return;
+    }
+    showToast('error', msg);
+  }
+}
+function onNewPw(pw){
+  renderStrength(pw,'set-str-bar','set-str-lbl');
+  var m={'sp-chk-len':pw.length>=8,'sp-chk-upper':/[A-Z]/.test(pw),'sp-chk-lower':/[a-z]/.test(pw),'sp-chk-num':/[0-9]/.test(pw),'sp-chk-special':/[^A-Za-z0-9]/.test(pw)};
+  Object.entries(m).forEach(function(e){var el=document.getElementById(e[0]);if(el)el.classList.toggle('ok',e[1]);});
+}
+async function loadNotificationPreferences(){
+  if(!window.hmApi || !hmToken()) return;
+  try {
+    var data = await hmApi('/api/settings/notifications');
+    var p = data.preferences || {};
+    document.getElementById('notif-hot').checked = p.hot_lead_alerts !== false;
+    document.getElementById('notif-daily').checked = p.daily_summary !== false;
+    document.getElementById('notif-drafts').checked = p.draft_confirmations !== false;
+    window.hmNotificationRecipient = data.recipient_email || '';
+    renderNotificationEmailStatus(data.email_configured, data.recipient_email, data.email_status || {});
+  } catch(e) {}
+}
+async function saveNotificationPreferences(){
+  try {
+    var data = await hmApi('/api/settings/notifications', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        hot_lead_alerts: document.getElementById('notif-hot').checked,
+        daily_summary: document.getElementById('notif-daily').checked,
+        draft_confirmations: document.getElementById('notif-drafts').checked
+      })
+    });
+    window.hmNotificationRecipient = data.recipient_email || window.hmNotificationRecipient || '';
+    renderNotificationEmailStatus(data.email_configured, data.recipient_email, data.email_status || {});
+    showToast('success','Notification preferences saved.');
+  } catch(ex) {
+    showToast('error', ex.message || 'Unable to save notification preferences.');
+  }
+}
+function renderNotificationEmailStatus(configured, recipientEmail, status){
+  var box = document.getElementById('notif-email-status');
+  if(!box) return;
+  var safeEmail = hmEscape(recipientEmail || window.hmNotificationRecipient || 'your account email');
+  box.innerHTML = '<span>&#x2705;</span><div><strong style="color:var(--accent)">Notification preferences saved</strong><br>Your updates and reminders are connected to <strong>'+safeEmail+'</strong>.</div>';
+}
+async function sendTestNotificationEmail(){
+  try {
+    var data = await hmApi('/api/settings/notifications/test', { method: 'POST', body: JSON.stringify({}) });
+    var email = data.recipient_email || window.hmNotificationRecipient || 'your account email';
+    showToast('success', data.message || ('Notification check completed for '+email+'.'));
+  } catch(ex) {
+    showToast('error', ex.message || 'Unable to check notifications right now.');
+  }
+}
+async function updateCookieSettings(e) {
+  e.preventDefault();
+  var val=document.getElementById('set-cookie').value.trim();
+  var err=document.getElementById('set-cookie-err');
+  if(!val){err.textContent='LinkedIn session cookie is required';document.getElementById('set-cookie').classList.add('is-error');return;}
+  if(!val.includes('li_at=') && val.includes('=')){err.textContent='Paste a valid LinkedIn session cookie value';document.getElementById('set-cookie').classList.add('is-error');return;}
+  err.textContent='';
+  document.getElementById('set-cookie').classList.remove('is-error');
+  try {
+    await hmSaveLinkedInCookie(val);
+    showToast('success','LinkedIn session cookie encrypted and saved securely.');
+    document.getElementById('set-cookie').value='';
+    if (window.hmLoadCookieStatus) hmLoadCookieStatus();
+    try {
+      showToast('info','Checking your LinkedIn connection...');
+      await hmSyncAfterCookieSave();
+      if (window.hmLoadCookieStatus) hmLoadCookieStatus();
+    } catch(syncErr) {
+      showToast('error', syncErr.message || 'LinkedIn session cookie Saved, but HireMate could not check for leads yet.');
+    }
+  } catch(ex) {
+    err.textContent=ex.message || 'Unable to save LinkedIn session cookie';
+    document.getElementById('set-cookie').classList.add('is-error');
+    showToast('error',err.textContent);
+  }
+}
+async function hmLoadCookieStatus(){
+  if(!window.hmApi || !hmToken()) return;
+  try{
+    var data = await hmApi('/api/linkedin/cookie');
+    var c = data.cookie || {};
+    var box = document.getElementById('cookie-status-box');
+    var row = document.getElementById('saved-cookie-row');
+    var mask = document.getElementById('saved-cookie-mask');
+    if(c.connected){
+      box.innerHTML = '<span>&#x2705;</span><div><strong style="color:var(--accent)">LinkedIn session cookie Saved</strong><br>Your LinkedIn session cookie is encrypted, saved securely, and ready for finding leads.</div>';
+      row.style.display = 'block';
+      mask.value = c.masked || 'li_at=&bull;&bull;&bull;&bull;&bull;&bull;';
+    } else {
+      box.innerHTML = '<span>&#x26A0;</span><div><strong style="color:var(--warm)">LinkedIn session cookie not added yet</strong><br>Add your LinkedIn session cookie so HireMate can search for better matched opportunities.</div>';
+      row.style.display = 'none';
+      mask.value = '';
+    }
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', function(){ setTimeout(hmLoadCookieStatus, 200); setTimeout(loadNotificationPreferences, 200); });
+function showDeleteModal() {
+  document.getElementById('modal-content').innerHTML = '<div class="modal-title" style="color:var(--hot)">&#x1F5D1; Delete Account</div><div class="modal-sub">This is permanent and cannot be undone. All your data will be erased.</div><div class="warning-box" style="margin-bottom:20px;"><span>&#x26A0;&#xFE0F;</span><span>Type <strong style="color:var(--text)">DELETE</strong> to confirm.</span></div><div class="form-group" style="margin-bottom:20px;"><label class="form-label">Confirmation</label><input class="form-input" placeholder="Type DELETE here" id="del-confirm" autocomplete="off"><span class="form-error-msg" id="del-err"></span></div><div style="display:flex;gap:10px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-danger" style="flex:1;" onclick="confirmDelete()">Delete My Account</button></div>';
+  document.getElementById('modal').classList.add('open');
+}
+function confirmDelete() {
+  var v=document.getElementById('del-confirm').value;
+  if(v==='DELETE'){closeModal();showToast('success','Account deleted.');setTimeout(function(){window.location.href='dashboard.html';},1200);}
+  else{document.getElementById('del-err').textContent='Type DELETE exactly (all caps)';document.getElementById('del-confirm').classList.add('is-error');}
+}
+</script>
+<script src="app.js?v=17"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

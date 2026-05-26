@@ -1,0 +1,1380 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Lead Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07080A; --surface:#0F1116; --surface2:#161820; --surface3:#1C1F2A;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+  --text-primary:#F0F2F5; --text-secondary:#8B919E; --text-muted:#565C68;
+  --accent:#4AFFA0; --accent-soft:rgba(74,255,160,.12); --accent-hover:#5FFFAC;
+  --hot:#FF6B6B; --hot-bg:rgba(255,107,107,.14); --hot-border:rgba(255,107,107,.28);
+  --warm:#FFB347; --warm-bg:rgba(255,179,71,.14); --warm-border:rgba(255,179,71,.28);
+  --cold:#74B9FF; --cold-bg:rgba(116,185,255,.14); --cold-border:rgba(116,185,255,.28);
+  --sh-xs:0 2px 12px rgba(0,0,0,.25);
+  --sh-sm:0 2px 12px rgba(0,0,0,.3);
+  --sh-md:0 8px 40px rgba(0,0,0,.5);
+  --r:20px; --rs:12px;
+}
+[data-theme="light"] {
+  --bg:#F5F7FA; --surface:#FFFFFF; --surface2:#F1F5F9; --surface3:#E8EEF5;
+  --border:rgba(15,23,42,.09); --border2:rgba(15,23,42,.16);
+  --text-primary:#111827; --text-secondary:#4B5563; --text-muted:#7A8494;
+  --accent:#059669; --accent-soft:rgba(5,150,105,.1); --accent-hover:#047857;
+  --hot:#DC2626; --hot-bg:rgba(220,38,38,.09); --hot-border:rgba(220,38,38,.2);
+  --warm:#B87500; --warm-bg:rgba(184,117,0,.09); --warm-border:rgba(184,117,0,.2);
+  --cold:#2563EB; --cold-bg:rgba(37,99,235,.09); --cold-border:rgba(37,99,235,.2);
+  --sh-xs:0 1px 2px rgba(15,23,42,.06);
+  --sh-sm:0 2px 12px rgba(15,23,42,.08);
+  --sh-md:0 8px 28px rgba(15,23,42,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-y:scroll;scrollbar-width:thin;scrollbar-color:var(--text-muted) var(--surface2)}
+body{font-family:'DM Sans',sans-serif;background:radial-gradient(circle at 20% 0%,rgba(74,255,160,.08),transparent 32%),radial-gradient(circle at 85% 8%,rgba(116,185,255,.08),transparent 28%),var(--bg);color:var(--text-primary);min-height:100vh;transition:background .25s,color .25s;overflow-x:hidden}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:999px;border:3px solid var(--surface2)}
+::-webkit-scrollbar-thumb:hover{background:var(--text-secondary)}
+
+/* NAV */
+.nav{background:rgba(15,17,22,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--sh-xs);transition:background .25s,border-color .25s}
+[data-theme="light"] .nav{background:rgba(255,255,255,.88)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;cursor:pointer;text-decoration:none;color:var(--text-primary);letter-spacing:-.3px}
+.nav-logo-icon{width:32px;height:32px;background:var(--accent);color:#07080A;border-radius:9px;display:grid;place-items:center;font-size:15px;font-weight:800;flex-shrink:0;box-shadow:0 0 22px rgba(74,255,160,.22)}
+.nav-links{display:flex;gap:2px}
+.nl{background:none;border:none;padding:6px 13px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .15s}
+.nl:hover{background:var(--surface2);color:var(--text-primary)}
+.nl.active{color:var(--accent);font-weight:600}
+.nav-r{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#74B9FF);border-radius:50%;display:grid;place-items:center;color:#07080A;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}.avatar.has-image{overflow:hidden;padding:0;background:var(--surface2);border:1px solid var(--border2)}.avatar.has-image img{width:100%;height:100%;display:block;object-fit:cover}
+.icon-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:50%;width:38px;height:38px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:17px;transition:all .2s;flex-shrink:0;vertical-align:middle}
+.icon-btn:hover{background:var(--surface3);transform:scale(1.08)}
+.theme-icon{width:21px;height:21px;display:block;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.btn{padding:7px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid var(--border);background:transparent;color:var(--text-secondary)}
+.btn:hover{border-color:var(--border2);color:var(--text-primary)}
+
+/* LAYOUT */
+body.hm-data-booting .wrap{visibility:hidden}
+body.hm-data-booting::after{content:'';position:fixed;left:50%;top:50%;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;border:4px solid var(--border2);border-top-color:var(--accent);border-right-color:var(--cold);background:transparent;animation:sp .75s linear infinite;z-index:40}
+body.hm-data-booting .wrap{visibility:visible}
+body.hm-data-booting::after{display:none}
+.wrap{max-width:1140px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:1fr 358px;gap:20px;align-items:start}
+
+/* BACK */
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:14px;padding:4px 0;transition:color .15s;user-select:none;border:none;background:none;font-family:'DM Sans',sans-serif}
+.back:hover{color:var(--accent)}
+.back svg{width:15px;height:15px}
+
+/* POST CARD */
+.card{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent),var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;transition:background .25s,border-color .25s,box-shadow .25s}
+.card:hover{border-color:var(--border2);box-shadow:var(--sh-md)}
+
+.post-hdr{padding:20px 20px 0;display:flex;align-items:flex-start;gap:14px}
+.co-logo{width:54px;height:54px;border-radius:14px;flex-shrink:0;background:var(--accent-soft);display:grid;place-items:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--accent);border:1px solid rgba(74,255,160,.22);box-shadow:0 0 24px rgba(74,255,160,.12)}
+.post-meta{flex:1;min-width:0}
+.co-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);line-height:1.3}
+.co-sub{font-size:13.5px;color:var(--text-secondary);margin-top:2px}
+.meta-row{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+.mi{font-size:11.5px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px}
+.mi svg{width:13px;height:13px;stroke:var(--accent);opacity:.95;flex-shrink:0}
+.mdot{width:3px;height:3px;background:var(--text-muted);border-radius:50%;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:0;white-space:nowrap;flex-shrink:0;box-shadow:none}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 7px currentColor}
+.b-hot{background:var(--hot-bg);color:var(--hot);border:1px solid var(--hot-border)}
+.b-warm{background:var(--warm-bg);color:var(--warm);border:1px solid var(--warm-border)}
+.b-cold{background:var(--cold-bg);color:var(--cold);border:1px solid var(--cold-border)}
+
+.post-body{padding:16px 20px 14px;font-size:14.5px;line-height:1.72;color:var(--text-primary)}
+.post-body p{margin-bottom:10px}
+.post-body p:last-child{margin-bottom:0}
+.post-body.job-desc p{margin-bottom:13px}
+.post-body .job-heading{font-weight:800;color:var(--text-primary)}
+.post-body .job-bullet{padding-left:18px;text-indent:-12px;margin-bottom:6px}
+.post-body .job-muted{color:var(--text-secondary)}
+.see-more{color:var(--accent);cursor:pointer;font-weight:600;font-size:13.5px;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0;transition:opacity .15s}
+.see-more:hover{opacity:.7}
+
+.post-tags{padding:4px 20px 16px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12.5px;color:var(--text-secondary);font-weight:500;cursor:pointer;transition:all .15s}
+.tag:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* REACTION STATS - read-only */
+.rxn-bar{padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.rxn-left{display:flex;align-items:center;gap:7px}
+.emoji-stack{display:flex}
+.re{width:22px;height:22px;border-radius:50%;border:2px solid var(--surface);display:grid;place-items:center;font-size:13px;background:var(--surface2);margin-left:-5px}
+.re:first-child{margin-left:0}
+.rxn-lbl{font-size:13px;color:var(--text-secondary)}
+.rxn-right{display:flex;gap:14px}
+.stat-pill{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text-secondary)}
+.stat-pill svg{width:14px;height:14px;opacity:.55}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:0 20px}
+
+/* COMMENTS */
+.cmts{padding:18px 20px 22px}
+.cmts-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cmts-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary)}
+.sort-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text-secondary);cursor:pointer;outline:none;font-family:'DM Sans',sans-serif}
+
+.cmt-compose{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px}
+.cmt-input-wrap{flex:1;position:relative}
+.cmt-input{width:100%;padding:10px 46px 10px 15px;border:1.5px solid var(--border);border-radius:24px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text-primary);background:var(--surface2);outline:none;resize:none;line-height:1.5;min-height:42px;max-height:120px;overflow:hidden;transition:border-color .15s,background .15s,border-radius .2s}
+.cmt-input:focus{border-color:var(--accent);background:var(--surface);border-radius:14px}
+.cmt-input::placeholder{color:var(--text-muted)}
+.cmt-send{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;transition:color .15s;display:grid;place-items:center}
+.cmt-send.on{color:var(--accent)}
+
+.comment-draft-only .cmts-top{display:none!important}
+.comment-draft-only .sort-sel,
+.comment-draft-only .cmt-compose,
+.comment-draft-only .cmt-list{display:none!important}
+
+.cmt-list{display:flex;flex-direction:column;gap:16px}
+.ci{display:flex;gap:10px}
+.ci.nested{margin-left:46px}
+.c-av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11.5px;font-weight:700;flex-shrink:0}
+.ci.nested .c-av{width:28px;height:28px;font-size:10px}
+.c-body{flex:1;min-width:0}
+.c-bub{background:var(--surface2);border:1px solid var(--border);border-radius:4px 16px 16px 16px;padding:10px 14px;display:inline-block;max-width:100%}
+.c-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.c-name .ab{font-size:10.5px;color:var(--accent);font-weight:600;margin-left:4px}
+.c-sub{font-size:11.5px;color:var(--text-muted);margin-bottom:4px}
+.c-txt{font-size:13.5px;color:var(--text-primary);line-height:1.55}
+.c-foot{display:flex;align-items:center;gap:12px;padding:5px 2px 0}
+.ca{font-size:12px;color:var(--text-secondary);cursor:pointer;font-weight:500;transition:color .15s;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+.ca:hover{color:var(--accent)}
+.ct{font-size:11.5px;color:var(--text-muted)}
+
+/* SIDEBAR */
+.sbar{display:flex;flex-direction:column;gap:16px}
+.lead-drafts-under-post{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.lead-drafts-under-post .sc{height:100%}
+.lead-drafts-under-post .dta{min-height:160px}
+.lead-drafts-under-post .dta.sm{min-height:160px}
+
+/* CTA */
+.cta{background:linear-gradient(180deg,rgba(74,255,160,.08),rgba(116,185,255,.04)),var(--surface);border:1px solid rgba(74,255,160,.18);border-radius:var(--r);padding:18px;box-shadow:0 10px 32px rgba(0,0,0,.22)}
+.cta h4{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:7px;letter-spacing:-.2px}
+.cta p{font-size:12.8px;color:var(--text-secondary);margin-bottom:15px;line-height:1.55}
+.cta-btns{display:flex;gap:8px}
+.cb-w{flex:1;background:var(--accent);color:#07080A;border:none;padding:10px 12px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;box-shadow:0 0 20px rgba(74,255,160,.16)}
+.cb-w:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.cb-o{flex:1;background:var(--surface2);color:var(--text-primary);border:1.5px solid var(--border2);padding:10px 12px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.cb-o:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* S-CARD */
+.sc{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent),var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;transition:background .25s,border-color .25s,box-shadow .25s}
+.sc:hover{border-color:var(--border2);box-shadow:var(--sh-sm)}
+.sc-hdr{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sc-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.ai-chip{background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:'Syne',sans-serif;letter-spacing:.4px;border:1px solid rgba(10,102,194,.15)}
+[data-theme="dark"] .ai-chip{border-color:var(--accent)}
+
+/* INFO LIST */
+.il{padding:4px 18px 14px}
+.ir{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ir:last-child{border-bottom:none}
+.ii{width:34px;height:34px;border-radius:10px;background:var(--accent-soft);border:1px solid rgba(74,255,160,.18);color:var(--accent);display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 18px rgba(74,255,160,.08)}
+.ii svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ilbl{font-size:11px;color:var(--text-muted);display:block;margin-bottom:1px}
+.ival{font-size:13.5px;font-weight:500;color:var(--text-primary)}
+
+/* MATCH */
+.match-in{padding:14px 18px 18px}
+.mc-wrap{width:80px;height:80px;margin:0 auto 16px;position:relative;display:grid;place-items:center}
+.mc-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--accent) 0% 87%,var(--border) 87% 100%)}
+.mc-ring.loading{background:conic-gradient(var(--accent) 0% 24%,var(--border) 24% 100%);animation:matchSpin 1.2s linear infinite}
+.mc-inner{width:62px;height:62px;border-radius:50%;background:var(--surface);z-index:1;display:grid;place-items:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--accent)}
+.sbars{display:flex;flex-direction:column;gap:9px}
+.sbr{display:flex;align-items:center;gap:8px}
+.sbn{width:82px;color:var(--text-secondary);flex-shrink:0;font-size:12px}
+.sbt{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.sbf{height:100%;border-radius:3px;background:var(--accent);transition:width .9s cubic-bezier(.4,0,.2,1)}
+.sbp{width:30px;text-align:right;color:var(--text-muted);font-size:11px}
+.sbr.missing .sbf{background:var(--warm)}
+.match-note{font-size:12px;color:var(--text-secondary);line-height:1.45;margin-top:12px}
+.match-loading-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface2)}
+.match-loading-title{display:flex;align-items:center;gap:8px;color:var(--text-primary);font-weight:700;font-size:13px;margin-bottom:5px}
+.match-loading-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:matchPulse 1s ease-in-out infinite}
+.match-skeleton{height:6px;border-radius:999px;background:linear-gradient(90deg,var(--surface3),rgba(74,255,160,.28),var(--surface3));background-size:220% 100%;animation:matchShimmer 1.25s linear infinite;margin-top:10px}
+@keyframes matchSpin{to{transform:rotate(360deg)}}
+@keyframes matchPulse{0%,100%{opacity:.45;transform:scale(.86)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes matchShimmer{to{background-position:-220% 0}}
+
+/* DRAFT */
+.draft-body{padding:14px 18px 18px}
+.dta{width:100%;min-height:140px;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.65;color:var(--text-primary);background:var(--surface2);outline:none;resize:vertical;transition:border-color .15s,background .15s}
+.dta:focus{border-color:var(--accent);background:var(--surface)}
+.dta.sm{min-height:90px}
+.dbr{display:flex;gap:8px;margin-top:10px}
+.db{flex:1;padding:8px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;border:1.5px solid transparent}
+.db-gen{background:linear-gradient(135deg,var(--accent),#1e88e5);color:#fff;border:none}
+.db-gen:hover{opacity:.88}
+.db-copy{background:var(--surface2);color:var(--text-secondary);border-color:var(--border)}
+.db-copy:hover{border-color:var(--accent);color:var(--accent)}
+.db-save{width:100%;margin-top:8px;padding:9px 12px;background:var(--surface2);color:var(--text-primary);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.db-save:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* SPINNER */
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* TOAST */
+#toasts{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+.toast{background:var(--text-primary);color:var(--bg);padding:11px 18px;border-radius:10px;font-size:13.5px;font-weight:500;box-shadow:var(--sh-md);display:flex;align-items:center;gap:8px;animation:ti .25s ease;pointer-events:auto}
+@keyframes ti{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:500;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.open{opacity:1;pointer-events:all}
+.mb{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:520px;max-width:calc(100vw - 32px);box-shadow:var(--sh-md);padding:24px;transform:translateY(12px) scale(.97);transition:transform .2s}
+.ov.open .mb{transform:translateY(0) scale(1)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mt{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.mx{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--text-secondary);transition:all .15s}
+.mx:hover{background:var(--surface3);color:var(--text-primary)}
+@keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fin{animation:fin .25s ease both}
+
+@media(max-width:900px){.lead-drafts-under-post{grid-template-columns:1fr}}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}.sbar{order:-1}.nav-links{display:none}}
+</style>
+</head>
+<body class="hm-data-booting">
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="leads.html">
+    <div class="nav-logo-icon">H</div>HireMate
+  </a>
+  <div class="nav-links">
+    <button class="nl" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nl active" onclick="location.href='leads.html'">Leads</button>
+    <button class="nl" onclick="location.href='drafts.html'">Drafts</button>
+    <button class="nl" onclick="location.href='analytics.html'">Analytics</button>
+  </div>
+  <div class="nav-r">
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button>
+    <button class="btn" onclick="location.href='profile.html'">Profile</button>
+    <div class="avatar">AS</div>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="wrap">
+
+  <!-- LEFT -->
+  <div>
+    <button class="back" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Leads
+    </button>
+
+    <!-- POST CARD -->
+    <div class="card">
+
+      <!-- Header -->
+      <div class="post-hdr">
+        <div class="co-logo"></div>
+        <div class="post-meta">
+          <div class="co-name"><span class="match-skeleton" style="display:block;width:180px;height:14px;margin:3px 0;"></span></div>
+          <div class="co-sub"><span class="match-skeleton" style="display:block;width:230px;height:10px;margin-top:8px;"></span></div>
+          <div class="meta-row">
+            <span class="mi"><span class="match-skeleton" style="display:inline-block;width:78px;height:10px;"></span></span>
+          </div>
+        </div>
+        <span class="badge b-hot" style="display:none;"></span>
+      </div>
+
+      <!-- Body -->
+      <div class="post-body">
+        <p><span class="match-skeleton" style="display:block;width:72%;height:14px;"></span></p>
+        <p><span class="match-skeleton" style="display:block;width:96%;height:12px;margin-bottom:8px;"></span><span class="match-skeleton" style="display:block;width:88%;height:12px;margin-bottom:8px;"></span><span class="match-skeleton" style="display:block;width:64%;height:12px;"></span></p>
+      </div>
+
+      <!-- Tags -->
+      <div class="post-tags">
+        <span class="tag"><span class="match-skeleton" style="display:inline-block;width:60px;height:10px;"></span></span><span class="tag"><span class="match-skeleton" style="display:inline-block;width:76px;height:10px;"></span></span>
+      </div>
+
+      <!-- Reaction stats - READ ONLY -->
+      <div class="rxn-bar">
+        <div class="rxn-left">
+          <div class="emoji-stack">
+            <div class="re"></div><div class="re"></div><div class="re"></div>
+          </div>
+          <span class="rxn-lbl"><span class="match-skeleton" style="display:inline-block;width:90px;height:10px;"></span></span>
+        </div>
+        <div class="rxn-right">
+          <div class="stat-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <span id="cmt-stat"></span>
+          </div>
+          <div class="stat-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+            <span> </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- COMMENTS -->
+      <div class="cmts">
+        <div class="cmts-top">
+          <span class="cmts-title">Comments</span>
+          <select class="sort-sel"><option>Most relevant</option><option>Newest first</option></select>
+        </div>
+
+        <!-- Compose -->
+        <div class="cmt-compose">
+          <div class="avatar" style="width:36px;height:36px;font-size:11px;flex-shrink:0;">AS</div>
+          <div class="cmt-input-wrap">
+            <textarea class="cmt-input" id="cmt-inp" placeholder="Add a comment" rows="1" oninput="ar(this);ts(this)"></textarea>
+            <button class="cmt-send" id="cmt-send" onclick="postCmt()">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Comment list -->
+        <div class="cmt-list" id="cmt-list"></div><!-- /cmt-list -->
+      </div><!-- /cmts -->
+    </div><!-- /card -->
+
+    <div class="lead-drafts-under-post">
+      <!-- AI Message Draft -->
+      <div class="sc" id="message-draft-card">
+        <div class="sc-hdr">
+          <span class="sc-title">Message Draft <span class="ai-chip">AI</span></span>
+        </div>
+        <div class="draft-body">
+          <textarea class="dta" id="msg-ta" placeholder="Click Generate to create a message draft for this lead."></textarea>
+          <div class="dbr">
+            <button class="db db-gen" id="msg-gen-btn" onclick="genMsg()">Generate</button>
+            <button class="db db-copy" onclick="cp('msg-ta')">Copy</button>
+            <button class="db db-copy" onclick="hmDeleteCurrentDraft('message')">Delete</button>
+          </div>
+          <button class="db-save" onclick="saveMsg()">Save to Message Drafts</button>
+        </div>
+      </div>
+
+      <!-- AI Comment Draft -->
+      <div class="sc" id="comment-draft-card">
+        <div class="sc-hdr">
+          <span class="sc-title">Comment Draft <span class="ai-chip">AI</span></span>
+        </div>
+        <div class="draft-body">
+          <textarea class="dta sm" id="cmt-ta" placeholder="Click Generate to create a comment draft for this post."></textarea>
+          <div class="dbr">
+            <button class="db db-gen" id="cmt-gen-btn" onclick="genCmt()">Generate</button>
+            <button class="db db-copy" onclick="cp('cmt-ta')">Copy</button>
+            <button class="db db-copy" onclick="hmDeleteCurrentDraft('comment')">Delete</button>
+          </div>
+          <button class="db-save" onclick="saveCmt()">Save to Comment Drafts</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /left -->
+
+  <!-- SIDEBAR -->
+  <div class="sbar">
+
+    <!-- CTA -->
+    <div class="cta">
+      <h4>Ready to Apply?</h4>
+      <p>Use your AI-generated message draft to reach out to this recruiter and stand out from the crowd.</p>
+      <div class="cta-btns">
+        <button class="cb-w" id="apply-now-btn" onclick="hmOpenLeadSource()">Apply Now</button>
+        <button class="cb-o" onclick="hmSaveLead()">Save Lead</button>
+      </div>
+    </div>
+
+    <!-- Job Details -->
+    <div class="sc">
+      <div class="sc-hdr"><span class="sc-title"><span class="ii"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path><rect x="4" y="7" width="16" height="14" rx="2"></rect></svg></span>Job Details</span></div>
+      <div class="il">
+        <div class="ir"><span class="ii"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"></path></svg></span><div><span class="ilbl">Company</span><span class="ival"><span class="match-skeleton" style="display:inline-block;width:130px;height:11px;"></span></span></div></div>
+        <div class="ir"><span class="ii"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect></svg></span><div><span class="ilbl">Role</span><span class="ival"><span class="match-skeleton" style="display:inline-block;width:150px;height:11px;"></span></span></div></div>
+      </div>
+    </div>
+
+    <!-- Match score -->
+    <div class="sc">
+      <div class="sc-hdr">
+        <span class="sc-title">Profile Match</span>
+        <span style="font-size:12px;color:var(--text-muted)">Based on your profile</span>
+      </div>
+      <div class="match-in">
+        <div class="mc-wrap">
+          <div class="mc-ring loading"></div>
+          <div class="mc-inner">AI</div>
+        </div>
+        <div class="sbars">
+          <div class="match-loading-card">
+            <div class="match-loading-title"><span class="match-loading-dot"></span>Preparing profile match</div>
+            <div class="admin-muted">A quick match estimate appears first, then improves quietly.</div>
+            <div class="match-skeleton"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sbar -->
+</div><!-- /wrap -->
+
+<div id="toasts"></div>
+
+<script>
+/* DATA */
+const MD = {};
+const CD = {};
+
+let cmtCount = 0;
+
+function leadDetailUserInitials(user) {
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+  const source = fullName || user.name || user.email || 'HM';
+  return source.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
+}
+function applyLeadDetailUserAvatar(userOverride) {
+  let user = userOverride || {};
+  if (!userOverride) {
+    try { user = JSON.parse(localStorage.getItem('hm_user') || '{}'); } catch (e) { user = {}; }
+  }
+  const image = String(user.avatar_image || '').trim();
+  const initials = leadDetailUserInitials(user);
+  document.querySelectorAll('.nav-r > .avatar, .cmt-compose > .avatar').forEach(avatar => {
+    avatar.classList.toggle('has-image', Boolean(image));
+    if (image) avatar.innerHTML = '<img src="' + esc(image) + '" alt="Profile picture">';
+    else avatar.textContent = initials;
+  });
+}
+async function refreshLeadDetailUserAvatar() {
+  applyLeadDetailUserAvatar();
+  if (!hmToken()) return;
+  try {
+    const data = await hmApi('/api/me');
+    if (data.user) {
+      localStorage.setItem('hm_user', JSON.stringify(data.user));
+      applyLeadDetailUserAvatar(data.user);
+    }
+  } catch (e) {}
+}
+
+window.onload = () => {
+  document.getElementById('msg-ta').value = '';
+  const cmtTa = document.getElementById('cmt-ta');
+  if (cmtTa) cmtTa.value = '';
+  const t = localStorage.getItem('hm-theme') || 'light';
+  applyTheme(t);
+  refreshLeadDetailUserAvatar();
+};
+
+/* THEME */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-btn').innerHTML = t === 'dark'
+    ? '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.3A8.2 8.2 0 0 1 8.7 3.8 8.8 8.8 0 1 0 20.2 15.3Z"></path></svg>'
+    : '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.2M12 19.3v2.2M4.7 4.7l1.6 1.6M17.7 17.7l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.7 19.3l1.6-1.6M17.7 6.3l1.6-1.6"></path></svg>';
+  localStorage.setItem('hm-theme', t);
+}
+function toggleTheme() {
+  const c = document.documentElement.getAttribute('data-theme');
+  applyTheme(c === 'dark' ? 'light' : 'dark');
+}
+
+/* POST EXPAND */
+function togglePost() {
+  const el = document.getElementById('xtra');
+  const btn = document.getElementById('sm-btn');
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? 'see more' : 'see less';
+}
+
+/* COMMENT INPUT */
+function ar(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function ts(el) { document.getElementById('cmt-send').classList.toggle('on', el.value.trim().length > 0); }
+
+function replyTo(name) {
+  const inp = document.getElementById('cmt-inp');
+  inp.value = `@${name} `;
+  inp.focus(); ar(inp); ts(inp);
+  inp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function postCmt() {
+  const inp = document.getElementById('cmt-inp');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const user = hmCurrentUser();
+  const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'You';
+  addCmt(txt, name, leadDetailUserInitials(user), 'linear-gradient(135deg,var(--accent),#1e88e5)', user.headline || 'HireMate user', true);
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('cmt-send').classList.remove('on');
+  toast('', 'Comment posted');
+}
+
+function addCmt(txt, name, init, bg, sub, isYou) {
+  const list = document.getElementById('cmt-list');
+  const badge = isYou ? `<span class="ab"> You</span>` : '';
+  const div = document.createElement('div');
+  div.className = 'ci fin';
+  div.innerHTML = `
+    <div class="c-av" style="background:${bg}">${init}</div>
+    <div class="c-body">
+      <div class="c-bub">
+        <div class="c-name">${esc(name)} ${badge}</div>
+        <div class="c-sub">${sub}</div>
+        <div class="c-txt">${esc(txt)}</div>
+      </div>
+      <div class="c-foot"><span class="ct">Just now</span><button class="ca" onclick="replyTo('${esc(name)}')">Reply</button></div>
+    </div>`;
+  list.insertBefore(div, list.firstChild);
+  cmtCount++;
+  document.getElementById('cmt-stat').textContent = cmtCount + ' comments';
+}
+
+function genCmt() {
+  return;
+  const btn = document.getElementById('cmt-gen-btn');
+  btn.innerHTML = '<div class="spin"></div> Generating';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = ' Regenerate'; btn.disabled = false;
+    toast('', 'Comment draft ready');
+  }, 1000);
+}
+/* MESSAGE DRAFT */
+function genMsg() {
+  return;
+  const btn = document.getElementById('msg-gen-btn');
+  btn.innerHTML = '<div class="spin"></div> Generating';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = ' Regenerate'; btn.disabled = false;
+    toast('', 'Message draft updated');
+  }, 1100);
+}
+function saveMsg() { toast('', 'Saved to Message Drafts'); }
+
+/* UTILS */
+function cp(id) {
+  navigator.clipboard.writeText(document.getElementById(id).value)
+    .then(() => toast('', 'Copied to clipboard'));
+}
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function toast(icon, msg) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${icon}</span>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; }, 2500);
+  setTimeout(() => t.remove(), 2900);
+}
+
+/* BACKEND LEAD DETAIL */
+let hmLead = null;
+let hmLastMessageDraftId = null;
+let hmLastCommentDraftId = null;
+
+function hmToken() { return localStorage.getItem('hm_token') || ''; }
+function hmApiBase() {
+  // Keep lead detail API calls attached to the Python backend even when the
+  // HTML file is opened from another local preview server.
+  if (window.location.origin && window.location.origin.startsWith('http')) {
+    const current = new URL(window.location.origin);
+    if (current.port === '8000') return window.location.origin;
+  }
+  return 'http://localhost:8000';
+}
+async function hmApi(path, options) {
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, (options && options.headers) || {});
+  if (hmToken()) headers.Authorization = 'Bearer ' + hmToken();
+  const res = await fetch(hmApiBase() + path, Object.assign({}, options || {}, { headers }));
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) throw new Error(data.error || 'Request failed');
+  return data;
+}
+function hmEsc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function hmLeadId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id') || localStorage.getItem('hm_selected_lead_id') || '';
+}
+function hmCurrentUser() {
+  try { return JSON.parse(localStorage.getItem('hm_user') || '{}'); } catch (e) { return {}; }
+}
+function hmCacheUserKey() {
+  const user = hmCurrentUser();
+  return String(user.id || user.email || hmToken().slice(0, 18) || 'guest');
+}
+function hmCacheKey(path) {
+  return 'hm_api_cache:v3:' + hmCacheUserKey() + ':' + path;
+}
+function hmReadCache(path, maxAgeMs) {
+  try {
+    const raw = localStorage.getItem(hmCacheKey(path));
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (maxAgeMs && Date.now() - Number(cached.t || 0) > maxAgeMs) return null;
+    return cached.v || null;
+  } catch (e) {
+    return null;
+  }
+}
+function hmWriteCache(path, value) {
+  try { localStorage.setItem(hmCacheKey(path), JSON.stringify({ t: Date.now(), v: value })); } catch (e) {}
+}
+function hmFindCachedLead(id) {
+  const detail = hmReadCache('/api/leads/' + encodeURIComponent(id), 30 * 60 * 1000);
+  if (detail && detail.lead) return detail.lead;
+  const dashboard = hmReadCache('/api/dashboard', 30 * 60 * 1000);
+  const recent = dashboard && dashboard.data ? dashboard.data.recent_leads || [] : [];
+  const fromDashboard = recent.find(item => Number(item.id) === Number(id));
+  if (fromDashboard) return fromDashboard;
+  try {
+    const prefix = 'hm_api_cache:v3:' + hmCacheUserKey() + ':/api/leads?';
+    for (const key of Object.keys(localStorage)) {
+      if (key.indexOf(prefix) !== 0) continue;
+      const payload = JSON.parse(localStorage.getItem(key) || '{}').v || {};
+      const found = (payload.leads || []).find(item => Number(item.id) === Number(id));
+      if (found) return found;
+    }
+  } catch (e) {}
+  return null;
+}
+function hmTimeAgo(iso) {
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return 'recently';
+  const minutes = Math.max(1, Math.floor((Date.now() - dt.getTime()) / 60000));
+  if (minutes < 60) return minutes + ' min ago';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + ' hrs ago';
+  return Math.floor(hours / 24) + ' days ago';
+}
+function hmRelativeLabelToIso(label, baseIso) {
+  const text = String(label || '').toLowerCase();
+  const match = text.match(/(\d+)\s+(minute|minutes|hour|hours|day|days|week|weeks|month|months)\s+ago/);
+  if (!match) return baseIso || new Date().toISOString();
+  const amount = Number(match[1] || 0);
+  const unit = match[2];
+  const multipliers = { minute: 60000, minutes: 60000, hour: 3600000, hours: 3600000, day: 86400000, days: 86400000, week: 604800000, weeks: 604800000, month: 2592000000, months: 2592000000 };
+  return new Date(Date.now() - amount * (multipliers[unit] || 0)).toISOString();
+}
+function hmTempBadge(temp) {
+  const label = temp === 'hot' ? 'Hot' : temp === 'warm' ? 'Warm' : 'Cold';
+  const cls = temp === 'hot' ? 'b-hot' : temp === 'warm' ? 'b-warm' : 'b-cold';
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function hmApplyTempBadge(temp) {
+  const badge = document.querySelector('.post-hdr .badge');
+  if (!badge) return;
+  const level = ['hot', 'warm', 'cold'].includes(temp) ? temp : 'cold';
+  badge.className = 'badge ' + (level === 'hot' ? 'b-hot' : level === 'warm' ? 'b-warm' : 'b-cold');
+  badge.textContent = level === 'hot' ? 'Hot' : level === 'warm' ? 'Warm' : 'Cold';
+  badge.style.display = 'inline-flex';
+}
+function hmHideTempBadge() {
+  const badge = document.querySelector('.post-hdr .badge');
+  if (!badge) return;
+  badge.style.display = 'none';
+  badge.textContent = '';
+}
+function hmInitials(name) {
+  return (name || 'HM').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'HM';
+}
+function hmSetText(selector, value) {
+  const el = document.querySelector(selector);
+  if (el) el.textContent = value || 'Not specified';
+}
+function hmSetHtml(selector, value) {
+  const el = document.querySelector(selector);
+  if (el) el.innerHTML = value;
+}
+function hmFormatPost(text) {
+  const safe = hmEsc(text || 'Post content is being prepared from LinkedIn.');
+  return safe
+    .split(/\n+/)
+    .filter(p => !/^About this job:?$/i.test(p.trim()))
+    .map(p => `<p>${p}</p>`)
+    .join('');
+}
+function hmFormatLeadText(lead) {
+  if (lead && lead.lead_kind === 'job') return hmFormatJobDescription(lead.post_text);
+  return hmFormatPost(lead ? lead.post_text : '');
+}
+function hmJobDescriptionMissing(lead) {
+  if (!lead || lead.lead_kind !== 'job') return false;
+  const text = String(lead.post_text || '').trim().toLowerCase();
+  if (!text) return true;
+  return text.includes('detailed job description will appear')
+    || text.includes('could not read the full linkedin job description')
+    || text.includes('open the linkedin job page to view the complete description');
+}
+function hmFormatJobDescription(text) {
+  let raw = String(text || 'Job description is being prepared from LinkedIn.').replace(/\r/g, '').trim();
+  const missing = /detailed job description will appear|could not read the full linkedin job description|open the linkedin job page to view the complete description/i.test(raw);
+  if (missing) {
+    const location = (raw.match(/Location:\s*([^\n]+)/i) || [])[1];
+    return [
+      location ? `<p><span class="job-heading">Location:</span> ${hmEsc(location.trim())}</p>` : '',
+      '<p>HireMate could not read the full LinkedIn job description during this safe sync.</p>',
+      '<p class="job-muted">Click <strong>Apply Now</strong> to open LinkedIn and view the complete description before deciding whether to apply.</p>'
+    ].join('');
+  }
+  raw = raw.replace(/\s+(Seniority level:|Employment type:|Job function:|Industries:)/g, '\n\n$1');
+  raw = raw.replace(/\s+(Responsibilities|Requirements|Qualifications|What you will do|What you’ll do|What we need|Key Responsibilities|Skills Required|About the job|About this job)\s*:?/gi, '\n\n$1:');
+  raw = raw.replace(/\s+(Show more Show less)\s*$/i, '');
+  const lines = raw.split(/\n+/).map(line => line.trim()).filter(line => line && !/^About this job:?$/i.test(line));
+  return lines.map(line => {
+    const safe = hmEsc(line.replace(/^\*\*(.+)\*\*$/, '$1'));
+    const plain = line.replace(/^\*\*(.+)\*\*$/, '$1').trim();
+    if (/^[-•*]\s+/.test(plain)) return `<p class="job-bullet">${safe}</p>`;
+    if (/^[A-Z][A-Za-z0-9 &/(),.+-]{2,70}:$/.test(plain) || /^(Seniority level|Employment type|Job function|Industries):/i.test(plain)) {
+      const parts = safe.split(':');
+      if (parts.length > 1 && parts.slice(1).join(':').trim()) {
+        return `<p><span class="job-heading">${parts.shift()}:</span>${parts.join(':')}</p>`;
+      }
+      return `<p class="job-heading">${safe}</p>`;
+    }
+    return `<p>${safe}</p>`;
+  }).join('');
+}
+async function hmLoadLeadDetail() {
+  if (!hmToken()) {
+    toast('', 'Please login first');
+    setTimeout(() => { location.href = 'login.html'; }, 800);
+    document.body.classList.remove('hm-data-booting');
+    return;
+  }
+  const id = hmLeadId();
+  if (!id) {
+    toast('', 'Select a lead from the Leads page first.');
+    document.body.classList.remove('hm-data-booting');
+    return;
+  }
+  const cachedLead = hmFindCachedLead(id);
+  if (cachedLead) {
+    hmLead = cachedLead;
+    hmRenderLeadDetail(hmLead);
+    document.body.classList.remove('hm-data-booting');
+    setTimeout(hmLoadLeadDrafts, 250);
+    setTimeout(() => hmRefreshLeadDetail(id, true), 10000);
+    return;
+  }
+  await hmRefreshLeadDetail(id, false);
+}
+
+async function hmRefreshLeadDetail(id, quiet) {
+  try {
+    const data = await hmApi('/api/leads/' + encodeURIComponent(id));
+    hmWriteCache('/api/leads/' + encodeURIComponent(id), data);
+    hmLead = data.lead;
+    localStorage.setItem('hm_selected_lead_id', String(hmLead.id));
+    hmRenderLeadDetail(hmLead);
+    document.body.classList.remove('hm-data-booting');
+    setTimeout(hmLoadLeadDrafts, 250);
+  } catch (err) {
+    if (!quiet) toast('', err.message);
+  } finally {
+    document.body.classList.remove('hm-data-booting');
+  }
+}
+function hmRenderLeadDetail(lead) {
+  window.hmCurrentLeadUrl = lead.post_url || '';
+  const isJob = lead.lead_kind === 'job';
+  const reaction = lead.reaction_items || {};
+  const postedLabel = reaction.posted_label ? hmTimeAgo(hmRelativeLabelToIso(reaction.posted_label, lead.posted_at)) : hmTimeAgo(lead.posted_at);
+  const applicantText = isJob ? hmApplicantText(lead) : '';
+  hmSetText('.co-name', lead.company);
+  hmSetHtml('.co-sub', `Posted by <strong>${hmEsc(lead.author_name || lead.company)}</strong>  ${hmEsc(lead.author_title || 'LinkedIn Jobs')}`);
+  hmSetHtml('.meta-row', `
+    <span class="mi">${hmEsc(postedLabel)}</span>
+    <span class="mdot"></span>
+    <span class="mi"> LinkedIn</span>
+    <span class="mdot"></span>
+    <span class="mi"> ${hmEsc(lead.location || 'Not specified')}</span>
+    ${isJob && applicantText ? '<span class="mdot"></span><span class="mi">' + hmEsc(applicantText) + '</span>' : ''}
+  `);
+  hmHideTempBadge();
+  hmSetHtml('.post-body', `
+    <p><strong>${hmEsc(lead.role_title)}</strong></p>
+    ${hmFormatLeadText(lead)}
+  `);
+  const tags = Array.isArray(lead.tags) ? lead.tags : [];
+  hmSetHtml('.post-tags', tags.map(tag => `<span class="tag">${hmEsc(tag)}</span>`).join('') || '<span class="tag">LinkedIn</span>');
+hmSetHtml('.rxn-lbl', isJob ? hmEsc(applicantText || 'Applicants not shown') : `${Number(lead.likes || 0)} reactions`);
+  const extractedComments = Array.isArray(lead.comment_items) ? lead.comment_items : [];
+  const commentCount = Number(lead.comments || extractedComments.length || 0);
+  hmSetText('#cmt-stat', isJob ? `${commentCount} applicants` : `${commentCount} comments`);
+  const repostEl = document.querySelector('.rxn-right .stat-pill:last-child');
+  if (repostEl) repostEl.lastChild.textContent = ' ' + Number(lead.reposts || 0) + ' reposts';
+  hmToggleJobSocialSections(isJob);
+  if (!isJob) hmRenderExtractedComments(extractedComments, lead.lead_kind);
+  const logo = document.querySelector('.co-logo');
+  if (logo) logo.textContent = hmInitials(lead.company);
+  const detailValues = document.querySelectorAll('.il .ival');
+  const values = [
+    lead.company,
+    lead.role_title,
+    lead.work_type,
+    lead.location,
+    lead.employment_type,
+    lead.experience,
+    lead.salary,
+  ];
+  detailValues.forEach((el, i) => { el.textContent = values[i] || 'Not specified'; });
+  const score = Math.max(0, Math.min(100, Number(lead.score || 0)));
+  hmSetText('.mc-inner', score + '%');
+  const ring = document.querySelector('.mc-ring');
+  if (ring) ring.style.background = `conic-gradient(var(--accent) 0% ${score}%,var(--border) ${score}% 100%)`;
+  const sbarWrap = document.querySelector('.sbars');
+  if (sbarWrap) {
+    sbarWrap.innerHTML = tags.slice(0, 4).map(tag => {
+      const pct = Math.max(35, Math.min(96, score - Math.floor(Math.random() * 18)));
+      return `<div class="sbr"><span class="sbn">${hmEsc(tag)}</span><div class="sbt"><div class="sbf" style="width:${pct}%"></div></div><span class="sbp">${pct}%</span></div>`;
+    }).join('') || `<div class="sbr"><span class="sbn">Profile</span><div class="sbt"><div class="sbf" style="width:${score}%"></div></div><span class="sbp">${score}%</span></div>`;
+  }
+}
+
+function hmToggleJobSocialSections(isJob) {
+  const comments = document.querySelector('.cmts');
+  if (comments) comments.style.display = isJob ? 'none' : '';
+  const left = document.querySelector('.rxn-left');
+  const emojiStack = left ? left.querySelector('.emoji-stack') : null;
+  if (emojiStack) emojiStack.style.display = isJob ? 'none' : '';
+  const right = document.querySelector('.rxn-right');
+  if (right && isJob) {
+    right.innerHTML = '<div class="stat-pill">LinkedIn Jobs</div>';
+  }
+}
+
+function hmOpenLeadSource() {
+  if (window.hmCurrentLeadUrl) {
+    window.open(window.hmCurrentLeadUrl, '_blank', 'noopener');
+    return;
+  }
+  toast('', 'Open link will appear after the next successful sync for this lead.');
+}
+async function hmSaveLead() {
+  if (!hmLead) return;
+  try {
+    const data = await hmApi('/api/leads/' + encodeURIComponent(hmLead.id), {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'saved' })
+    });
+    if (data.lead && data.lead.already_saved) {
+      toast('', 'This lead is already saved');
+      return;
+    }
+    toast('', 'Lead saved to your list');
+    hmLead.status = 'saved';
+  } catch (err) {
+    toast('', err.message);
+  }
+}
+function hmRenderExtractedComments(comments, kind) {
+  const list = document.getElementById('cmt-list');
+  if (!list) return;
+  if (!comments || comments.length === 0) {
+    list.innerHTML = `
+      <div class="ci fin">
+        <div class="c-body">
+          <div class="c-bub" style="width:100%;">
+            <div class="c-name">LinkedIn comments</div>
+            <div class="c-txt">${kind === 'job'
+              ? 'This lead came from LinkedIn Jobs, so public post comments are not available. The content above is the live job description/details extracted from LinkedIn.'
+              : 'LinkedIn did not expose readable comments during this sync. HireMate keeps this area clean instead of showing placeholder comments.'}</div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+  list.innerHTML = comments.map((comment, index) => {
+    const author = comment.author || 'LinkedIn member';
+    const initials = hmInitials(author);
+    const text = comment.text || comment;
+    return `
+      <div class="ci fin" style="animation-delay:${index * 0.04}s">
+        <div class="c-av" style="background:linear-gradient(135deg,var(--accent),#1e88e5)">${hmEsc(initials)}</div>
+        <div class="c-body">
+          <div class="c-bub">
+            <div class="c-name">${hmEsc(author)}</div>
+            <div class="c-sub">Extracted from LinkedIn</div>
+            <div class="c-txt">${hmEsc(text)}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+async function hmGenerateBackendDraft(type, tone, notify) {
+  if (!hmLead) return;
+  const data = await hmApi('/api/drafts/generate', {
+    method: 'POST',
+    body: JSON.stringify({ lead_id: hmLead.id, draft_type: type, tone: tone })
+  });
+  if (type === 'message') {
+    hmLastMessageDraftId = data.draft.id;
+    document.getElementById('msg-ta').value = data.draft.content;
+  } else {
+    hmLastCommentDraftId = data.draft.id;
+    document.getElementById('cmt-ta').value = data.draft.content;
+  }
+  if (notify) toast('', `${type === 'message' ? 'Message' : 'Comment'} draft is ready`);
+}
+
+function hmLocalDraft(type) {
+  const user = hmCurrentUser();
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'there';
+  const firstName = (user.first_name || fullName.split(/\s+/)[0] || '').trim();
+  const lead = hmLead || {};
+  const company = lead.company || 'your team';
+  const role = lead.role_title || 'this opportunity';
+  const skills = String(user.skills || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3).join(', ');
+  if (type === 'comment') {
+    return `This looks like a strong opportunity. My background${skills ? ' in ' + skills : ''} aligns with ${role}, and I would be glad to learn more about the role at ${company}.`;
+  }
+  return `Hi ${lead.author_name || company},\n\nI came across the ${role} opportunity at ${company} and wanted to reach out.\n\nMy profile${skills ? ' includes ' + skills : ''}, and this role looks aligned with the work I am looking for. I would be happy to share my portfolio or discuss how I can contribute.\n\nBest regards,\n${firstName || fullName}`;
+}
+
+function hmSetDraftButtonLoading(type, loading) {
+  const btn = document.getElementById(type === 'message' ? 'msg-gen-btn' : 'cmt-gen-btn');
+  if (!btn) return;
+  btn.disabled = !!loading;
+  btn.innerHTML = loading ? '<div class="spin"></div> Preparing draft' : 'Generate';
+}
+
+async function hmLoadLeadDrafts() {
+  const path = '/api/drafts';
+  const renderDrafts = data => {
+    const drafts = ((data && data.drafts) || []).filter(d => Number(d.lead_id) === Number(hmLead.id));
+    const latestMessage = drafts.find(d => d.draft_type === 'message');
+    const latestComment = drafts.find(d => d.draft_type === 'comment');
+    if (latestMessage) {
+      hmLastMessageDraftId = latestMessage.id;
+      document.getElementById('msg-ta').value = latestMessage.content || '';
+    }
+    if (latestComment) {
+      hmLastCommentDraftId = latestComment.id;
+      const cmtTa = document.getElementById('cmt-ta');
+      if (cmtTa) cmtTa.value = latestComment.content || '';
+    }
+  };
+  const cached = hmReadCache(path, 10 * 60 * 1000);
+  if (cached) renderDrafts(cached);
+  try {
+    const data = await hmApi(path);
+    hmWriteCache(path, data);
+    renderDrafts(data);
+  } catch (err) {}
+}
+
+genMsg = function() {
+  const ta = document.getElementById('msg-ta');
+  if (ta) ta.value = 'Preparing your message draft...';
+  hmLastMessageDraftId = null;
+  toast('', 'Preparing your message draft');
+  hmSetDraftButtonLoading('message', true);
+  hmGenerateBackendDraft('message', 'professional', true)
+    .catch(err => {
+      if (ta) ta.value = '';
+      toast('', err.message);
+    })
+    .finally(() => hmSetDraftButtonLoading('message', false));
+};
+saveMsg = function() {
+  const id = hmLastMessageDraftId;
+  if (!id) {
+    hmGenerateBackendDraft('message', 'professional', false)
+      .then(() => toast('', 'Saved to Message Drafts'))
+      .catch(err => toast('', err.message));
+    return;
+  }
+  hmApi('/api/drafts/' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'approved', content: document.getElementById('msg-ta').value })
+  }).then(() => toast('', 'Saved to Message Drafts')).catch(err => toast('', err.message));
+};
+genCmt = function() {
+  const ta = document.getElementById('cmt-ta');
+  if (ta) ta.value = 'Preparing your comment draft...';
+  hmLastCommentDraftId = null;
+  toast('', 'Preparing your comment draft');
+  hmSetDraftButtonLoading('comment', true);
+  hmGenerateBackendDraft('comment', 'professional', true)
+    .catch(err => {
+      if (ta) ta.value = '';
+      toast('', err.message);
+    })
+    .finally(() => hmSetDraftButtonLoading('comment', false));
+};
+
+function saveCmt() {
+  const id = hmLastCommentDraftId;
+  if (!id) {
+    hmGenerateBackendDraft('comment', 'professional', false)
+      .then(() => toast('', 'Saved to Comment Drafts'))
+      .catch(err => toast('', err.message));
+    return;
+  }
+  hmApi('/api/drafts/' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'approved', content: document.getElementById('cmt-ta').value })
+  }).then(() => toast('', 'Saved to Comment Drafts')).catch(err => toast('', err.message));
+}
+
+async function hmDeleteCurrentDraft(type) {
+  const id = type === 'message' ? hmLastMessageDraftId : hmLastCommentDraftId;
+  const ta = document.getElementById(type === 'message' ? 'msg-ta' : 'cmt-ta');
+  if (!id) {
+    if (ta) ta.value = '';
+    toast('', 'Draft area cleared');
+    return;
+  }
+  try {
+    await hmApi('/api/drafts/' + id, { method: 'DELETE' });
+    if (type === 'message') hmLastMessageDraftId = null;
+    else hmLastCommentDraftId = null;
+    if (ta) ta.value = '';
+    toast('', 'Draft deleted');
+  } catch (err) {
+    toast('', err.message);
+  }
+}
+
+function hmAuthorLine(lead) {
+  const author = lead.author_name || lead.company || '';
+  const title = lead.author_title || '';
+  if (!author && !title) return '';
+  return (author ? 'Posted by <strong>' + hmEsc(author) + '</strong>' : '') + (title ? '  ' + hmEsc(title) : '');
+}
+
+function hmPostedLabel(lead) {
+  const reaction = lead.reaction_items || {};
+  const iso = reaction.posted_label ? hmRelativeLabelToIso(reaction.posted_label, lead.posted_at) : lead.posted_at;
+  return iso ? hmTimeAgo(iso) : '';
+}
+function hmApplicantText(lead) {
+  const reaction = lead.reaction_items || {};
+  const label = String(reaction.applicant_text || '').trim();
+  if (label && !/^0\s+applicants?$/i.test(label)) return label;
+  const count = Number(lead.comments || 0);
+  return count > 0 ? count + ' applicants' : '';
+}
+function hmMetaItem(value, type) {
+  const text = hmEsc(value || '');
+  if (!text) return '';
+  if (type === 'time') {
+    return '<span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>' + text + '</span>';
+  }
+  return '<span class="mi">' + text + '</span>';
+}
+
+function hmRenderLeadStats(lead, isJob, applicantText) {
+  const likes = Number(lead.likes || 0);
+  const comments = Number(lead.comments || 0);
+  const reposts = Number(lead.reposts || 0);
+  const right = document.querySelector('.rxn-right');
+  if (isJob) {
+    const label = applicantText || 'Applicants not shown';
+    hmSetHtml('.rxn-lbl', hmEsc(label));
+    if (right) right.innerHTML = '<div class="stat-pill">' + hmEsc(label) + '</div>';
+    return;
+  }
+  hmSetHtml('.rxn-lbl', `${likes} reactions`);
+  if (right) {
+    const commentText = `${comments} comments`;
+    const repostText = `${reposts} reposts`;
+    right.innerHTML = [
+      `<div class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span>${commentText}</span></div>`,
+      `<div class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>${repostText}</div>`
+    ].join('');
+  }
+}
+
+function hmPrepareCommentDraftOnly(isJob) {
+  const comments = document.querySelector('.cmts');
+  if (!comments) return;
+  comments.classList.add('comment-draft-only');
+  comments.style.display = isJob ? 'none' : '';
+  const list = document.getElementById('cmt-list');
+  if (list) list.innerHTML = '';
+}
+
+function hmRenderSourceButton(lead) {
+  const btn = document.getElementById('apply-now-btn');
+  if (!btn) return;
+  const url = hmLeadSourceUrl(lead);
+  const hasExactPost = lead.lead_kind === 'post' && !!lead.post_url;
+  btn.textContent = lead.lead_kind === 'job' ? 'Apply Now' : (hasExactPost ? 'Open Post' : 'Open Profile');
+  btn.disabled = !url;
+  btn.style.opacity = url ? '1' : '.75';
+  btn.title = hasExactPost
+    ? 'Open the exact LinkedIn post saved with this lead'
+    : (url ? 'Open the LinkedIn profile saved with this lead' : 'This lead needs a fresh sync to save its LinkedIn link.');
+}
+
+function hmLeadSourceUrl(lead) {
+  if (lead.post_url) return lead.post_url;
+  const reaction = lead.reaction_items || {};
+  if (lead.lead_kind === 'post' && reaction.author_profile_url) return reaction.author_profile_url;
+  return '';
+}
+
+function hmRenderProfileMatchScore(score) {
+  const pct = Math.max(0, Math.min(100, Number(score || 0)));
+  hmSetText('.mc-inner', pct + '%');
+  const ring = document.querySelector('.mc-ring');
+  if (ring) {
+    ring.classList.remove('loading');
+    ring.style.background = `conic-gradient(var(--accent) 0% ${pct}%,var(--border) ${pct}% 100%)`;
+  }
+}
+
+function hmRenderProfileMatchLoading(lead) {
+  const ring = document.querySelector('.mc-ring');
+  if (ring) {
+    ring.classList.add('loading');
+    ring.style.background = '';
+  }
+  hmSetText('.mc-inner', 'AI');
+  const tags = Array.isArray(lead.tags) ? lead.tags : [];
+  const wrap = document.querySelector('.sbars');
+  if (!wrap) return;
+  const context = tags.slice(0, 3).map(tag => `<span class="tag">${hmEsc(tag)}</span>`).join('');
+  wrap.innerHTML = `
+    <div class="match-loading-card">
+      <div class="match-loading-title"><span class="match-loading-dot"></span>AI analyzing profile match</div>
+      <div class="match-note" style="margin-top:0;">Your match percentage and skill details will appear here shortly.</div>
+      <div class="match-skeleton"></div>
+    </div>
+    ${context ? '<div class="post-tags" style="padding:0;margin-top:10px;">' + context + '</div>' : ''}
+  `;
+}
+
+function hmQuickProfileMatch(lead) {
+  const score = Number(lead && lead.score);
+  if (score > 0) return Math.max(20, Math.min(95, Math.round(score)));
+  const text = [
+    lead && lead.role_title,
+    lead && lead.post_text,
+    Array.isArray(lead && lead.tags) ? lead.tags.join(' ') : ''
+  ].join(' ').toLowerCase();
+  const user = hmCurrentUser();
+  const terms = String([user.skills, user.interests, user.target_roles].filter(Boolean).join(','))
+    .split(',')
+    .map(term => term.trim().toLowerCase())
+    .filter(term => term.length > 1);
+  const matched = terms.filter(term => text.includes(term)).length;
+  const base = lead && lead.temperature === 'hot' ? 78 : lead && lead.temperature === 'warm' ? 58 : 38;
+  return Math.max(25, Math.min(92, base + Math.min(18, matched * 4)));
+}
+
+function hmRenderProfileMatchUnavailable(lead) {
+  hmSetText('.mc-inner', 'N/A');
+  const ring = document.querySelector('.mc-ring');
+  if (ring) {
+    ring.classList.remove('loading');
+    ring.style.background = 'conic-gradient(var(--text-muted) 0% 100%,var(--border) 100% 100%)';
+  }
+  const wrap = document.querySelector('.sbars');
+  if (!wrap) return;
+  wrap.innerHTML = `
+    <div class="match-loading-card">
+      <div class="match-loading-title">Profile match unavailable</div>
+      <div class="match-note" style="margin-top:0;">HireMate needs the full job description before it can give a reliable match. Click <strong>Apply Now</strong> to read the complete LinkedIn job details.</div>
+    </div>
+  `;
+}
+
+async function hmLoadAiProfileMatch(leadId) {
+  if (!leadId) return;
+  const path = hmProfileMatchCachePath(leadId);
+  const cached = hmReadCache(path, 7 * 24 * 60 * 60 * 1000);
+  if (cached && cached.match) {
+    hmRenderAiProfileMatch(cached.match);
+    return;
+  }
+  if (window.hmMatchRequestInFlight === path) return;
+  window.hmMatchRequestInFlight = path;
+  try {
+    const data = await hmApi('/api/leads/' + encodeURIComponent(leadId) + '/match');
+    hmWriteCache(path, data);
+    if (data && data.match) hmRenderAiProfileMatch(data.match);
+  } catch (err) {
+    const wrap = document.querySelector('.sbars');
+    if (wrap) {
+      const note = document.createElement('div');
+      note.className = 'match-note';
+      note.textContent = 'Profile match will update when AI analysis is available.';
+      wrap.appendChild(note);
+    }
+  } finally {
+    window.hmMatchRequestInFlight = '';
+  }
+}
+
+function hmProfileMatchCachePath(leadId) {
+  return '/api/leads/' + encodeURIComponent(leadId) + '/match?profile=' + hmProfileMatchFingerprint();
+}
+
+function hmProfileMatchFingerprint() {
+  const user = hmCurrentUser();
+  const raw = [
+    user.headline,
+    user.location,
+    user.about,
+    user.skills,
+    user.interests,
+    user.experience_detail || user.experience_level,
+    user.education,
+    user.work_modes || user.preferred_locations
+  ].map(value => String(value || '').trim().toLowerCase()).join('|');
+  let hash = 0;
+  for (let i = 0; i < raw.length; i += 1) hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0;
+  return String(Math.abs(hash));
+}
+
+function hmRenderAiProfileMatch(match) {
+  const score = Math.max(0, Math.min(100, Number(match.overall_match_percentage || 0)));
+  const category = score >= 75 ? 'hot' : score >= 45 ? 'warm' : 'cold';
+  if (hmLead) {
+    hmLead.score = score;
+    hmLead.temperature = category;
+  }
+  hmRenderProfileMatchScore(score);
+  hmApplyTempBadge(category);
+  const wrap = document.querySelector('.sbars');
+  if (!wrap) return;
+  const matched = Array.isArray(match.matched_skills) ? match.matched_skills.slice(0, 4) : [];
+  const missing = Array.isArray(match.missing_skills) ? match.missing_skills.slice(0, 2) : [];
+  const rows = matched.map(item => {
+    const pct = Math.max(0, Math.min(100, Number(item.match_percentage || 0)));
+    return `<div class="sbr"><span class="sbn">${hmEsc(item.skill || 'Skill')}</span><div class="sbt"><div class="sbf" style="width:${pct}%"></div></div><span class="sbp">${pct}%</span></div>`;
+  });
+  missing.forEach(item => {
+    rows.push(`<div class="sbr missing"><span class="sbn">${hmEsc(item.skill || 'Gap')}</span><div class="sbt"><div class="sbf" style="width:35%"></div></div><span class="sbp">${hmEsc(item.importance || 'Gap')}</span></div>`);
+  });
+  const summary = match.summary ? `<div class="match-note">${hmEsc(match.match_label || 'Profile match')}: ${hmEsc(match.summary)}</div>` : '';
+  wrap.innerHTML = (rows.join('') || `<div class="sbr"><span class="sbn">Profile</span><div class="sbt"><div class="sbf" style="width:${score}%"></div></div><span class="sbp">${score}%</span></div>`) + summary;
+}
+
+hmRenderLeadDetail = function(lead) {
+  window.hmCurrentLeadUrl = hmLeadSourceUrl(lead);
+  const isJob = lead.lead_kind === 'job';
+  const postedLabel = hmPostedLabel(lead);
+  const applicantText = isJob ? hmApplicantText(lead) : '';
+  const metaItems = [];
+  if (postedLabel) metaItems.push({ text: postedLabel, type: 'time' });
+  if (isJob) metaItems.push('LinkedIn Jobs');
+  if (isJob && lead.location) metaItems.push(lead.location);
+  if (isJob && applicantText) metaItems.push(applicantText);
+  const missingJobDescription = hmJobDescriptionMissing(lead);
+  hmSetText('.co-name', lead.company);
+  hmSetHtml('.co-sub', hmAuthorLine(lead));
+  hmSetHtml('.meta-row', metaItems.map((item, index) => {
+    const value = typeof item === 'string' ? item : item.text;
+    const type = typeof item === 'string' ? '' : item.type;
+    return (index ? '<span class="mdot"></span>' : '') + hmMetaItem(value, type);
+  }).join(''));
+  hmHideTempBadge();
+  const body = document.querySelector('.post-body');
+  if (body) body.classList.toggle('job-desc', isJob);
+  hmSetHtml('.post-body', `<p><strong>${hmEsc(lead.role_title)}</strong></p>${hmFormatLeadText(lead)}`);
+  const tags = Array.isArray(lead.tags) ? lead.tags : [];
+  hmSetHtml('.post-tags', tags.length ? tags.map(tag => `<span class="tag">${hmEsc(tag)}</span>`).join('') : '<span class="tag">LinkedIn details</span>');
+  hmRenderLeadStats(lead, isJob, applicantText);
+  hmToggleJobSocialSections(isJob);
+  hmPrepareCommentDraftOnly(isJob);
+  hmRenderSourceButton(lead);
+  const logo = document.querySelector('.co-logo');
+  if (logo) logo.textContent = hmInitials(lead.company);
+  const detailValues = document.querySelectorAll('.il .ival');
+  [lead.company, lead.role_title, lead.work_type, lead.location, lead.employment_type, lead.experience, lead.salary]
+    .forEach((value, index) => { if (detailValues[index]) detailValues[index].textContent = value || 'Not mentioned'; });
+  if (missingJobDescription) {
+    hmRenderProfileMatchUnavailable(lead);
+  } else {
+    const cachedMatch = hmCachedProfileMatch(lead.id);
+    if (cachedMatch) {
+      hmRenderAiProfileMatch(cachedMatch);
+    } else {
+      hmRenderProfileMatchLoading(lead);
+      setTimeout(() => hmLoadAiProfileMatch(lead.id), 1200);
+    }
+  }
+};
+
+function hmCachedProfileMatch(leadId) {
+  const cached = hmReadCache(hmProfileMatchCachePath(leadId), 7 * 24 * 60 * 60 * 1000);
+  return cached && cached.match ? cached.match : null;
+}
+
+hmToggleJobSocialSections = function(isJob) {
+  const left = document.querySelector('.rxn-left');
+  const emojiStack = left ? left.querySelector('.emoji-stack') : null;
+  if (emojiStack) emojiStack.style.display = isJob ? 'none' : '';
+  const draftPanel = document.querySelector('.lead-drafts-under-post');
+  if (draftPanel) draftPanel.style.display = isJob ? 'none' : '';
+  const commentDraft = document.getElementById('comment-draft-card');
+  if (commentDraft) commentDraft.style.display = isJob ? 'none' : '';
+};
+
+hmOpenLeadSource = function() {
+  const url = hmLead ? hmLeadSourceUrl(hmLead) : window.hmCurrentLeadUrl;
+  if (url) {
+    window.open(url, '_blank', 'noopener');
+    return;
+  }
+  toast('Link', 'This lead needs a fresh sync to save its direct LinkedIn link.');
+};
+
+document.addEventListener('DOMContentLoaded', hmLoadLeadDetail);
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

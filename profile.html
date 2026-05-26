@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body class="hm-data-booting">
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+<input id="profile-avatar-input" type="file" accept="image/*" style="display:none" onchange="hmUploadProfileImage('avatar', this)">
+<input id="profile-cover-input" type="file" accept="image/*" style="display:none" onchange="hmUploadProfileImage('cover', this)">
+
+<div class="page active">
+  <nav class="navbar">
+    <div class="nav-logo" onclick="window.location.href='dashboard.html'"><div class="nav-logo-icon">H</div>HireMate</div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="window.location.href='dashboard.html'">Dashboard</button>
+      <button class="nav-link" onclick="window.location.href='leads.html'">Leads</button>
+      <button class="nav-link" onclick="window.location.href='drafts.html'">Drafts</button>
+      <button class="nav-link" onclick="window.location.href='analytics.html'">Analytics</button>
+    </div>
+    <div class="nav-actions"><button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button><button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">Profile</button><div class="avatar" onclick="window.location.href='profile.html'"></div><button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Logout</button></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <button class="sidebar-item" onclick="window.location.href='dashboard.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"></path><path d="M5.5 10.2V21h13V10.2"></path><path d="M9.5 21v-6h5v6"></path></svg></span>Home</button>
+      <button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></span>Hot Leads</button>
+      <button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.9 4.9l1.4 1.4"></path><path d="M17.7 17.7l1.4 1.4"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.9 19.1l1.4-1.4"></path><path d="M17.7 6.3l1.4-1.4"></path></svg></span>Warm Leads</button>
+      <button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20"></path><path d="m5 5 14 14"></path><path d="M5 19 19 5"></path><path d="M2 12h20"></path></svg></span>Cold Leads</button>
+      <div class="sidebar-section">Drafts</div>
+      <button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg></span>Message Drafts</button>
+      <button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path><path d="M8 10h8"></path><path d="M8 13h5"></path></svg></span>Comment Drafts</button>
+      <div class="sidebar-section">Account</div>
+      <button class="sidebar-item active" onclick="window.location.href='profile.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Profile</button>
+      <button class="sidebar-item" onclick="window.location.href='analytics.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-3"></path></svg></span>Analytics</button>
+      <button class="sidebar-item" onclick="window.location.href='settings.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path><path d="M19.4 15a1.8 1.8 0 0 0 .4 2l.1.1-2 3.4-.2-.1a1.8 1.8 0 0 0-2 .4l-.2.2h-4l-.2-.2a1.8 1.8 0 0 0-2-.4l-.2.1-2-3.4.1-.1a1.8 1.8 0 0 0 .4-2l-.1-.3-2.9-1.7V9l2.9-1.7.1-.3a1.8 1.8 0 0 0-.4-2l-.1-.1 2-3.4.2.1a1.8 1.8 0 0 0 2-.4l.2-.2h4l.2.2a1.8 1.8 0 0 0 2 .4l.2-.1 2 3.4-.1.1a1.8 1.8 0 0 0-.4 2l.1.3L22 9v4l-2.5 1.7-.1.3Z"></path></svg></span>Settings</button>
+      <button class="sidebar-item" onclick="confirmLogout()" style="margin-top:auto;"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M21 4v16"></path></svg></span>Logout</button>
+    </aside>
+    <main class="main-content" style="padding-bottom:60px;">
+      <div class="profile-banner-card">
+        <div class="profile-cover">
+          <div class="profile-cover-grid"></div>
+          <div class="profile-cover-actions"><button class="btn btn-ghost btn-sm" onclick="hmPickProfileImage('cover')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4V8Z"></path><circle cx="12" cy="13.5" r="3.5"></circle></svg> Edit Cover</button></div>
+        </div>
+        <div class="profile-bottom">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div class="profile-avatar-wrap"><div class="profile-avatar-xl"></div><div class="profile-avatar-edit" onclick="hmPickProfileImage('avatar')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M14 7l3 3"></path></svg></div></div>
+            <div style="display:flex;gap:8px;padding-bottom:4px;"><button class="btn btn-outline btn-sm" onclick="showEditProfileModal()"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M14 7l3 3"></path></svg> Edit Profile</button></div>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="profile-name"><span class="hm-skeleton hm-skeleton-line"></span></div>
+            <div class="profile-headline"><span class="hm-skeleton hm-skeleton-line"></span></div>
+            <div class="profile-location"><span class="hm-skeleton hm-skeleton-line"></span></div>
+            <div class="profile-tags"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="section-card" id="about-card" style="grid-column:1/-1;">
+          <div class="section-card-header"><div class="section-title"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h9l3 3v13H6V4Z"></path><path d="M14 4v4h4"></path><path d="M8.5 12h7"></path><path d="M8.5 16h5"></path></svg> About</div><button class="edit-btn" onclick="toggleEdit('about')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M14 7l3 3"></path></svg> Edit</button></div>
+          <div id="about-view"><div class="hm-list-skeleton"><span></span><span></span></div></div>
+          <div id="about-edit" style="display:none;"><textarea class="form-textarea" id="about-text" style="min-height:160px;" placeholder="Write a short summary about your background, skills, and goals."></textarea><div style="display:flex;gap:8px;margin-top:12px;"><button class="btn btn-ghost btn-sm" onclick="toggleEdit('about')">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveAbout()">Save Changes</button></div></div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-title"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4"></path><path d="M12 17v4"></path><path d="M4.2 7.5l3.4 2"></path><path d="M16.4 14.5l3.4 2"></path><path d="M19.8 7.5l-3.4 2"></path><path d="M7.6 14.5l-3.4 2"></path><circle cx="12" cy="12" r="4"></circle></svg> Skills</div><button class="edit-btn" onclick="hmOpenTagModal('skills')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M14 7l3 3"></path></svg> Edit</button></div>
+          <div class="tag-input-area" id="skills-container"><span class="hm-skeleton hm-skeleton-line"></span></div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-title"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2 7.5 14 3 9.6l6.2-.9L12 3Z"></path></svg> Interests</div><button class="edit-btn" onclick="hmOpenTagModal('interests')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M14 7l3 3"></path></svg> Edit</button></div>
+          <div class="tag-input-area" id="interests-container"><span class="hm-skeleton hm-skeleton-line"></span></div>
+        </div>
+        <div class="section-card" id="experience-card" style="grid-column:1/-1;">
+          <div class="section-card-header"><div class="section-title"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1"></path><rect x="4" y="6" width="16" height="14" rx="2"></rect><path d="M4 12h16"></path></svg> Experience</div><button class="edit-btn" onclick="showAddExperience()">+ Add</button></div>
+        </div>
+        <div class="section-card" id="education-card" style="grid-column:1/-1;">
+          <div class="section-card-header"><div class="section-title"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 8 9-4 9 4-9 4-9-4Z"></path><path d="M7 10.5V15c2.8 2 7.2 2 10 0v-4.5"></path></svg> Education</div><button class="edit-btn" onclick="showAddEducation()">+ Add</button></div>
+        </div>
+        <div class="section-card" style="grid-column:1/-1;">
+          <div class="section-card-header"><div class="section-title"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"></path></svg> LinkedIn session cookie</div><button class="edit-btn" onclick="toggleEdit('cookie')"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"></path><path d="M14 7l3 3"></path></svg> Update Cookie</button></div>
+          <div id="cookie-view"><div class="info-box" id="profile-cookie-status"><span class="hm-skeleton hm-skeleton-number"></span><div><span class="hm-skeleton hm-skeleton-line"></span><br><span class="hm-skeleton hm-skeleton-line"></span></div></div><div class="form-group" id="profile-saved-cookie-row" style="display:none;margin-top:14px;"><label class="form-label">Saved LinkedIn session cookie</label><div style="position:relative;"><input class="form-input" id="profile-saved-cookie-mask" type="password" readonly style="padding-right:44px;"><button type="button" id="profile-saved-cookie-eye" onclick="togglePw('profile-saved-cookie-eye','profile-saved-cookie-mask')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div><span class="form-hint">Encrypted and hidden for your privacy.</span></div></div>
+          <div id="cookie-edit" style="display:none;margin-top:16px;"><div class="form-group"><label class="form-label">LinkedIn session cookie</label><input class="form-input" id="cookie-input" type="password" placeholder="Paste your LinkedIn session cookie here" autocomplete="off"><span class="form-error-msg" id="cookie-err"></span><span class="form-hint">Use the LinkedIn session cookie value from your active LinkedIn account.</span></div><div style="display:flex;gap:8px;margin-top:12px;"><button class="btn btn-ghost btn-sm" onclick="toggleEdit('cookie')">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveCookie()">Save Cookie</button></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="app.js?v=17"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

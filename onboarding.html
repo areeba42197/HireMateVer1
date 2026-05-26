@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate — Profile Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="toast-container" id="toasts"></div>
+<div class="page active">
+  <div class="auth-page">
+    <div class="auth-bg">
+      <div class="auth-glow" style="width:560px;height:560px;background:rgba(74,255,160,0.08);top:-120px;left:50%;transform:translateX(-50%);"></div>
+    </div>
+    <div class="auth-card" style="max-width:760px;">
+      <div class="auth-logo">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
+          <div class="nav-logo-icon">H</div>
+          <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">HireMate</span>
+        </div>
+      </div>
+      <div class="auth-title">Build your job-search profile</div>
+      <div class="auth-subtitle">These answers become your profile and LinkedIn search filters.</div>
+
+      <form class="auth-form" onsubmit="handleOnboarding(event)" novalidate>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Professional Headline</label>
+            <input class="form-input" id="ob-headline" placeholder="Frontend Developer | SE Student">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Current Location</label>
+            <input class="form-input" id="ob-location" placeholder="Islamabad, Pakistan">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">About You</label>
+          <textarea class="form-textarea" id="ob-about" placeholder="Briefly describe your background, degree, current focus and what roles you want."></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Education</label>
+            <textarea class="form-textarea" id="ob-education" placeholder="BS Software Engineering, IIUI, 2021-2025"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Experience</label>
+            <textarea class="form-textarea" id="ob-experience-detail" placeholder="Internships, projects, freelance work, or academic projects"></textarea>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Skills</label>
+            <input class="form-input" id="ob-skills" placeholder="React, JavaScript, Python, Django">
+            <span class="form-hint">Comma separated. These are used for ranking.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Interests</label>
+            <input class="form-input" id="ob-interests" placeholder="Remote, Internship, AI, Freelance">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Target Roles</label>
+            <input class="form-input" id="ob-roles" placeholder="Frontend Developer, Python Intern">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preferred Locations</label>
+            <input class="form-input" id="ob-locations" placeholder="Pakistan, Remote, Islamabad">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Work Mode</label>
+            <select class="form-select" id="ob-work-modes">
+              <option>Remote, Hybrid</option>
+              <option>Remote</option>
+              <option>Hybrid</option>
+              <option>On-site</option>
+              <option>Internship</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Experience Level</label>
+            <select class="form-select" id="ob-experience">
+              <option>Student / Fresh Graduate</option>
+              <option>Intern</option>
+              <option>Junior</option>
+              <option>1-2 years</option>
+              <option>2-3 years</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">LinkedIn session cookie</label>
+          <input class="form-input" id="ob-cookie" placeholder="Paste your LinkedIn session cookie here" autocomplete="off">
+          <span class="form-hint">Required for authenticated post search. Public LinkedIn jobs are also searched using your filters.</span>
+        </div>
+
+        <div class="info-box">
+          <span>&#x1F50D;</span>
+          <span>After saving, your profile will be ready. You can start finding opportunities from the dashboard when you are ready.</span>
+        </div>
+
+        <button class="btn btn-primary" type="submit" style="width:100%;padding:15px;" id="ob-submit">Save Profile</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

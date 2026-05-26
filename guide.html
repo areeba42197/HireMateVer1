@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HireMate — User Guide</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+
+<script>
+(function () {
+  const savedTheme = localStorage.getItem("hiremate-theme");
+  if (savedTheme === "light") {
+    document.documentElement.classList.add("light-mode");
+    document.body?.classList?.add("light-mode");
+  }
+})();
+</script>
+
+</head>
+
+<body>
+
+<div class="guide-wrapper">
+
+  <div class="guide-hero">
+    <div class="guide-badge">FINAL YEAR PROJECT • USER DOCUMENTATION</div>
+
+    <h1>HireMate User Guide</h1>
+
+    <p>
+      This guide explains how to use HireMate effectively,
+      connect LinkedIn securely, manage sessions,
+      and generate professional hiring leads.
+    </p>
+  </div>
+
+  <div class="guide-section">
+    <h2>1. Introduction</h2>
+
+    <p>
+      HireMate is an AI-powered lead generation and outreach platform
+      designed to help users discover hiring opportunities from LinkedIn,
+      organize leads, and generate smart communication drafts.
+    </p>
+  </div>
+
+  <div class="guide-section">
+    <h2>2. System Requirements</h2>
+
+    <ul>
+      <li>Modern web browser (Chrome, Edge, Firefox)</li>
+      <li>Stable internet connection</li>
+      <li>LinkedIn account logged in on the same browser</li>
+      <li>JavaScript enabled</li>
+    </ul>
+  </div>
+
+  <div class="guide-section">
+    <h2>3. How to Use HireMate</h2>
+
+    <ol>
+      <li>Open the HireMate website.</li>
+      <li>Create a new account or sign in.</li>
+      <li>Ensure LinkedIn is already logged in.</li>
+      <li>Navigate to Dashboard to explore hiring leads.</li>
+      <li>Open lead details to analyze opportunities.</li>
+      <li>Generate AI-powered outreach drafts.</li>
+      <li>Manage drafts from the Drafts section.</li>
+    </ol>
+  </div>
+
+  <div class="guide-section">
+    <h2>4. LinkedIn Requirement</h2>
+
+    <div class="info-box">
+      <div>??</div>
+
+      <div>
+        LinkedIn should remain open and logged in in the same browser session
+        for proper lead synchronization and data access.
+      </div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h2>5. Session Cookie Information</h2>
+
+    <p>
+      HireMate may use browser session cookies to maintain authentication,
+      user preferences, and secure navigation during active sessions.
+    </p>
+
+    <div class="box">
+      <h3>Cookies are used for:</h3>
+
+      <ul>
+        <li>User authentication</li>
+        <li>Theme preferences (Light/Dark mode)</li>
+        <li>Session management</li>
+        <li>Improved user experience</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h2>6. Security Guidelines</h2>
+
+    <div class="warning">
+      Never share your account password or session credentials with anyone.
+    </div>
+
+    <ul>
+      <li>Always logout after use on shared systems.</li>
+      <li>Use strong passwords.</li>
+      <li>Keep LinkedIn credentials secure.</li>
+      <li>Avoid suspicious browser extensions.</li>
+    </ul>
+  </div>
+
+  <div class="guide-section">
+    <h2>7. Dashboard Features</h2>
+
+    <ul>
+      <li>Lead Categorization</li>
+      <li>Hot / Warm / Cold Lead Detection</li>
+      <li>Draft Generation</li>
+      <li>Analytics Dashboard</li>
+      <li>Profile & Settings Management</li>
+    </ul>
+  </div>
+
+  <div class="guide-section">
+    <h2>8. Theme Support</h2>
+
+    <p>
+      HireMate supports both Dark Mode and Light Mode.
+      User theme preferences are stored locally for consistent experience.
+    </p>
+  </div>
+
+  <div class="guide-section">
+    <h2>9. Conclusion</h2>
+
+    <p>
+      HireMate simplifies professional networking and hiring opportunity
+      management through an industry-inspired modern interface and
+      intelligent automation workflow.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
+/* ============================================================
+   AUTH TOP BUTTONS
+============================================================ */
+
+.auth-top-actions{
+  position:absolute;
+  top:24px;
+  left:24px;
+  right:24px;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.auth-nav-btn,
+.auth-close-btn{
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border2);
+  color:var(--text);
+  backdrop-filter:blur(10px);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+
+.auth-nav-btn{
+  padding:10px 18px;
+  border-radius:12px;
+  font-family:'Syne',sans-serif;
+  font-size:13px;
+  font-weight:700;
+}
+
+.auth-close-btn{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  font-size:18px;
+}
+
+.auth-nav-btn:hover,
+.auth-close-btn:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:var(--accent-glow2);
+}
+
+/* ============================================================
+   FIX LIGHT MODE FLICKER
+============================================================ */
+
+html.light-mode,
+body.light-mode{
+  background:var(--bg);
+  color:var(--text);
+}
+
+body{
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+
+
+
+
+
+
+
+
+
+
+

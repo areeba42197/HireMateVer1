@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate — Signing Out</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+
+<div class="page active">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;"><div style="position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(74,255,160,0.05);filter:blur(80px);top:50%;left:50%;transform:translate(-50%,-50%);"></div></div>
+    <div style="text-align:center;position:relative;z-index:2;max-width:400px;padding:40px 20px;">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--surface);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px;box-shadow:0 0 40px rgba(74,255,160,0.1);">&#x1F44B;</div>
+      <div style="font-family:Syne,sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;">You have been signed out</div>
+      <div style="font-size:15px;color:var(--text2);margin-bottom:32px;line-height:1.6;">Thank you for using HireMate. Your session has been safely ended and your LinkedIn data is secure.</div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button class="btn btn-primary btn-lg" onclick="window.location.href='login.html'">Sign Back In &#x2192;</button>
+        <button class="btn btn-outline btn-lg" onclick="window.location.href='landing.html'">Home</button>
+      </div>
+      <div style="margin-top:32px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+        <div style="font-size:12px;color:var(--text3);">Redirecting home in <span id="countdown" style="color:var(--accent);font-weight:700;font-family:Syne,sans-serif;">2</span> seconds...</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  showToast('success', 'You have been signed out successfully.');
+  var count = 2;
+  var interval = setInterval(function() {
+    count--;
+    var el = document.getElementById('countdown');
+    if(el) el.textContent = count;
+    if(count <= 0) { clearInterval(interval); window.location.href = 'landing.html'; }
+  }, 1000);
+});
+</script>
+<button class="theme-toggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:18px;z-index:999;" title="Toggle theme">??</button>
+<script src="app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

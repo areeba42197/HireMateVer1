@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Draft Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="toast-container" id="toasts"></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" id="confirm-no">Cancel</button>
+      <button class="btn" id="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="page active">
+  <nav class="navbar">
+    <div class="nav-logo" onclick="window.location.href='dashboard.html'">
+      <div class="nav-logo-icon">H</div>HireMate
+    </div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="window.location.href='dashboard.html'">Dashboard</button>
+      <button class="nav-link" onclick="window.location.href='leads.html'">Leads</button>
+      <button class="nav-link active" onclick="window.location.href='drafts.html'">Drafts</button>
+      <button class="nav-link" onclick="window.location.href='analytics.html'">Analytics</button>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">Light</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">Profile</button>
+      <div class="avatar" onclick="window.location.href='profile.html'">HM</div>
+      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <button class="sidebar-item" onclick="window.location.href='dashboard.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"></path><path d="M5.5 10.2V21h13V10.2"></path><path d="M9.5 21v-6h5v6"></path></svg></span>Home</button>
+      <button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></span>Hot Leads</button>
+      <button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">W</span>Warm Leads</button>
+      <button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">C</span>Cold Leads</button>
+      <div class="sidebar-section">Drafts</div>
+      <button class="sidebar-item active" onclick="window.location.href='drafts.html'"><span class="icon">D</span>Drafts</button>
+      <div class="sidebar-section">Account</div>
+      <button class="sidebar-item" onclick="window.location.href='profile.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Profile</button>
+      <button class="sidebar-item" onclick="window.location.href='settings.html'"><span class="icon">S</span>Settings</button>
+    </aside>
+
+    <main class="main-content">
+      <button class="btn btn-ghost btn-sm" onclick="window.location.href='drafts.html'" style="margin-bottom:18px;">Back to Drafts</button>
+      <div class="draft-review-layout">
+        <section class="section-card draft-review-main">
+          <div class="section-card-header">
+            <div>
+              <div class="section-title" id="draft-review-title">Draft Review</div>
+              <p class="page-sub" id="draft-review-sub" style="margin:6px 0 0;">Loading draft...</p>
+            </div>
+            <span class="badge badge-pending" id="draft-status-badge">Pending</span>
+          </div>
+
+          <label class="form-label" for="draft-review-text">Editable Draft</label>
+          <textarea class="form-textarea draft-review-textarea" id="draft-review-text" placeholder="Your generated draft will appear here."></textarea>
+
+          <div class="draft-review-actions">
+            <button class="btn btn-outline" onclick="hmGenerateNewDraft()">Generate</button>
+            <button class="btn btn-primary" onclick="hmApproveDraft()">Approve</button>
+            <button class="btn btn-outline" onclick="hmCopyDraft()">Copy</button>
+            <button class="btn btn-ghost" onclick="hmOpenDraftLead()">Open Post</button>
+            <button class="btn btn-danger" onclick="hmDiscardDraft()">Discard</button>
+          </div>
+        </section>
+
+        <aside class="section-card draft-review-side">
+          <div class="section-card-header">
+            <div class="section-title">Selected Lead</div>
+          </div>
+          <div class="draft-review-lead-card">
+            <div class="draft-review-lead-title" id="draft-lead-title">Loading lead...</div>
+            <div class="draft-review-lead-sub" id="draft-lead-sub">The original lead context will appear here.</div>
+          </div>
+          <div class="draft-review-meta">
+            <span class="meta-label">Company</span>
+            <strong id="draft-company">Not mentioned</strong>
+            <span class="meta-label">Role / Opportunity</span>
+            <strong id="draft-role">Not mentioned</strong>
+            <span class="meta-label">Lead Type</span>
+            <strong id="draft-kind">Not mentioned</strong>
+            <span class="meta-label">Original Content</span>
+            <p id="draft-post-text">No post text available.</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+let hmReviewDraft = null;
+
+function hmDraftIdFromUrl() {
+  return new URLSearchParams(window.location.search).get('id') || '';
+}
+
+async function hmLoadDraftReview() {
+  const id = hmDraftIdFromUrl();
+  if (!id) {
+    showToast('error', 'No draft selected.');
+    return;
+  }
+  try {
+    const data = await hmApi('/api/drafts/' + encodeURIComponent(id));
+    hmReviewDraft = data.draft;
+    hmRenderDraftReview(hmReviewDraft);
+  } catch (err) {
+    showToast('error', err.message);
+  }
+}
+
+function hmRenderDraftReview(draft) {
+  const kind = draft.draft_type === 'comment' ? 'Comment Draft' : 'Message Draft';
+  document.getElementById('draft-review-title').textContent = kind;
+  document.getElementById('draft-review-sub').textContent = draft.company + ' / ' + draft.role_title;
+  document.getElementById('draft-review-text').value = draft.content || '';
+  document.getElementById('draft-company').textContent = draft.company || 'Not mentioned';
+  document.getElementById('draft-role').textContent = draft.role_title || 'Not mentioned';
+  document.getElementById('draft-lead-title').textContent = draft.company || 'Selected lead';
+  document.getElementById('draft-lead-sub').textContent = draft.role_title || 'Opportunity details not mentioned';
+  document.getElementById('draft-kind').textContent = draft.lead_kind === 'job' ? 'LinkedIn Job' : 'LinkedIn Post';
+  document.getElementById('draft-post-text').textContent = draft.post_text || 'No post text available.';
+  const badge = document.getElementById('draft-status-badge');
+  badge.className = 'badge ' + (draft.status === 'approved' ? 'badge-approved' : 'badge-pending');
+  badge.textContent = draft.status || 'pending';
+}
+
+async function hmGenerateNewDraft() {
+  if (!hmReviewDraft) return;
+  try {
+    showToast('info', 'Generating a new AI draft...');
+    const data = await hmApi('/api/drafts/generate', {
+      method: 'POST',
+      body: JSON.stringify({ lead_id: hmReviewDraft.lead_id, draft_type: hmReviewDraft.draft_type, tone: 'professional' })
+    });
+    hmReviewDraft = Object.assign({}, hmReviewDraft, data.draft || {});
+    history.replaceState(null, '', 'draft-detail.html?id=' + encodeURIComponent(hmReviewDraft.id));
+    hmRenderDraftReview(hmReviewDraft);
+    showToast('success', 'New draft generated.');
+  } catch (err) {
+    showToast('error', err.message);
+  }
+}
+
+async function hmApproveDraft() {
+  if (!hmReviewDraft) return;
+  try {
+    const content = document.getElementById('draft-review-text').value.trim();
+    const data = await hmApi('/api/drafts/' + encodeURIComponent(hmReviewDraft.id), {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'approved', content: content })
+    });
+    hmReviewDraft = Object.assign({}, hmReviewDraft, data.draft || {}, { content: content });
+    hmRenderDraftReview(hmReviewDraft);
+    showToast('success', 'Draft approved and saved.');
+  } catch (err) {
+    showToast('error', err.message);
+  }
+}
+
+function hmCopyDraft() {
+  const text = document.getElementById('draft-review-text').value;
+  navigator.clipboard.writeText(text).then(function () {
+    showToast('success', 'Draft copied to clipboard.');
+  });
+}
+
+function hmOpenDraftLead() {
+  if (!hmReviewDraft) return;
+  if (hmReviewDraft.post_url) {
+    window.open(hmReviewDraft.post_url, '_blank', 'noopener');
+    return;
+  }
+  window.location.href = hmLeadUrl(hmReviewDraft.lead_id);
+}
+
+function hmDiscardDraft() {
+  if (!hmReviewDraft) return;
+  showConfirm(
+    '!',
+    'Discard this draft?',
+    'This will remove the draft from your draft list and from the lead page.',
+    'Discard',
+    'btn-danger',
+    async function () {
+      try {
+        await hmApi('/api/drafts/' + encodeURIComponent(hmReviewDraft.id), { method: 'DELETE' });
+        showToast('success', 'Draft discarded.');
+        setTimeout(function () { window.location.href = 'drafts.html'; }, 500);
+      } catch (err) {
+        showToast('error', err.message);
+      }
+    }
+  );
+}
+
+document.addEventListener('DOMContentLoaded', hmLoadDraftReview);
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1051 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Lead Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f3f2ef; --surface:#fff; --surface2:#f5f4f1; --surface3:#eeedea;
+  --border:#dedad4; --border2:#c9c5be;
+  --text-primary:#111110; --text-secondary:#5e5b56; --text-muted:#9c9890;
+  --accent:#0a66c2; --accent-soft:#e8f1fb; --accent-hover:#084f9a;
+  --hot:#dc2626; --hot-bg:#fef2f2; --hot-border:#fecaca;
+  --warm:#d97706; --warm-bg:#fffbeb; --warm-border:#fde68a;
+  --cold:#2563eb; --cold-bg:#eff6ff; --cold-border:#bfdbfe;
+  --sh-xs:0 1px 2px rgba(0,0,0,.06);
+  --sh-sm:0 1px 4px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.12);
+  --r:12px; --rs:8px;
+}
+[data-theme="dark"] {
+  --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#222; --surface3:#2a2a2a;
+  --border:#2e2e2e; --border2:#3a3a3a;
+  --text-primary:#f0eeeb; --text-secondary:#a09d98; --text-muted:#6b6865;
+  --accent:#4d9de0; --accent-soft:#1a2a3a; --accent-hover:#3a8fd0;
+  --hot:#f87171; --hot-bg:#2a1010; --hot-border:#7f1d1d;
+  --warm:#fbbf24; --warm-bg:#2a1f00; --warm-border:#78350f;
+  --cold:#60a5fa; --cold-bg:#0f1e30; --cold-border:#1e3a5f;
+  --sh-xs:0 1px 2px rgba(0,0,0,.4);
+  --sh-sm:0 1px 4px rgba(0,0,0,.5);
+  --sh-md:0 4px 20px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;transition:background .25s,color .25s}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* NAV */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--sh-xs);transition:background .25s,border-color .25s}
+.nav-logo{display:flex;align-items:center;gap:9px;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;cursor:pointer;text-decoration:none;color:var(--text-primary);letter-spacing:-.3px}
+.nav-logo-icon{width:30px;height:30px;background:var(--accent);color:#fff;border-radius:7px;display:grid;place-items:center;font-size:15px;font-weight:800;flex-shrink:0}
+.nav-links{display:flex;gap:2px}
+.nl{background:none;border:none;padding:6px 13px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .15s}
+.nl:hover{background:var(--surface2);color:var(--text-primary)}
+.nl.active{color:var(--accent);font-weight:600}
+.nav-r{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#5ba4cf);border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;font-size:16px;transition:all .15s;flex-shrink:0}
+.icon-btn:hover{background:var(--surface3)}
+.theme-svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.btn{padding:7px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid var(--border);background:transparent;color:var(--text-secondary)}
+.btn:hover{border-color:var(--border2);color:var(--text-primary)}
+
+/* LAYOUT */
+.wrap{max-width:1140px;margin:0 auto;padding:22px 20px 60px;display:grid;grid-template-columns:1fr 358px;gap:20px;align-items:start}
+
+/* BACK */
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:14px;padding:4px 0;transition:color .15s;user-select:none;border:none;background:none;font-family:'DM Sans',sans-serif}
+.back:hover{color:var(--accent)}
+.back svg{width:15px;height:15px}
+
+/* POST CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;transition:background .25s,border-color .25s}
+
+.post-hdr{padding:20px 20px 0;display:flex;align-items:flex-start;gap:14px}
+.co-logo{width:54px;height:54px;border-radius:10px;flex-shrink:0;background:var(--accent-soft);display:grid;place-items:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--accent);border:1px solid var(--border)}
+.post-meta{flex:1;min-width:0}
+.co-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);line-height:1.3}
+.co-sub{font-size:13.5px;color:var(--text-secondary);margin-top:2px}
+.meta-row{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+.mi{font-size:11.5px;color:var(--text-muted)}
+.mdot{width:3px;height:3px;background:var(--text-muted);border-radius:50%;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.b-hot{background:var(--hot-bg);color:var(--hot);border:1px solid var(--hot-border)}
+.b-warm{background:var(--warm-bg);color:var(--warm);border:1px solid var(--warm-border)}
+.b-cold{background:var(--cold-bg);color:var(--cold);border:1px solid var(--cold-border)}
+.badge .badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+
+.post-body{padding:16px 20px 14px;font-size:14.5px;line-height:1.72;color:var(--text-primary)}
+.post-body p{margin-bottom:10px}
+.post-body p:last-child{margin-bottom:0}
+.see-more{color:var(--accent);cursor:pointer;font-weight:600;font-size:13.5px;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0;transition:opacity .15s}
+.see-more:hover{opacity:.7}
+
+.post-tags{padding:4px 20px 16px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12.5px;color:var(--text-secondary);font-weight:500;cursor:pointer;transition:all .15s}
+.tag:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* REACTION STATS - read-only */
+.rxn-bar{padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.rxn-left{display:flex;align-items:center;gap:7px}
+.emoji-stack{display:flex}
+.re{width:22px;height:22px;border-radius:50%;border:2px solid var(--surface);display:grid;place-items:center;font-size:13px;background:var(--surface2);margin-left:-5px}
+.re:first-child{margin-left:0}
+.rxn-lbl{font-size:13px;color:var(--text-secondary)}
+.rxn-right{display:flex;gap:14px}
+.stat-pill{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text-secondary)}
+.stat-pill svg{width:14px;height:14px;opacity:.55}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:0 20px}
+
+/* COMMENTS */
+.cmts{padding:18px 20px 22px}
+.cmts-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cmts-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary)}
+.sort-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text-secondary);cursor:pointer;outline:none;font-family:'DM Sans',sans-serif}
+
+.cmt-compose{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px}
+.cmt-input-wrap{flex:1;position:relative}
+.cmt-input{width:100%;padding:10px 46px 10px 15px;border:1.5px solid var(--border);border-radius:24px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text-primary);background:var(--surface2);outline:none;resize:none;line-height:1.5;min-height:42px;max-height:120px;overflow:hidden;transition:border-color .15s,background .15s,border-radius .2s}
+.cmt-input:focus{border-color:var(--accent);background:var(--surface);border-radius:14px}
+.cmt-input::placeholder{color:var(--text-muted)}
+.cmt-send{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;transition:color .15s;display:grid;place-items:center}
+.cmt-send.on{color:var(--accent)}
+
+.comment-draft-only .cmts-top{margin-bottom:10px}
+.comment-draft-only .sort-sel,
+.comment-draft-only .cmt-compose,
+.comment-draft-only .cmt-list{display:none!important}
+
+.cmt-list{display:flex;flex-direction:column;gap:16px}
+.ci{display:flex;gap:10px}
+.ci.nested{margin-left:46px}
+.c-av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11.5px;font-weight:700;flex-shrink:0}
+.ci.nested .c-av{width:28px;height:28px;font-size:10px}
+.c-body{flex:1;min-width:0}
+.c-bub{background:var(--surface2);border:1px solid var(--border);border-radius:4px 16px 16px 16px;padding:10px 14px;display:inline-block;max-width:100%}
+.c-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.c-name .ab{font-size:10.5px;color:var(--accent);font-weight:600;margin-left:4px}
+.c-sub{font-size:11.5px;color:var(--text-muted);margin-bottom:4px}
+.c-txt{font-size:13.5px;color:var(--text-primary);line-height:1.55}
+.c-foot{display:flex;align-items:center;gap:12px;padding:5px 2px 0}
+.ca{font-size:12px;color:var(--text-secondary);cursor:pointer;font-weight:500;transition:color .15s;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+.ca:hover{color:var(--accent)}
+.ct{font-size:11.5px;color:var(--text-muted)}
+
+/* SIDEBAR */
+.sbar{display:flex;flex-direction:column;gap:16px}
+.lead-drafts-under-post{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.lead-drafts-under-post .sc{height:100%}
+.lead-drafts-under-post .dta{min-height:160px}
+.lead-drafts-under-post .dta.sm{min-height:160px}
+
+/* CTA */
+.cta{background:linear-gradient(135deg,#0a66c2,#1a7fd4);border-radius:var(--r);padding:18px;box-shadow:var(--sh-sm)}
+[data-theme="dark"] .cta{background:linear-gradient(135deg,#0d3f6e,#0a4f8c)}
+.cta h4{font-family:'Syne',sans-serif;font-size:14.5px;font-weight:700;color:#fff;margin-bottom:5px}
+.cta p{font-size:12.5px;color:rgba(255,255,255,.8);margin-bottom:14px;line-height:1.5}
+.cta-btns{display:flex;gap:8px}
+.cb-w{flex:1;background:#fff;color:#0a66c2;border:none;padding:9px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.cb-w:hover{background:#e8f1fb}
+.cb-o{flex:1;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45);padding:9px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.cb-o:hover{border-color:#fff;background:rgba(255,255,255,.12)}
+
+/* S-CARD */
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;transition:background .25s,border-color .25s}
+.sc-hdr{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sc-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.ai-chip{background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:'Syne',sans-serif;letter-spacing:.4px;border:1px solid rgba(10,102,194,.15)}
+[data-theme="dark"] .ai-chip{border-color:var(--accent)}
+
+/* INFO LIST */
+.il{padding:4px 18px 14px}
+.ir{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ir:last-child{border-bottom:none}
+.ii{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.ilbl{font-size:11px;color:var(--text-muted);display:block;margin-bottom:1px}
+.ival{font-size:13.5px;font-weight:500;color:var(--text-primary)}
+
+/* MATCH */
+.match-in{padding:14px 18px 18px}
+.mc-wrap{width:80px;height:80px;margin:0 auto 16px;position:relative;display:grid;place-items:center}
+.mc-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--accent) 0% 87%,var(--border) 87% 100%)}
+.mc-inner{width:62px;height:62px;border-radius:50%;background:var(--surface);z-index:1;display:grid;place-items:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--accent)}
+.sbars{display:flex;flex-direction:column;gap:9px}
+.sbr{display:flex;align-items:center;gap:8px}
+.sbn{width:82px;color:var(--text-secondary);flex-shrink:0;font-size:12px}
+.sbt{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.sbf{height:100%;border-radius:3px;background:var(--accent);transition:width .9s cubic-bezier(.4,0,.2,1)}
+.sbp{width:30px;text-align:right;color:var(--text-muted);font-size:11px}
+
+/* DRAFT */
+.draft-body{padding:14px 18px 18px}
+.dta{width:100%;min-height:140px;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.65;color:var(--text-primary);background:var(--surface2);outline:none;resize:vertical;transition:border-color .15s,background .15s}
+.dta:focus{border-color:var(--accent);background:var(--surface)}
+.dta.sm{min-height:90px}
+.dbr{display:flex;gap:8px;margin-top:10px}
+.db{flex:1;padding:8px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;border:1.5px solid transparent}
+.db-gen{background:linear-gradient(135deg,var(--accent),#1e88e5);color:#fff;border:none}
+.db-gen:hover{opacity:.88}
+.db-copy{background:var(--surface2);color:var(--text-secondary);border-color:var(--border)}
+.db-copy:hover{border-color:var(--accent);color:var(--accent)}
+.db-save{width:100%;margin-top:8px;padding:9px 12px;background:var(--surface2);color:var(--text-primary);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.db-save:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* SPINNER */
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* TOAST */
+#toasts{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+.toast{background:var(--text-primary);color:var(--bg);padding:11px 18px;border-radius:10px;font-size:13.5px;font-weight:500;box-shadow:var(--sh-md);display:flex;align-items:center;gap:8px;animation:ti .25s ease;pointer-events:auto}
+@keyframes ti{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:500;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.open{opacity:1;pointer-events:all}
+.mb{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:520px;max-width:calc(100vw - 32px);box-shadow:var(--sh-md);padding:24px;transform:translateY(12px) scale(.97);transition:transform .2s}
+.ov.open .mb{transform:translateY(0) scale(1)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mt{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.mx{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--text-secondary);transition:all .15s}
+.mx:hover{background:var(--surface3);color:var(--text-primary)}
+@keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fin{animation:fin .25s ease both}
+
+@media(max-width:900px){.lead-drafts-under-post{grid-template-columns:1fr}}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}.sbar{order:-1}.nav-links{display:none}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="leads.html">
+    <div class="nav-logo-icon">H</div>HireMate
+  </a>
+  <div class="nav-links">
+    <button class="nl" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="nl active" onclick="location.href='leads.html'">Leads</button>
+    <button class="nl" onclick="location.href='drafts.html'">Drafts</button>
+    <button class="nl" onclick="location.href='analytics.html'">Analytics</button>
+  </div>
+  <div class="nav-r">
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"></button>
+    <button class="btn" onclick="location.href='profile.html'">Profile</button>
+    <div class="avatar">AS</div>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="wrap">
+
+  <!-- LEFT -->
+  <div>
+    <button class="back" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Leads
+    </button>
+
+    <!-- POST CARD -->
+    <div class="card">
+
+      <!-- Header -->
+      <div class="post-hdr">
+        <div class="co-logo">TV</div>
+        <div class="post-meta">
+          <div class="co-name">TechVentures PK</div>
+          <div class="co-sub">Posted by <strong>Asad Hussain</strong> &middot; HR Manager</div>
+          <div class="meta-row">
+            <span class="mi">2 hours ago</span>
+            <span class="mdot"></span>
+            <span class="mi"> Public</span>
+            <span class="mdot"></span>
+            <span class="mi"> Lahore, Pakistan</span>
+          </div>
+        </div>
+        <span class="badge b-hot"><span class="badge-dot"></span> Hot</span>
+      </div>
+
+      <!-- Body -->
+      <div class="post-body">
+        <p> <strong>We're Hiring - Frontend Developer (Remote)!</strong></p>
+        <p>TechVentures PK is growing fast and we're looking for a passionate Frontend Developer with strong React.js skills to join our product team. If you love building clean, performant UIs and enjoy a culture that values ownership and creativity - this one's for you.</p>
+        <div id="xtra" style="display:none;">
+          <p><strong>What you'll do:</strong><br>&#10003; Build responsive web apps with React.js<br>&#10003; Collaborate with designers and backend engineers<br>&#10003; Write clean, reusable, well-documented code<br>&#10003; Participate in code reviews and technical discussions</p>
+          <p><strong>What we need:</strong><br>&bull; 1-3 years React.js experience<br>&bull; Proficient in HTML, CSS, JS (ES6+)<br>&bull; Experience with REST APIs and state management<br>&bull; Remote-friendly mindset + strong communication</p>
+          <p> <strong>Perks:</strong> Flexible hours &middot; Remote-first &middot; Competitive PKR salary &middot; Annual bonus</p>
+          <p>Interested? DM us or drop your portfolio in the comments!</p>
+          <p style="color:var(--text-secondary);font-size:13.5px;">#hiring #frontend #reactjs #remotework #PakistanTech</p>
+        </div>
+        <button class="see-more" id="sm-btn" onclick="togglePost()">...see more</button>
+      </div>
+
+      <!-- Tags -->
+      <div class="post-tags">
+        <span class="tag">#ReactJS</span><span class="tag">#Frontend</span><span class="tag">#RemoteWork</span><span class="tag">#JavaScript</span><span class="tag">#PakistanTech</span><span class="tag">#Hiring</span>
+      </div>
+
+      <!-- Reaction stats - READ ONLY -->
+      <div class="rxn-bar">
+        <div class="rxn-left">
+          <div class="emoji-stack">
+            <div class="re"> class="re">Love</div><div class="re">Like</div>
+          <span class="rxn-lbl">48 reactions</span>
+        </div>
+        <div class="rxn-right">
+          <div class="stat-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <span id="cmt-stat">12 comments</span>
+          </div>
+          <div class="stat-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+            3 reposts
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- COMMENTS -->
+      <div class="cmts">
+        <div class="cmts-top">
+          <span class="cmts-title">Comments</span>
+          <select class="sort-sel"><option>Most relevant</option><option>Newest first</option></select>
+        </div>
+
+        <!-- Compose -->
+        <div class="cmt-compose">
+          <div class="avatar" style="width:36px;height:36px;font-size:11px;flex-shrink:0;">AS</div>
+          <div class="cmt-input-wrap">
+            <textarea class="cmt-input" id="cmt-inp" placeholder="Add a comment..." rows="1" oninput="ar(this);ts(this)"></textarea>
+            <button class="cmt-send" id="cmt-send" onclick="postCmt()">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Comment list -->
+        <div class="cmt-list" id="cmt-list">
+
+          <div class="ci fin">
+            <div class="c-av" style="background:linear-gradient(135deg,#f093fb,#f5576c)">RK</div>
+            <div class="c-body">
+              <div class="c-bub">
+                <div class="c-name">Raza Khan</div>
+                <div class="c-sub">React Developer &middot; TechVentures PK</div>
+                <div class="c-txt">Great opportunity! The team here is super collaborative and the product is genuinely exciting. Highly recommend applying 
+              </div>
+              <div class="c-foot"><span class="ct">1h ago</span><button class="ca" onclick="replyTo('Raza Khan')">Reply</button></div>
+            </div>
+          </div>
+
+          <div class="ci fin" style="animation-delay:.05s">
+            <div class="c-av" style="background:linear-gradient(135deg,#11998e,#38ef7d)">SA</div>
+            <div class="c-body">
+              <div class="c-bub">
+                <div class="c-name">Sana Amir</div>
+                <div class="c-sub">CS Student &middot; NUST</div>
+                <div class="c-txt">Is this open for fresh graduates too? I have strong React skills from university projects and internships.</div>
+              </div>
+              <div class="c-foot"><span class="ct">45m ago</span><button class="ca" onclick="replyTo('Sana Amir')">Reply</button></div>
+            </div>
+          </div>
+
+          <div class="ci nested fin" style="animation-delay:.08s">
+            <div class="c-av" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,var(--accent),#1e88e5)">AH</div>
+            <div class="c-body">
+              <div class="c-bub">
+                <div class="c-name">Asad Hussain <span class="ab">&middot; Author</span></div>
+                <div class="c-sub">HR Manager &middot; TechVentures PK</div>
+                <div class="c-txt">Hi Sana! Fresh grads with strong portfolios are very welcome - DM me your GitHub! 
+              </div>
+              <div class="c-foot"><span class="ct">32m ago</span><button class="ca" onclick="replyTo('Asad Hussain')">Reply</button></div>
+            </div>
+          </div>
+
+          <div class="ci fin" style="animation-delay:.1s">
+            <div class="c-av" style="background:linear-gradient(135deg,#667eea,#764ba2)">ZB</div>
+            <div class="c-body">
+              <div class="c-bub">
+                <div class="c-name">Zain Butt</div>
+                <div class="c-sub">Full Stack Developer &middot; Freelance</div>
+                <div class="c-txt">What's the rough salary range? Remote-first roles in PK tech are getting competitive 
+              </div>
+              <div class="c-foot"><span class="ct">20m ago</span><button class="ca" onclick="replyTo('Zain Butt')">Reply</button></div>
+            </div>
+          </div>
+
+        </div><!-- /cmt-list -->
+      </div><!-- /cmts -->
+    </div><!-- /card -->
+
+    <!-- AI Drafts: kept under the post so context and draft writing stay together. -->
+    <div class="lead-drafts-under-post">
+      <div class="sc">
+        <div class="sc-hdr">
+          <span class="sc-title">Message Draft <span class="ai-chip">AI</span></span>
+        </div>
+        <div class="draft-body">
+          <textarea class="dta" id="msg-ta" placeholder="Click Generate to create a message draft for this lead."></textarea>
+          <div class="dbr">
+            <button class="db db-gen" id="msg-gen-btn" onclick="genMsg()">Generate</button>
+            <button class="db db-copy" onclick="cp('msg-ta')">Copy</button>
+            <button class="db db-copy" onclick="hmDeleteCurrentDraft('message')">Delete</button>
+          </div>
+          <button class="db-save" onclick="saveMsg()">Save to Message Drafts</button>
+        </div>
+      </div>
+
+      <div class="sc" id="comment-draft-card">
+        <div class="sc-hdr">
+          <span class="sc-title">Comment Draft <span class="ai-chip">AI</span></span>
+        </div>
+        <div class="draft-body">
+          <textarea class="dta sm" id="cmt-ta" placeholder="Click Generate to create a comment draft for this post."></textarea>
+          <div class="dbr">
+            <button class="db db-gen" id="cmt-gen-btn" onclick="genCmt()">Generate</button>
+            <button class="db db-copy" onclick="cp('cmt-ta')">Copy</button>
+            <button class="db db-copy" onclick="hmDeleteCurrentDraft('comment')">Delete</button>
+          </div>
+          <button class="db-save" onclick="saveCmt()">Save to Comment Drafts</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /left -->
+
+  <!-- SIDEBAR -->
+  <div class="sbar">
+
+    <!-- CTA -->
+    <div class="cta">
+      <h4>Ready to Apply?</h4>
+      <p>Use your AI-generated message draft to reach out to this recruiter and stand out from the crowd.</p>
+      <div class="cta-btns">
+        <button class="cb-w" id="apply-now-btn" onclick="hmOpenLeadSource()">Apply Now</button>
+        <button class="cb-o" onclick="hmSaveLead()">Save Lead</button>
+      </div>
+    </div>
+
+    <!-- Job Details -->
+    <div class="sc">
+      <div class="sc-hdr"><span class="sc-title">Job Details</span></div>
+      <div class="il">
+        <div class="ir"><span class="ii">&#x1F3E2;</span><div><span class="ilbl">Company</span><span class="ival">TechVentures PK</span></div></div>
+        <div class="ir"><span class="ii">&#x1F4BC;</span><div><span class="ilbl">Role</span><span class="ival">Frontend Developer</span></div></div>
+        <div class="ir"><span class="ii">&#x1F310;</span><div><span class="ilbl">Work type</span><span class="ival">Remote</span></div></div>
+        <div class="ir"><span class="ii">&#x1F4CD;</span><div><span class="ilbl">Location</span><span class="ival">Lahore, Pakistan</span></div></div>
+        <div class="ir"><span class="ii">&#x23F1;</span><div><span class="ilbl">Employment</span><span class="ival">Full-time</span></div></div>
+        <div class="ir"><span class="ii">&#x1F393;</span><div><span class="ilbl">Experience</span><span class="ival">1-3 years</span></div></div>
+        <div class="ir"><span class="ii">&#x1F4B0;</span><div><span class="ilbl">Salary</span><span class="ival">Competitive (PKR)</span></div></div>
+      </div>
+    </div>
+
+    <!-- Match score -->
+    <div class="sc">
+      <div class="sc-hdr">
+        <span class="sc-title">Profile Match</span>
+        <span style="font-size:12px;color:var(--text-muted)">Based on your profile</span>
+      </div>
+      <div class="match-in">
+        <div class="mc-wrap">
+          <div class="mc-ring"></div>
+          <div class="mc-inner">87%</div>
+        </div>
+        <div class="sbars">
+          <div class="sbr"><span class="sbn">React.js</span><div class="sbt"><div class="sbf" style="width:95%"></div></div><span class="sbp">95%</span></div>
+          <div class="sbr"><span class="sbn">JavaScript</span><div class="sbt"><div class="sbf" style="width:90%"></div></div><span class="sbp">90%</span></div>
+          <div class="sbr"><span class="sbn">REST APIs</span><div class="sbt"><div class="sbf" style="width:80%"></div></div><span class="sbp">80%</span></div>
+          <div class="sbr"><span class="sbn">CSS / HTML</span><div class="sbt"><div class="sbf" style="width:88%"></div></div><span class="sbp">88%</span></div>
+        </div>
+      </div>
+    </div>
+
+
+  </div><!-- /sbar -->
+</div><!-- /wrap -->
+
+<div id="toasts"></div>
+
+<script>
+/* DATA */
+const MD = {
+  Professional:`Hi Asad,\n\nI came across your post about the Frontend Developer role at TechVentures PK and I'm very interested in this opportunity.\n\nI bring 2+ years of hands-on experience with React.js, JavaScript (ES6+), and REST APIs - with a track record of building clean, performant UIs in production environments.\n\nI'd love to connect and discuss how I can contribute to your team. My portfolio and CV are ready to share at your convenience.\n\nBest regards,\nAyesha S.`,
+  Enthusiastic:`Hey Asad!  post about the Frontend Developer role immediately caught my eye - TechVentures PK is doing some really exciting work and I'd love to be a part of it!\n\nI'm a React developer with 2+ years building fast, beautiful UIs. I love collaborating closely with design and backend teams and I'm passionate about clean, maintainable code.\n\nWould love to chat - happy to share my portfolio anytime!\n\nCheers,\nAyesha S. 
+  Concise:`Hi Asad,\n\nInterested in the Frontend Developer role.\n\n&bull; 2+ yrs React.js\n&bull; Strong JS (ES6+), REST APIs, CSS\n&bull; Remote-ready, available immediately\n\nPortfolio on request.\n\nBest, Ayesha S.`,
+  Formal:`Dear Mr. Hussain,\n\nI am writing to express my sincere interest in the Frontend Developer position recently advertised by TechVentures PK.\n\nWith over two years of professional experience in React.js and modern JavaScript development, I am confident in my ability to contribute meaningfully to your product team.\n\nI would welcome the opportunity to discuss my qualifications at your earliest convenience.\n\nYours sincerely,\nAyesha Shahid`
+};
+const CD = {
+  Engaging:`This looks like a fantastic opportunity! TechVentures PK has a great reputation for its engineering culture. I'd love to learn more - what does onboarding typically look like for remote team members? 
+  Curious:`Exciting role! Quick question - is the team fully distributed or are there hybrid options for Lahore-based candidates? Also curious about the tech stack beyond React on the frontend side.`,
+  Professional:`Thank you for sharing this opportunity. The role aligns closely with my experience in React.js and frontend development. I would appreciate the chance to discuss this further - I'll send a message with my portfolio shortly.`,
+  Concise:`Great opportunity - exactly the kind of role I've been looking for. DM incoming with my portfolio! 
+};
+
+let cmtCount = 12;
+
+window.onload = () => {
+  document.getElementById('msg-ta').value = '';
+  const cmtTa = document.getElementById('cmt-ta');
+  if (cmtTa) cmtTa.value = '';
+  const t = localStorage.getItem('hm-theme') || 'light';
+  applyTheme(t);
+};
+
+/* THEME */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-btn').innerHTML = themeIcon(t === 'light');
+  localStorage.setItem('hm-theme', t);
+}
+function themeIcon(isLight) {
+  return isLight
+    ? '<svg class="theme-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.2M12 19.3v2.2M4.7 4.7l1.6 1.6M17.7 17.7l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.7 19.3l1.6-1.6M17.7 6.3l1.6-1.6"></path></svg>'
+    : '<svg class="theme-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.3A8.2 8.2 0 0 1 8.7 3.8 8.8 8.8 0 1 0 20.2 15.3Z"></path></svg>';
+}
+function toggleTheme() {
+  const c = document.documentElement.getAttribute('data-theme');
+  applyTheme(c === 'dark' ? 'light' : 'dark');
+}
+
+/* POST EXPAND */
+function togglePost() {
+  const el = document.getElementById('xtra');
+  const btn = document.getElementById('sm-btn');
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? '...see more' : 'see less';
+}
+
+/* COMMENT INPUT */
+function ar(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function ts(el) { document.getElementById('cmt-send').classList.toggle('on', el.value.trim().length > 0); }
+
+function replyTo(name) {
+  const inp = document.getElementById('cmt-inp');
+  inp.value = `@${name} `;
+  inp.focus(); ar(inp); ts(inp);
+  inp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function postCmt() {
+  const inp = document.getElementById('cmt-inp');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  addCmt(txt, 'Ayesha S.', 'AS', 'linear-gradient(135deg,var(--accent),#1e88e5)', 'Frontend Developer &middot; Job Seeker', true);
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('cmt-send').classList.remove('on');
+  toast(' 'Comment posted');
+}
+
+function addCmt(txt, name, init, bg, sub, isYou) {
+  const list = document.getElementById('cmt-list');
+  const badge = isYou ? `<span class="ab">&middot; You</span>` : '';
+  const div = document.createElement('div');
+  div.className = 'ci fin';
+  div.innerHTML = `
+    <div class="c-av" style="background:${bg}">${init}</div>
+    <div class="c-body">
+      <div class="c-bub">
+        <div class="c-name">${esc(name)} ${badge}</div>
+        <div class="c-sub">${sub}</div>
+        <div class="c-txt">${esc(txt)}</div>
+      </div>
+      <div class="c-foot"><span class="ct">Just now</span><button class="ca" onclick="replyTo('${esc(name)}')">Reply</button></div>
+    </div>`;
+  list.insertBefore(div, list.firstChild);
+  cmtCount++;
+  document.getElementById('cmt-stat').textContent = cmtCount + ' comments';
+}
+
+function genCmt() {
+  return;
+  const btn = document.getElementById('cmt-gen-btn');
+  btn.innerHTML = '<div class="spin"></div> Generating...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = 'AI Regenerate'; btn.disabled = false;
+    toast('AI', 'Comment draft ready');
+  }, 1000);
+}
+/* MESSAGE DRAFT */
+function genMsg() {
+  return;
+  const btn = document.getElementById('msg-gen-btn');
+  btn.innerHTML = '<div class="spin"></div> Generating...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = 'AI Regenerate'; btn.disabled = false;
+    toast('AI', 'Message draft updated');
+  }, 1100);
+}
+function saveMsg() { toast(' 'Saved to Message Drafts'); }
+
+/* UTILS */
+function cp(id) {
+  navigator.clipboard.writeText(document.getElementById(id).value)
+    .then(() => toast(' 'Copied to clipboard'));
+}
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function toast(icon, msg) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${icon}</span>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; }, 2500);
+  setTimeout(() => t.remove(), 2900);
+}
+
+/* BACKEND LEAD DETAIL */
+let hmLead = null;
+let hmLastMessageDraftId = null;
+let hmLastCommentDraftId = null;
+
+function hmToken() { return localStorage.getItem('hm_token') || ''; }
+function hmApiBase() {
+  // Keep lead detail API calls attached to the Python backend even when the
+  // HTML file is opened from another local preview server.
+  if (window.location.origin && window.location.origin.startsWith('http')) {
+    const current = new URL(window.location.origin);
+    if (current.port === '8000') return window.location.origin;
+  }
+  return 'http://localhost:8000';
+}
+async function hmApi(path, options) {
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, (options && options.headers) || {});
+  if (hmToken()) headers.Authorization = 'Bearer ' + hmToken();
+  const res = await fetch(hmApiBase() + path, Object.assign({}, options || {}, { headers }));
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) throw new Error(data.error || 'Request failed');
+  return data;
+}
+function hmEsc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function hmLeadId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id') || localStorage.getItem('hm_selected_lead_id') || '';
+}
+function hmTimeAgo(iso) {
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return 'recently';
+  const minutes = Math.max(1, Math.floor((Date.now() - dt.getTime()) / 60000));
+  if (minutes < 60) return minutes + ' min ago';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + ' hrs ago';
+  return Math.floor(hours / 24) + ' days ago';
+}
+function hmRelativeLabelToIso(label, baseIso) {
+  const text = String(label || '').toLowerCase();
+  const match = text.match(/(\d+)\s+(minute|minutes|hour|hours|day|days|week|weeks|month|months)\s+ago/);
+  if (!match) return baseIso || new Date().toISOString();
+  const amount = Number(match[1] || 0);
+  const unit = match[2];
+  const multipliers = { minute: 60000, minutes: 60000, hour: 3600000, hours: 3600000, day: 86400000, days: 86400000, week: 604800000, weeks: 604800000, month: 2592000000, months: 2592000000 };
+  return new Date(Date.now() - amount * (multipliers[unit] || 0)).toISOString();
+}
+function hmTempBadge(temp) {
+  const label = temp === 'hot' ? 'Hot' : temp === 'warm' ? 'Warm' : 'Cold';
+  const cls = temp === 'hot' ? 'b-hot' : temp === 'warm' ? 'b-warm' : 'b-cold';
+  return `<span class="badge ${cls}"><span class="badge-dot"></span> ${label}</span>`;
+}
+function hmInitials(name) {
+  return (name || 'HM').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'HM';
+}
+function hmSetText(selector, value) {
+  const el = document.querySelector(selector);
+  if (el) el.textContent = value || 'Not specified';
+}
+function hmSetHtml(selector, value) {
+  const el = document.querySelector(selector);
+  if (el) el.innerHTML = value;
+}
+function hmFormatPost(text) {
+  const safe = hmEsc(text || 'No post content was extracted.');
+  return safe
+    .split(/\n+/)
+    .filter(p => !/^About this job:?$/i.test(p.trim()))
+    .map(p => `<p>${p}</p>`)
+    .join('');
+}
+async function hmLoadLeadDetail() {
+  if (!hmToken()) {
+    toast('!', 'Please login first');
+    setTimeout(() => { location.href = 'login.html'; }, 800);
+    return;
+  }
+  const id = hmLeadId();
+  if (!id) {
+    toast('!', 'No lead selected');
+    return;
+  }
+  try {
+    const data = await hmApi('/api/leads/' + encodeURIComponent(id));
+    hmLead = data.lead;
+    localStorage.setItem('hm_selected_lead_id', String(hmLead.id));
+    hmRenderLeadDetail(hmLead);
+    await hmLoadLeadDrafts();
+  } catch (err) {
+    toast('!', err.message);
+  }
+}
+function hmRenderLeadDetail(lead) {
+  window.hmCurrentLeadUrl = lead.post_url || '';
+  const isJob = lead.lead_kind === 'job';
+  const reaction = lead.reaction_items || {};
+  const postedLabel = reaction.posted_label ? hmTimeAgo(hmRelativeLabelToIso(reaction.posted_label, lead.posted_at)) : hmTimeAgo(lead.posted_at);
+  const applicantText = reaction.applicant_text || (Number(lead.comments || 0) ? Number(lead.comments || 0) + ' applicants' : '');
+  hmSetText('.co-name', lead.company);
+  hmSetHtml('.co-sub', `Posted by <strong>${hmEsc(lead.author_name || lead.company)}</strong> &middot; ${hmEsc(lead.author_title || 'LinkedIn Jobs')}`);
+  hmSetHtml('.meta-row', `
+    <span class="mi">${hmEsc(postedLabel)}</span>
+    <span class="mdot"></span>
+    <span class="mi"> LinkedIn</span>
+    <span class="mdot"></span>
+    <span class="mi"> ${hmEsc(lead.location || 'Not specified')}</span>
+    ${isJob && applicantText ? '<span class="mdot"></span><span class="mi">' + hmEsc(applicantText) + '</span>' : ''}
+  `);
+  hmSetHtml('.post-hdr .badge', hmTempBadge(lead.temperature));
+  hmSetHtml('.post-body', `
+    <p><strong>${hmEsc(lead.role_title)}</strong></p>
+    ${hmFormatPost(lead.post_text)}
+  `);
+  const tags = Array.isArray(lead.tags) ? lead.tags : [];
+  hmSetHtml('.post-tags', tags.map(tag => `<span class="tag">${hmEsc(tag)}</span>`).join('') || '<span class="tag">LinkedIn</span>');
+hmSetHtml('.rxn-lbl', isJob ? hmEsc(applicantText || '0 applicants') : `${Number(lead.likes || 0)} reactions`);
+  const extractedComments = Array.isArray(lead.comment_items) ? lead.comment_items : [];
+  const commentCount = Number(lead.comments || extractedComments.length || 0);
+  hmSetText('#cmt-stat', isJob ? `${commentCount} applicants` : `${commentCount} comments`);
+  const repostEl = document.querySelector('.rxn-right .stat-pill:last-child');
+  if (repostEl) repostEl.lastChild.textContent = ' ' + Number(lead.reposts || 0) + ' reposts';
+  hmToggleJobSocialSections(isJob);
+  if (!isJob) hmRenderExtractedComments(extractedComments, lead.lead_kind);
+  const logo = document.querySelector('.co-logo');
+  if (logo) logo.textContent = hmInitials(lead.company);
+  const detailValues = document.querySelectorAll('.il .ival');
+  const values = [
+    lead.company,
+    lead.role_title,
+    lead.work_type,
+    lead.location,
+    lead.employment_type,
+    lead.experience,
+    lead.salary,
+  ];
+  detailValues.forEach((el, i) => { el.textContent = values[i] || 'Not specified'; });
+  const score = Math.max(0, Math.min(100, Number(lead.score || 0)));
+  hmSetText('.mc-inner', score + '%');
+  const ring = document.querySelector('.mc-ring');
+  if (ring) ring.style.background = `conic-gradient(var(--accent) 0% ${score}%,var(--border) ${score}% 100%)`;
+  const sbarWrap = document.querySelector('.sbars');
+  if (sbarWrap) {
+    sbarWrap.innerHTML = tags.slice(0, 4).map(tag => {
+      const pct = Math.max(35, Math.min(96, score - Math.floor(Math.random() * 18)));
+      return `<div class="sbr"><span class="sbn">${hmEsc(tag)}</span><div class="sbt"><div class="sbf" style="width:${pct}%"></div></div><span class="sbp">${pct}%</span></div>`;
+    }).join('') || `<div class="sbr"><span class="sbn">Profile</span><div class="sbt"><div class="sbf" style="width:${score}%"></div></div><span class="sbp">${score}%</span></div>`;
+  }
+}
+
+function hmToggleJobSocialSections(isJob) {
+  const comments = document.querySelector('.cmts');
+  if (comments) comments.style.display = isJob ? 'none' : '';
+  const left = document.querySelector('.rxn-left');
+  const emojiStack = left ? left.querySelector('.emoji-stack') : null;
+  if (emojiStack) emojiStack.style.display = isJob ? 'none' : '';
+  const right = document.querySelector('.rxn-right');
+  if (right && isJob) {
+    right.innerHTML = '<div class="stat-pill">LinkedIn Jobs</div>';
+  }
+}
+
+function hmOpenLeadSource() {
+  if (window.hmCurrentLeadUrl) {
+    window.open(window.hmCurrentLeadUrl, '_blank', 'noopener');
+    return;
+  }
+  toast('!', 'No LinkedIn source link was saved for this lead.');
+}
+async function hmSaveLead() {
+  if (!hmLead) return;
+  try {
+    const data = await hmApi('/api/leads/' + encodeURIComponent(hmLead.id), {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'saved' })
+    });
+    if (data.lead && data.lead.already_saved) {
+      toast(' 'This lead is already saved');
+      return;
+    }
+    toast(' 'Lead saved to your list');
+    hmLead.status = 'saved';
+  } catch (err) {
+    toast('!', err.message);
+  }
+}
+function hmRenderExtractedComments(comments, kind) {
+  const list = document.getElementById('cmt-list');
+  if (!list) return;
+  if (!comments || comments.length === 0) {
+    list.innerHTML = `
+      <div class="ci fin">
+        <div class="c-body">
+          <div class="c-bub" style="width:100%;">
+            <div class="c-name">No extracted LinkedIn comments</div>
+            <div class="c-txt">${kind === 'job'
+              ? 'This lead came from LinkedIn Jobs, so public post comments are not available. The content above is the live job description/details extracted from LinkedIn.'
+              : 'No visible comments were returned for this post during the safe sync. If the post requires login or LinkedIn hides comments, HireMate leaves this empty instead of showing fake comments.'}</div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+  list.innerHTML = comments.map((comment, index) => {
+    const author = comment.author || 'LinkedIn member';
+    const initials = hmInitials(author);
+    const text = comment.text || comment;
+    return `
+      <div class="ci fin" style="animation-delay:${index * 0.04}s">
+        <div class="c-av" style="background:linear-gradient(135deg,var(--accent),#1e88e5)">${hmEsc(initials)}</div>
+        <div class="c-body">
+          <div class="c-bub">
+            <div class="c-name">${hmEsc(author)}</div>
+            <div class="c-sub">Extracted from LinkedIn</div>
+            <div class="c-txt">${hmEsc(text)}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+async function hmGenerateBackendDraft(type, tone, notify) {
+  if (!hmLead) return;
+  const data = await hmApi('/api/drafts/generate', {
+    method: 'POST',
+    body: JSON.stringify({ lead_id: hmLead.id, draft_type: type, tone: tone })
+  });
+  if (type === 'message') {
+    hmLastMessageDraftId = data.draft.id;
+    document.getElementById('msg-ta').value = data.draft.content;
+  } else {
+    hmLastCommentDraftId = data.draft.id;
+    document.getElementById('cmt-ta').value = data.draft.content;
+  }
+  if (notify) toast('AI', `${type === 'message' ? 'Message' : 'Comment'} draft generated from this lead`);
+}
+
+async function hmLoadLeadDrafts() {
+  try {
+    const data = await hmApi('/api/drafts');
+    const drafts = (data.drafts || []).filter(d => Number(d.lead_id) === Number(hmLead.id));
+    const latestMessage = drafts.find(d => d.draft_type === 'message');
+    const latestComment = drafts.find(d => d.draft_type === 'comment');
+    if (latestMessage) {
+      hmLastMessageDraftId = latestMessage.id;
+      document.getElementById('msg-ta').value = latestMessage.content || '';
+    }
+    if (latestComment) {
+      hmLastCommentDraftId = latestComment.id;
+      const cmtTa = document.getElementById('cmt-ta');
+      if (cmtTa) cmtTa.value = latestComment.content || '';
+    }
+  } catch (err) {}
+}
+
+genMsg = function() {
+  const btn = document.getElementById('msg-gen-btn');
+  btn.innerHTML = '<div class="spin"></div> Generating...';
+  btn.disabled = true;
+  hmGenerateBackendDraft('message', 'professional', true)
+    .catch(err => toast('!', err.message))
+    .finally(() => { btn.innerHTML = 'Generate'; btn.disabled = false; });
+};
+saveMsg = function() {
+  const id = hmLastMessageDraftId;
+  if (!id) { toast(' 'Draft is already saved'); return; }
+  hmApi('/api/drafts/' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'approved', content: document.getElementById('msg-ta').value })
+  }).then(() => toast(' 'Saved to Message Drafts')).catch(err => toast('!', err.message));
+};
+genCmt = function() {
+  const btn = document.getElementById('cmt-gen-btn');
+  btn.innerHTML = '<div class="spin"></div> Generating...';
+  btn.disabled = true;
+  hmGenerateBackendDraft('comment', 'professional', true)
+    .catch(err => toast('!', err.message))
+    .finally(() => { btn.innerHTML = 'Generate'; btn.disabled = false; });
+};
+
+function saveCmt() {
+  const id = hmLastCommentDraftId;
+  if (!id) { toast(' 'Generate a comment draft first'); return; }
+  hmApi('/api/drafts/' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'approved', content: document.getElementById('cmt-ta').value })
+  }).then(() => toast(' 'Saved to Comment Drafts')).catch(err => toast('!', err.message));
+}
+
+async function hmDeleteCurrentDraft(type) {
+  const id = type === 'message' ? hmLastMessageDraftId : hmLastCommentDraftId;
+  const ta = document.getElementById(type === 'message' ? 'msg-ta' : 'cmt-ta');
+  if (!id) {
+    if (ta) ta.value = '';
+    toast('Done', 'Draft area cleared');
+    return;
+  }
+  try {
+    await hmApi('/api/drafts/' + id, { method: 'DELETE' });
+    if (type === 'message') hmLastMessageDraftId = null;
+    else hmLastCommentDraftId = null;
+    if (ta) ta.value = '';
+    toast('Done', 'Draft deleted');
+  } catch (err) {
+    toast('!', err.message);
+  }
+}
+
+function hmAuthorLine(lead) {
+  const author = lead.author_name || lead.company || '';
+  const title = lead.author_title || '';
+  if (!author && !title) return '';
+  return (author ? 'Posted by <strong>' + hmEsc(author) + '</strong>' : '') + (title ? ' &middot; ' + hmEsc(title) : '');
+}
+
+function hmPostedLabel(lead) {
+  const reaction = lead.reaction_items || {};
+  const iso = reaction.posted_label ? hmRelativeLabelToIso(reaction.posted_label, lead.posted_at) : lead.posted_at;
+  return iso ? hmTimeAgo(iso) : '';
+}
+
+function hmRenderLeadStats(lead, isJob, applicantText) {
+  const likes = Number(lead.likes || 0);
+  const comments = Number(lead.comments || 0);
+  const reposts = Number(lead.reposts || 0);
+  const right = document.querySelector('.rxn-right');
+  if (isJob) {
+    hmSetHtml('.rxn-lbl', hmEsc(applicantText || '0 applicants'));
+    if (right) right.innerHTML = '<div class="stat-pill">' + hmEsc(applicantText || '0 applicants') + '</div>';
+    return;
+  }
+  hmSetHtml('.rxn-lbl', `${likes} reactions`);
+  if (right) {
+    const commentText = `${comments} comments`;
+    const repostText = `${reposts} reposts`;
+    right.innerHTML = [
+      `<div class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span>${commentText}</span></div>`,
+      `<div class="stat-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>${repostText}</div>`
+    ].join('');
+  }
+}
+
+function hmPrepareCommentDraftOnly(isJob) {
+  const comments = document.querySelector('.cmts');
+  if (!comments) return;
+  comments.classList.add('comment-draft-only');
+  comments.style.display = isJob ? 'none' : '';
+  const title = comments.querySelector('.cmts-title');
+  if (title) title.textContent = 'Comment Draft';
+  const list = document.getElementById('cmt-list');
+  if (list) list.innerHTML = '';
+}
+
+function hmRenderSourceButton(lead) {
+  const btn = document.getElementById('apply-now-btn');
+  if (!btn) return;
+  const url = hmLeadSourceUrl(lead);
+  const hasExactPost = lead.lead_kind === 'post' && !!lead.post_url;
+  btn.textContent = lead.lead_kind === 'job' ? 'Apply Now' : (hasExactPost ? 'Open Post' : 'Open Profile');
+  btn.disabled = !url;
+  btn.style.opacity = url ? '1' : '.75';
+  btn.title = hasExactPost
+    ? 'Open the exact LinkedIn post saved with this lead'
+    : (url ? 'Open the LinkedIn profile saved with this lead' : 'This lead needs a fresh sync to save its LinkedIn link.');
+}
+
+function hmLeadSourceUrl(lead) {
+  if (lead.post_url) return lead.post_url;
+  const reaction = lead.reaction_items || {};
+  if (lead.lead_kind === 'post' && reaction.author_profile_url) return reaction.author_profile_url;
+  return '';
+}
+
+hmRenderLeadDetail = function(lead) {
+  window.hmCurrentLeadUrl = hmLeadSourceUrl(lead);
+  const isJob = lead.lead_kind === 'job';
+  const reaction = lead.reaction_items || {};
+  const postedLabel = hmPostedLabel(lead);
+  const applicantText = reaction.applicant_text || '';
+  hmSetText('.co-name', lead.company);
+  hmSetHtml('.co-sub', hmAuthorLine(lead));
+  hmSetHtml('.meta-row', `
+    ${postedLabel ? '<span class="mi">' + hmEsc(postedLabel) + '</span><span class="mdot"></span>' : ''}
+    <span class="mi">LinkedIn</span>
+    ${lead.location ? '<span class="mdot"></span><span class="mi">' + hmEsc(lead.location) + '</span>' : ''}
+    ${isJob && applicantText ? '<span class="mdot"></span><span class="mi">' + hmEsc(applicantText) + '</span>' : ''}
+  `);
+  hmSetHtml('.post-hdr .badge', hmTempBadge(lead.temperature));
+  hmSetHtml('.post-body', `<p><strong>${hmEsc(lead.role_title)}</strong></p>${hmFormatPost(lead.post_text)}`);
+  const tags = Array.isArray(lead.tags) ? lead.tags : [];
+  hmSetHtml('.post-tags', tags.length ? tags.map(tag => `<span class="tag">${hmEsc(tag)}</span>`).join('') : '<span class="tag">No tags extracted from LinkedIn</span>');
+  hmRenderLeadStats(lead, isJob, applicantText);
+  hmToggleJobSocialSections(isJob);
+  hmPrepareCommentDraftOnly(isJob);
+  hmRenderSourceButton(lead);
+  const logo = document.querySelector('.co-logo');
+  if (logo) logo.textContent = hmInitials(lead.company);
+  const detailValues = document.querySelectorAll('.il .ival');
+  [lead.company, lead.role_title, lead.work_type, lead.location, lead.employment_type, lead.experience, lead.salary]
+    .forEach((value, index) => { if (detailValues[index]) detailValues[index].textContent = value || 'Not mentioned'; });
+  const score = Math.max(0, Math.min(100, Number(lead.score || 0)));
+  hmSetText('.mc-inner', score + '%');
+  const ring = document.querySelector('.mc-ring');
+  if (ring) ring.style.background = `conic-gradient(var(--accent) 0% ${score}%,var(--border) ${score}% 100%)`;
+  const sbarWrap = document.querySelector('.sbars');
+  if (sbarWrap) {
+    sbarWrap.innerHTML = tags.slice(0, 4).map(tag => {
+      return `<div class="sbr"><span class="sbn">${hmEsc(tag)}</span><div class="sbt"><div class="sbf" style="width:${score}%"></div></div><span class="sbp">${score}%</span></div>`;
+    }).join('') || `<div class="sbr"><span class="sbn">Profile</span><div class="sbt"><div class="sbf" style="width:${score}%"></div></div><span class="sbp">${score}%</span></div>`;
+  }
+};
+
+hmToggleJobSocialSections = function(isJob) {
+  const left = document.querySelector('.rxn-left');
+  const emojiStack = left ? left.querySelector('.emoji-stack') : null;
+  if (emojiStack) emojiStack.style.display = isJob ? 'none' : '';
+  const commentDraft = document.getElementById('comment-draft-card');
+  if (commentDraft) commentDraft.style.display = isJob ? 'none' : '';
+  const draftPanel = document.querySelector('.lead-drafts-under-post');
+  if (draftPanel) draftPanel.style.display = isJob ? 'none' : '';
+};
+
+hmOpenLeadSource = function() {
+  const url = hmLead ? hmLeadSourceUrl(hmLead) : window.hmCurrentLeadUrl;
+  if (url) {
+    window.open(url, '_blank', 'noopener');
+    return;
+  }
+  toast('Link', 'This lead needs a fresh sync to save its direct LinkedIn link.');
+};
+
+document.addEventListener('DOMContentLoaded', hmLoadLeadDetail);
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

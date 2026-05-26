@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireMate - Drafts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body class="hm-data-booting">
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+
+<div class="page active">
+  <nav class="navbar">
+    <div class="nav-logo" onclick="window.location.href='dashboard.html'">
+      <div class="nav-logo-icon">H</div>HireMate
+    </div>
+    <div class="nav-links"><button class="nav-link" onclick="window.location.href='dashboard.html'">Dashboard</button><button class="nav-link" onclick="window.location.href='leads.html'">Leads</button><button class="nav-link active" onclick="window.location.href='drafts.html'">Drafts</button><button class="nav-link" onclick="window.location.href='analytics.html'">Analytics</button></div>
+    <div class="nav-actions"><button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <button class="btn btn-ghost btn-sm" onclick="window.location.href='profile.html'">Profile</button>
+      <div class="avatar" onclick="window.location.href='profile.html'">AS</div>
+      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><button class="sidebar-item" onclick="window.location.href='dashboard.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8"></path><path d="M5.5 10.2V21h13V10.2"></path><path d="M9.5 21v-6h5v6"></path></svg></span>Home</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3.2-1.8-5.5-4.2-7.7-.4 2.2-1.6 3.4-3.1 4.3.4-3-1-5.5-3.7-8.1C7.4 6.4 5 9.4 5 15c0 4 3 7 7 7Z"></path><path d="M12 22c1.8 0 3.2-1.3 3.2-3.1 0-1.4-.8-2.5-2.1-3.5-.2 1-.8 1.7-1.6 2.2.2-1.5-.5-2.7-1.7-4-1 1.8-1.6 3.2-1.6 5.3 0 1.8 1.4 3.1 3.8 3.1Z"></path></svg></span>Hot Leads <span class="sidebar-badge">3</span></button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x1F321;</span>Warm Leads</button><button class="sidebar-item" onclick="window.location.href='leads.html'"><span class="icon">&#x2744;</span>Cold Leads</button><div class="sidebar-section">Drafts</div><button class="sidebar-item active" onclick="window.location.href='drafts.html'"><span class="icon">&#x2709;</span>Message Drafts</button><button class="sidebar-item" onclick="window.location.href='drafts.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path><path d="M8 10h8"></path><path d="M8 13h5"></path></svg></span>Comment Drafts</button><div class="sidebar-section">Account</div><button class="sidebar-item" onclick="window.location.href='profile.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></span>Profile</button><button class="sidebar-item" onclick="window.location.href='analytics.html'"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-3"></path></svg></span>Analytics</button><button class="sidebar-item" onclick="window.location.href='settings.html'"><span class="icon">&#x2699;</span>Settings</button><button class="sidebar-item" onclick="confirmLogout()" style="margin-top:auto;"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M21 4v16"></path></svg></span>Logout</button></aside>
+    <main class="main-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h1 class="page-title">Drafts</h1>
+          <p class="page-sub" style="margin-bottom:0;"><span class="hm-skeleton hm-skeleton-line"></span></p>
+        </div>
+        <div>
+          <div class="filter-row">
+            <button class="filter-btn active" data-draft-filter="all" onclick="filterDrafts('all')">All</button>
+            <button class="filter-btn" data-draft-filter="message" onclick="filterDrafts('message')">Messages</button>
+            <button class="filter-btn" data-draft-filter="comment" onclick="filterDrafts('comment')">Comments</button>
+            <button class="filter-btn" data-draft-filter="approved" onclick="filterDrafts('approved')">Approved</button>
+          </div>
+        </div>
+      </div>
+      <!-- Drafts are generated from lead detail pages only, after the user clicks Generate. -->
+      <div class="section-card" style="margin-bottom:24px;display:none;">
+        <div class="section-card-header">
+          <div class="section-title">&#x2728; Generate New Draft</div>
+        </div>
+        <p style="font-size:14px;color:var(--text2);margin-bottom:16px;">Select a lead and generate an AI-powered message or comment draft.</p>
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:end;flex-wrap:wrap;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Select Lead</label>
+            <select class="form-select">
+              <option>TechVentures PK - Frontend Developer</option>
+              <option>Systems Limited - React Native Developer</option>
+              <option>Netsol Technologies - Python Developer</option>
+              <option>LUMS - Research Assistant</option>
+            </select>
+          </div>
+          <button class="btn btn-outline" onclick="generateDraftNew('msg')">&#x2709; Generate Message</button>
+          <button class="btn btn-primary" onclick="generateDraftNew('cmt')">&#x1F4AC; Generate Comment</button>
+        </div>
+      </div>
+      <div class="drafts-list">
+        <div class="draft-item">
+          <div class="draft-type-icon">&#x2709;</div>
+          <div class="draft-info">
+            <div class="draft-target">Message &#x2192; TechVentures PK <span style="font-size:12px;color:var(--text3);font-weight:400">/ Frontend Developer</span></div>
+            <div class="draft-preview">Hi Ahmed, I came across your post about the Frontend Developer role and I am very excited...</div>
+            <div class="draft-meta-row"><span class="badge badge-pending">Pending</span><span style="font-size:12px;color:var(--text3)">Generated 2 hrs ago</span><span class="badge badge-hot" style="font-size:10px;">&#x1F525; Hot Lead</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href='lead-detail.html'">Review &#x2192;</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('success','Draft deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="draft-item">
+          <div class="draft-type-icon">&#x1F4AC;</div>
+          <div class="draft-info">
+            <div class="draft-target">Comment &#x2192; TechVentures PK <span style="font-size:12px;color:var(--text3);font-weight:400">/ Frontend Developer</span></div>
+            <div class="draft-preview">Interested! I am a final year SE student at IIUI with strong React.js and TypeScript...</div>
+            <div class="draft-meta-row"><span class="badge badge-pending">Pending</span><span style="font-size:12px;color:var(--text3)">Generated 2 hrs ago</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href='lead-detail.html'">Review &#x2192;</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('success','Draft deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="draft-item" style="opacity:0.75;">
+          <div class="draft-type-icon">&#x2709;</div>
+          <div class="draft-info">
+            <div class="draft-target">Message &#x2192; Systems Limited <span style="font-size:12px;color:var(--text3);font-weight:400">/ React Native Developer</span></div>
+            <div class="draft-preview">Hi, I noticed your post about the React Native developer position. My background in...</div>
+            <div class="draft-meta-row"><span class="badge badge-approved">&#x2713; Approved</span><span style="font-size:12px;color:var(--text3)">Approved 1 day ago</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button class="btn btn-outline btn-sm" onclick="showToast('success','Copied to clipboard!')">&#x1F4CB; Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('success','Draft deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="draft-item">
+          <div class="draft-type-icon">&#x2709;</div>
+          <div class="draft-info">
+            <div class="draft-target">Message &#x2192; Netsol Technologies <span style="font-size:12px;color:var(--text3);font-weight:400">/ Python Developer</span></div>
+            <div class="draft-preview">Hello, your post about Python/Django developer caught my attention. I have solid experience...</div>
+            <div class="draft-meta-row"><span class="badge badge-pending">Pending</span><span style="font-size:12px;color:var(--text3)">Generated 5 hrs ago</span><span class="badge badge-warm" style="font-size:10px;">&#x1F321; Warm</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href='lead-detail.html'">Review &#x2192;</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('success','Draft deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="draft-item">
+          <div class="draft-type-icon">&#x1F4AC;</div>
+          <div class="draft-info">
+            <div class="draft-target">Comment &#x2192; LUMS <span style="font-size:12px;color:var(--text3);font-weight:400">/ Research Assistant</span></div>
+            <div class="draft-preview">Very interested in this research position! My work on NLP projects during my degree...</div>
+            <div class="draft-meta-row"><span class="badge badge-pending">Pending</span><span style="font-size:12px;color:var(--text3)">Generated 8 hrs ago</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href='lead-detail.html'">Review &#x2192;</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('success','Draft deleted')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+function generateDraftNew(type) {
+  var btn = event.currentTarget;
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner"></span> Generating...';
+  btn.disabled = true;
+  setTimeout(function() {
+    btn.innerHTML = orig; btn.disabled = false;
+    showToast('success', (type==='msg'?'Message':'Comment') + ' draft generated! It now appears in your list.');
+  }, 1800);
+}
+</script>
+<script src="app.js?v=17"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
