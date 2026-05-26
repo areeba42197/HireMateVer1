@@ -383,11 +383,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========== BACKEND INTEGRATION ==========
 const HM_BACKEND_ORIGIN = 'http://localhost:8000';
 function hmApiBase() {
-  // The backend serves the frontend on port 8000. If the same files are opened
-  // from another preview server, keep API calls pointed at the real backend.
   if (window.location.origin && window.location.origin.startsWith('http')) {
     const current = new URL(window.location.origin);
     if (current.port === '8000') return window.location.origin;
+    if (!['localhost', '127.0.0.1'].includes(current.hostname)) return window.location.origin;
   }
   return HM_BACKEND_ORIGIN;
 }
