@@ -81,7 +81,13 @@
             <div class="strength-bar-wrap"><div class="strength-bar-fill" id="strength-bar" style="width:0%;"></div></div>
             <div class="strength-label" id="strength-label" style="color:var(--text3);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-top:4px;"></div>
           </div>
-          <div class="form-hint">Use 8 or more characters with a mix of letters and numbers.</div>
+          <ul class="validation-checks" id="pw-checks" style="margin-top:8px;">
+            <li id="chk-len">8 or more characters</li>
+            <li id="chk-upper">One uppercase letter</li>
+            <li id="chk-lower">One lowercase letter</li>
+            <li id="chk-num">One number</li>
+            <li id="chk-special">One special character</li>
+          </ul>
           <span class="form-error-msg" id="reg-pw-err"></span>
         </div>
           <div style="display:flex;gap:10px;">
