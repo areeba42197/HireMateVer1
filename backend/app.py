@@ -816,6 +816,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             return error(self, 400, "Please enter your email address.")
         if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
             return error(self, 400, "Please enter a valid email address.")
+        if not email_is_configured():
+            return error(self, 503, "Password reset email is not available yet. Please try again later or contact support.")
         # Always return success to prevent email enumeration
         success_msg = (
             "If an account with that email exists, we've sent a password reset link. "
