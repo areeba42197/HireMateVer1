@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <script>
     (function () {
@@ -7,184 +8,203 @@
         var mode = localStorage.getItem('hm-theme') || 'dark';
         document.documentElement.classList.toggle('light-mode', mode === 'light');
         document.documentElement.setAttribute('data-theme', mode);
-      } catch (e) {}
+      } catch (e) { }
     })();
   </script>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HireMate — Create Account</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireMate — Create Account</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<div class="toast-container" id="toasts"></div>
-<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
-<div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-box">
-    <div class="confirm-icon" id="confirm-icon"></div>
-    <div class="confirm-title" id="confirm-title"></div>
-    <div class="confirm-sub" id="confirm-sub"></div>
-    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
-  </div>
-</div>
 
-<div class="page active">
-  <div class="auth-page">
-    <div class="auth-bg">
-      <div class="auth-glow" style="width:500px;height:500px;background:rgba(74,255,160,0.08);top:-100px;left:50%;transform:translateX(-50%);"></div>
+<body>
+  <div class="toast-container" id="toasts"></div>
+  <div class="modal-overlay" id="modal">
+    <div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button>
+      <div id="modal-content"></div>
     </div>
-    <div class="auth-card" style="max-width:500px;">
-      <div class="auth-logo">
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
-          <div class="nav-logo-icon">H</div>
-          <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">HireMate</span>
+  </div>
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <div class="confirm-icon" id="confirm-icon"></div>
+      <div class="confirm-title" id="confirm-title"></div>
+      <div class="confirm-sub" id="confirm-sub"></div>
+      <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn"
+          id="confirm-yes">Confirm</button></div>
+    </div>
+  </div>
+
+  <div class="page active">
+    <div class="auth-page">
+      <div class="auth-bg">
+        <div class="auth-glow"
+          style="width:500px;height:500px;background:rgba(74,255,160,0.08);top:-100px;left:50%;transform:translateX(-50%);">
         </div>
       </div>
-      <div class="auth-title">Create your account</div>
-      <form class="auth-form" onsubmit="handleRegister(event)" novalidate>
-        <div class="signup-progress"><span class="signup-dot active"></span><span class="signup-dot"></span><span class="signup-dot"></span></div>
+      <div class="auth-card" style="max-width:500px;">
+        <div class="auth-logo">
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
+            <div class="nav-logo-icon">H</div>
+            <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">HireMate</span>
+          </div>
+        </div>
+        <div class="auth-title">Create your account</div>
+        <form class="auth-form" onsubmit="handleRegister(event)" novalidate>
+          <div class="signup-progress"><span class="signup-dot active"></span><span class="signup-dot"></span><span
+              class="signup-dot"></span></div>
 
-        <div class="signup-step active" data-step="0">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="form-group">
-            <label class="form-label">First Name</label>
-            <input class="form-input" id="reg-fname" placeholder="Areeba" autocomplete="given-name">
-            <span class="form-error-msg" id="reg-fname-err"></span>
+          <div class="signup-step active" data-step="0">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input class="form-input" id="reg-fname" placeholder="Areeba" autocomplete="given-name">
+                <span class="form-error-msg" id="reg-fname-err"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input class="form-input" id="reg-lname" placeholder="Syed" autocomplete="family-name">
+                <span class="form-error-msg" id="reg-lname-err"></span>
+              </div>
+            </div>
+            <button class="btn btn-primary" type="button" style="width:100%;padding:15px;"
+              onclick="signupNext()">Continue</button>
           </div>
-          <div class="form-group">
-            <label class="form-label">Last Name</label>
-            <input class="form-input" id="reg-lname" placeholder="Syed" autocomplete="family-name">
-            <span class="form-error-msg" id="reg-lname-err"></span>
-          </div>
-        </div>
-          <button class="btn btn-primary" type="button" style="width:100%;padding:15px;" onclick="signupNext()">Continue</button>
-        </div>
 
-        <div class="signup-step" data-step="1">
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x2709;</span>
-            <input class="form-input" id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" style="padding-left:42px;">
+          <div class="signup-step" data-step="1">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div style="position:relative;">
+                <span
+                  style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x2709;</span>
+                <input class="form-input" id="reg-email" type="email" placeholder="you@example.com" autocomplete="email"
+                  style="padding-left:42px;">
+              </div>
+              <span class="form-error-msg" id="reg-email-err"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div style="position:relative;">
+                <span class="input-icon hm-auth-icon"
+                  style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;"></span>
+                <input class="form-input" id="reg-pw" type="password" placeholder="Create a strong password"
+                  autocomplete="new-password" oninput="onPwInput(this.value)"
+                  style="padding-left:42px;padding-right:44px;">
+                <button type="button" id="toggle-rpw" onclick="togglePw('toggle-rpw','reg-pw')"
+                  style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;font-weight:700;">Show</button>
+              </div>
+              <div style="margin-top:8px;">
+                <div class="strength-bar-wrap">
+                  <div class="strength-bar-fill" id="strength-bar" style="width:0%;"></div>
+                </div>
+                <div class="strength-label" id="strength-label"
+                  style="color:var(--text3);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-top:4px;">
+                </div>
+              </div>
+              <ul class="validation-checks" id="pw-checks" style="margin-top:8px;">
+                <li id="chk-len">Minimum 8 characters</li>
+                <li id="chk-upper">At least one uppercase letter (A-Z)</li>
+                <li id="chk-lower">At least one lowercase letter (a-z)</li>
+                <li id="chk-num">At least one number (0-9)</li>
+                <li id="chk-special">At least one special character (!@#$%^&amp;*)</li>
+              </ul>
+              <span class="form-error-msg" id="reg-pw-err"></span>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-outline" type="button" style="flex:1;padding:15px;"
+                onclick="signupPrev()">Back</button>
+              <button class="btn btn-primary" type="button" style="flex:1;padding:15px;"
+                onclick="signupNext()">Continue</button>
+            </div>
           </div>
-          <span class="form-error-msg" id="reg-email-err"></span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <div style="position:relative;">
-            <span class="input-icon hm-auth-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;"></span>
-            <input class="form-input" id="reg-pw" type="password" placeholder="Create a strong password" autocomplete="new-password" oninput="onPwInput(this.value)" style="padding-left:42px;padding-right:44px;">
-            <button type="button" id="toggle-rpw" onclick="togglePw('toggle-rpw','reg-pw')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;font-weight:700;">Show</button>
-          </div>
-          <div style="margin-top:8px;">
-            <div class="strength-bar-wrap"><div class="strength-bar-fill" id="strength-bar" style="width:0%;"></div></div>
-            <div class="strength-label" id="strength-label" style="color:var(--text3);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-top:4px;"></div>
-          </div>
-          <ul class="validation-checks" id="pw-checks" style="margin-top:8px;">
-            <li id="chk-len">8 or more characters</li>
-            <li id="chk-upper">One uppercase letter</li>
-            <li id="chk-lower">One lowercase letter</li>
-            <li id="chk-num">One number</li>
-            <li id="chk-special">One special character</li>
-          </ul>
-          <span class="form-error-msg" id="reg-pw-err"></span>
-        </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn btn-outline" type="button" style="flex:1;padding:15px;" onclick="signupPrev()">Back</button>
-            <button class="btn btn-primary" type="button" style="flex:1;padding:15px;" onclick="signupNext()">Continue</button>
-          </div>
-        </div>
 
-        <div class="signup-step" data-step="2">
-        <div class="form-group">
-          <label class="form-label">LinkedIn session cookie Optional</label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x1F517;</span>
-            <input class="form-input" id="reg-cookie" placeholder="Paste your LinkedIn session cookie here" style="padding-left:42px;" autocomplete="off">
+          <div class="signup-step" data-step="2">
+            <div class="form-group">
+              <label class="form-label">LinkedIn session cookie Optional</label>
+              <div style="position:relative;">
+                <span
+                  style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;">&#x1F517;</span>
+                <input class="form-input" id="reg-cookie" placeholder="Paste your LinkedIn session cookie here"
+                  style="padding-left:42px;" autocomplete="off">
+              </div>
+              <span class="form-error-msg" id="reg-cookie-err"></span>
+              <span class="form-hint">Optional. If you provide it, HireMate can find more relevant LinkedIn
+                opportunities. your session cookie is encrypted and saved securely.</span>
+            </div>
+            <div class="info-box">
+              <span class="hm-auth-icon"></span>
+              <span>You can skip this now and add it later from Settings or Profile. Without it, HireMate will still use
+                public job results.</span>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-outline" type="button" style="flex:1;padding:15px;"
+                onclick="signupPrev()">Back</button>
+              <button class="btn btn-primary" type="submit" style="flex:1;padding:15px;">Create Account
+                &#x2192;</button>
+            </div>
           </div>
-          <span class="form-error-msg" id="reg-cookie-err"></span>
-          <span class="form-hint">Optional. If you provide it, HireMate can find more relevant LinkedIn opportunities. your session cookie is encrypted and saved securely.</span>
-        </div>
-        <div class="info-box">
-          <span class="hm-auth-icon"></span>
-          <span>You can skip this now and add it later from Settings or Profile. Without it, HireMate will still use public job results.</span>
-        </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn btn-outline" type="button" style="flex:1;padding:15px;" onclick="signupPrev()">Back</button>
-            <button class="btn btn-primary" type="submit" style="flex:1;padding:15px;">Create Account &#x2192;</button>
-          </div>
-        </div>
-      </form>
-      <div class="auth-footer">Already have an account? <a href="login.html">Sign in &#x2192;</a></div>
+        </form>
+        <div class="auth-footer">Already have an account? <a href="login.html">Sign in &#x2192;</a></div>
+      </div>
     </div>
   </div>
-</div>
-<script>
-function onPwInput(pw) {
-  renderStrength(pw, 'strength-bar', 'strength-label');
-  var checks = {'chk-len': pw.length>=8,'chk-upper':/[A-Z]/.test(pw),'chk-lower':/[a-z]/.test(pw),'chk-num':/[0-9]/.test(pw),'chk-special':/[^A-Za-z0-9]/.test(pw)};
-  Object.entries(checks).forEach(function([id,ok]){var el=document.getElementById(id);if(el)el.classList.toggle('ok',ok);});
-  if (pw && Object.values(checks).every(Boolean)) {
-    setFieldValid('reg-pw','reg-pw-err');
-  }
-}
-function validateSignupStep(step) {
-  if (step === 0) {
-    var fname = document.getElementById('reg-fname');
-    var lname = document.getElementById('reg-lname');
-    var okName = true;
-    if (!fname || !fname.value.trim()) { setFieldError('reg-fname','reg-fname-err','First name is required'); okName = false; } else setFieldValid('reg-fname','reg-fname-err');
-    if (!lname || !lname.value.trim()) { setFieldError('reg-lname','reg-lname-err','Last name is required'); okName = false; } else setFieldValid('reg-lname','reg-lname-err');
-    return okName;
-  }
-  if (step === 1) {
-    var email = document.getElementById('reg-email');
-    var pw = document.getElementById('reg-pw');
-    var ok = true;
-    if (!email || !email.value.trim()) { setFieldError('reg-email','reg-email-err','Email is required'); ok = false; }
-    else if (!isValidEmail(email.value)) { setFieldError('reg-email','reg-email-err','Enter a valid email address.'); ok = false; }
-    else setFieldValid('reg-email','reg-email-err');
-    var passwordReady = pw && pw.value.length >= 8 && /[A-Z]/.test(pw.value) && /[a-z]/.test(pw.value) && /[0-9]/.test(pw.value) && /[^A-Za-z0-9]/.test(pw.value);
-    if (!passwordReady) {
-      setFieldError('reg-pw','reg-pw-err','Please complete the password checklist.');
-      ok = false;
-    } else {
-      setFieldValid('reg-pw','reg-pw-err');
+  <script>
+    function onPwInput(pw) {
+      renderStrength(pw, 'strength-bar', 'strength-label');
+      var checks = { 'chk-len': pw.length >= 8, 'chk-upper': /[A-Z]/.test(pw), 'chk-lower': /[a-z]/.test(pw), 'chk-num': /[0-9]/.test(pw), 'chk-special': /[^A-Za-z0-9]/.test(pw) };
+      Object.entries(checks).forEach(function ([id, ok]) { var el = document.getElementById(id); if (el) el.classList.toggle('ok', ok); });
+      if (pw && Object.values(checks).every(Boolean)) {
+        setFieldValid('reg-pw', 'reg-pw-err');
+      }
     }
-    return ok;
-  }
-  return true;
-}
-let signupStep = 0;
-function renderSignupStep() {
-  document.querySelectorAll('.signup-step').forEach((step, index) => step.classList.toggle('active', index === signupStep));
-  document.querySelectorAll('.signup-dot').forEach((dot, index) => dot.classList.toggle('active', index <= signupStep));
-}
-function signupNext() {
-  if (!validateSignupStep(signupStep)) return;
-  signupStep = Math.min(2, signupStep + 1);
-  renderSignupStep();
-}
-function signupPrev() {
-  signupStep = Math.max(0, signupStep - 1);
-  renderSignupStep();
-}
-</script>
-<button class="theme-toggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:18px;z-index:999;" title="Toggle theme"></button>
-<script src="app.js?v=20"></script>
+    function validateSignupStep(step) {
+      if (step === 0) {
+        var fname = document.getElementById('reg-fname');
+        var lname = document.getElementById('reg-lname');
+        var okName = true;
+        if (!fname || !fname.value.trim()) { setFieldError('reg-fname', 'reg-fname-err', 'First name is required'); okName = false; } else setFieldValid('reg-fname', 'reg-fname-err');
+        if (!lname || !lname.value.trim()) { setFieldError('reg-lname', 'reg-lname-err', 'Last name is required'); okName = false; } else setFieldValid('reg-lname', 'reg-lname-err');
+        return okName;
+      }
+      if (step === 1) {
+        var email = document.getElementById('reg-email');
+        var pw = document.getElementById('reg-pw');
+        var ok = true;
+        if (!email || !email.value.trim()) { setFieldError('reg-email', 'reg-email-err', 'Email is required'); ok = false; }
+        else if (!isValidEmail(email.value)) { setFieldError('reg-email', 'reg-email-err', 'Enter a valid email address.'); ok = false; }
+        else setFieldValid('reg-email', 'reg-email-err');
+        var passwordReady = pw && pw.value.length >= 8 && /[A-Z]/.test(pw.value) && /[a-z]/.test(pw.value) && /[0-9]/.test(pw.value) && /[^A-Za-z0-9]/.test(pw.value);
+        if (!passwordReady) {
+          setFieldError('reg-pw', 'reg-pw-err', 'Please complete the password checklist.');
+          ok = false;
+        } else {
+          setFieldValid('reg-pw', 'reg-pw-err');
+        }
+        return ok;
+      }
+      return true;
+    }
+    let signupStep = 0;
+    function renderSignupStep() {
+      document.querySelectorAll('.signup-step').forEach((step, index) => step.classList.toggle('active', index === signupStep));
+      document.querySelectorAll('.signup-dot').forEach((dot, index) => dot.classList.toggle('active', index <= signupStep));
+    }
+    function signupNext() {
+      if (!validateSignupStep(signupStep)) return;
+      signupStep = Math.min(2, signupStep + 1);
+      renderSignupStep();
+    }
+    function signupPrev() {
+      signupStep = Math.max(0, signupStep - 1);
+      renderSignupStep();
+    }
+  </script>
+  <button class="theme-toggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:18px;z-index:999;"
+    title="Toggle theme"></button>
+  <script src="app.js?v=20"></script>
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
