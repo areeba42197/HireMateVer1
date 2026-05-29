@@ -126,6 +126,7 @@ The Professional Title is one of the strongest career signals.
 
 
 
+
 Examples:
 
 "AI Engineer | Machine Learning | NLP"
@@ -257,11 +258,11 @@ Use the title to detect:
 * Career specialization
 * Industry category
 * Suitable job roles
-* Technical direction
 * Career path
 * Seniority level
 * Search direction
 * Recruiter terminology
+* Professional specialization
 
 Generate:
 
@@ -434,9 +435,10 @@ Skills should generate:
 * direct keywords
 * semantic keywords
 * recruiter terminology
-* technology stack keywords
-* framework keywords
+* technology stack keywords only for tech related users  , dodnot look at this point if user belongs to non tech background
 * tool keywords
+* domain-specific tools
+* domain-specific platforms
 
 Expand skills ONLY according to the user's profile.
 
@@ -724,11 +726,15 @@ Location and work preferences should:
 Do NOT let location dominate the career direction.
 
 ---
-DOMAIN LOCK RULE
+DOMAIN DETECTION RULE
 
-After detecting the user's primary domain, all generated roles, search queries, recruiter keywords and opportunities must remain inside that domain unless there is strong evidence for another domain.
+Before generating any keywords, roles, search queries, or opportunities:
 
-Example:
+Step 1:
+Identify the user's PRIMARY DOMAIN.
+
+Examples:
+
 
 Education Specialist
 → Education
@@ -736,6 +742,29 @@ Education Specialist
 → NGO Programs
 → Curriculum Development
 → Monitoring & Evaluation
+Teacher → Education
+Market Research Analyst → Research & Consulting
+Pharmacist → Healthcare
+Doctor → Healthcare
+Accountant → Finance
+HR Officer → Human Resources
+Marketing Executive → Marketing
+Software Engineer → Technology
+
+Step 2:
+Identify SECONDARY DOMAINS only if supported by profile evidence.
+
+Step 3:
+Generate roles and search queries primarily from the PRIMARY DOMAIN.
+
+Primary Domain should contribute at least 70% of generated roles and queries.
+DOMAIN LOCK RULE
+
+After detecting the user's primary domain, all generated roles, search queries, recruiter keywords and opportunities must remain inside that domain unless there is strong evidence for another domain.
+
+Example:
+
+
 
 Search queries must be built from:
 
@@ -760,6 +789,12 @@ Curriculum Specialist
 Training Coordinator
 Monitoring and Evaluation Officer
 Education Consultant
+
+DOMAIN PENALTY RULE
+
+If a generated role belongs to a different domain than the user's primary domain:
+
+Reduce its ranking significantly.
 
 ## KEYWORD GENERATION REQUIREMENTS
 
