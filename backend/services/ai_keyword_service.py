@@ -1,7 +1,7 @@
 """AI keyword generation for HireMate LinkedIn discovery.
 
 This service builds a complete profile prompt for the configured AI provider,
-validates the JSON response, caches it in SQLite, and exposes small rotating
+validates the JSON response, caches it in db, and exposes small rotating
 keyword queues for LinkedIn job and post collectors. If the API is unavailable,
 a deterministic profile-only fallback keeps the product usable.
 """
@@ -31,9 +31,9 @@ HIREMATE_AI_PROMPT = """You are HireMate AI — an advanced AI-powered LinkedIn 
 
 Your task is to deeply analyze a user's profile and generate highly accurate, intelligent, LinkedIn-optimized keywords, search queries, semantic expansions, and matching signals to help the user discover the most relevant jobs, internships, freelance opportunities, research opportunities, startup roles, and hiring posts based on user's profile explicitly.
 The system must support BOTH technical and non-technical users.Always remain inside the domain of user.
-Technical careers are only ONE category of opportunities.
 
-Many users may belong to non-technical domains such as:
+
+
 Users may belong to fields such as:
 
 Software Engineering
@@ -67,11 +67,11 @@ For example:
 "Communication" does NOT always imply software engineering.
 "Research" does NOT alwasy imply AI research.
 "Analysis" does NOT automatically imply Data Science.
-"Projects" does NOT automatically imply coding projects.
+
 
 Always infer the user's domain carefully from the complete profile context.
 
-Do NOT assume the user belongs to a technical field.
+
 
 The user's actual profile must determine the domain.
 
@@ -425,7 +425,6 @@ Important:
 
 These are examples only.
 
-Do NOT focus on these examples.
 
 Infer tools dynamically based on the user's actual skills, industry, profession, and career domain.
 
@@ -540,14 +539,7 @@ The About section helps detect:
 * motivation
 
 Example:
-"Interested in helping brands grow online"
 
-Generate:
-[
-"Digital Marketing",
-"Brand Management",
-"Content Marketing"
-]
 
 "Passionate about creating user-friendly interfaces"
 
@@ -742,13 +734,15 @@ Education Specialist
 → NGO Programs
 → Curriculum Development
 → Monitoring & Evaluation
-Teacher → Education
+
 Market Research Analyst → Research & Consulting
+
 Pharmacist → Healthcare
 Doctor → Healthcare
 Accountant → Finance
 HR Officer → Human Resources
 Marketing Executive → Marketing
+
 Software Engineer → Technology
 
 Step 2:
@@ -775,20 +769,7 @@ Primary Roles
 Industry Keywords
 
 NOT from generic skills alone.
-Example:
 
-For Educationist 
-Bad:
-Communication Specialist
-Support Executive
-Operations Associate
-
-Good:
-Education Program Officer
-Curriculum Specialist
-Training Coordinator
-Monitoring and Evaluation Officer
-Education Consultant
 
 DOMAIN PENALTY RULE
 

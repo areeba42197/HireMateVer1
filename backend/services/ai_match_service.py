@@ -143,11 +143,6 @@ Do not only check exact words. Also check meaning.
 
 Examples:
 
-* "LLM" can match "Generative AI", "GPT", "Prompt Engineering", "RAG", "Transformers"
-
-* "NLP" can match "Text Processing", "Chatbot Development", "Sentiment Analysis", "Language Understanding"
-
-* "Python" can match "Backend Development", "Automation", "API Development", "Data Processing"
 
 * "Data Science" can match "Machine Learning", "Data Analysis", "Visualization", "Predictive Modeling"
 
