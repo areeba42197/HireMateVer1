@@ -72,7 +72,6 @@ For example:
 Always infer the user's domain carefully from the complete profile context.
 
 
-
 The user's actual profile must determine the domain.
 
 Your objective is NOT to generate simple keyword lists only.
@@ -345,14 +344,13 @@ Expand every skill into related LinkedIn and recruiter terminology.
 
 Example:
 {
-"LLM": [
-"Generative AI",
-"Prompt Engineering",
-"RAG",
-"LangChain",
-"GPT",
-"Transformers",
 
+"Teaching": [
+"Lesson Planning",
+"Classroom Management",
+"Student Engagement",
+"Curriculum Development",
+"Academic Instruction"
 ],
 
 "Data Analysis": [
@@ -363,13 +361,17 @@ Example:
 "Insights Generation"
 ],
 
-"Teaching": [
-"Lesson Planning",
-"Classroom Management",
-"Student Engagement",
-"Curriculum Development",
-"Academic Instruction"
-],
+
+
+"LLM": [
+"Generative AI",
+"Prompt Engineering",
+"RAG",
+"LangChain",
+"GPT",
+"Transformers",
+
+]
 
 "Project Management": [
 "Project Coordination",
@@ -759,16 +761,78 @@ After detecting the user's primary domain, all generated roles, search queries, 
 Example:
 
 
+DOMAIN-NEUTRAL MATCHING RULE
 
-Search queries must be built from:
+HireMate must support all professional domains equally.
 
-Primary Domain
-+
-Primary Roles
-+
-Industry Keywords
+Do not over-prioritize any one domain such as:
+Technology
+AI
+Data Science
+Education
+Healthcare
+Marketing
+Finance
 
-NOT from generic skills alone.
+First detect the user's primary career domain from:
+1. Professional title
+2. Skills
+3. Experience
+4. Education
+5. About section
+6. Interests
+
+Then generate roles, skills, keywords, and search queries inside that detected domain.
+
+Generic skills such as:
+Communication
+Management
+Leadership
+Research
+Analysis
+Problem Solving
+Coordination
+
+must not create unrelated jobs by themselves.
+
+Examples:
+
+Education Specialist + Project Management
+→ Education Program Manager
+→ Curriculum Specialist
+→ Training Coordinator
+
+NOT:
+Product Manager
+Engineering Manager
+Operations Manager
+
+Market Research Analyst + Analysis
+→ Market Research Analyst
+→ Business Research Analyst
+→ Healthcare Research Analyst
+
+NOT:
+AI Engineer
+SQL Developer
+
+Pharmacist + Healthcare
+→ Clinical Pharmacist
+→ Hospital Pharmacist
+→ Medical Representative
+
+NOT:
+Data Analyst
+Software Engineer
+
+Accountant + Excel
+→ Accountant
+→ Finance Officer
+→ Accounts Executive
+
+NOT:
+Data Scientist
+Business Intelligence Engineer
 
 
 DOMAIN PENALTY RULE
