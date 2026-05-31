@@ -1,3 +1,2 @@
 psycopg2-binary>=2.9
-selenium>=4.20
-chromedriver-binary-auto>=0.3
+selenium>=4.26

@@ -111,10 +111,6 @@ def browser_post_keywords(user):
 
 
 def import_selenium():
-    try:
-        import chromedriver_binary  # noqa: F401
-    except Exception:
-        pass
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
@@ -125,6 +121,8 @@ def import_selenium():
 
 
 def make_driver(webdriver, options_cls, user):
+    if os.environ.get("VERCEL") or os.environ.get("CI"):
+        os.environ.setdefault("SE_CACHE_PATH", "/tmp/selenium")
     options = options_cls()
     options.add_argument("--window-size=1365,900")
     options.set_capability("pageLoadStrategy", "eager")
