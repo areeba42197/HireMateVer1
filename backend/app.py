@@ -26,7 +26,7 @@ from core.security import hash_password, iso_after, new_token, protect_text, rev
 from services.ai_keyword_service import keyword_profile_for_user
 from services.ai_match_service import profile_match_for_lead
 from services.draft_service import delete_draft, generate_draft, get_draft, list_drafts, update_draft_status
-from services.lead_service import dashboard, get_lead, import_posts, list_leads, sample_posts, update_lead_status
+from services.lead_service import clear_lead_cache, dashboard, get_lead, import_posts, list_leads, sample_posts, update_lead_status
 from services.linkedin_browser_post_service import (
     collect_posts_with_browser,
 )
@@ -717,6 +717,14 @@ class HireMateHandler(BaseHTTPRequestHandler):
             "avatar_image": body.get("avatar_image", user.get("avatar_image", "")),
             "cover_image": body.get("cover_image", user.get("cover_image", "")),
         }
+        profile_search_fields = (
+            "headline", "location", "about", "skills", "interests", "target_roles",
+            "preferred_locations", "work_modes", "experience_level", "education", "experience_detail"
+        )
+        profile_changed = any(
+            str(fields[key] or "").strip() != str(user.get(key, "") or "").strip()
+            for key in profile_search_fields
+        )
         for image_key in ("avatar_image", "cover_image"):
             image_value = fields[image_key] or ""
             if image_value and (not image_value.startswith("data:image/") or len(image_value) > 1500000):
@@ -758,9 +766,24 @@ class HireMateHandler(BaseHTTPRequestHandler):
                     "UPDATE users SET linkedin_cookie_cipher=?, linkedin_user_agent=COALESCE(NULLIF(?, ''), linkedin_user_agent), linkedin_accept_language=COALESCE(NULLIF(?, ''), linkedin_accept_language) WHERE id=?",
                     (protect_text(cookie), session_meta["user_agent"], session_meta["accept_language"], user["id"]),
                 )
+            if profile_changed:
+                conn.execute("DELETE FROM ai_keyword_profiles WHERE user_id=?", (user["id"],))
+                conn.execute(
+                    """
+                    INSERT INTO linkedin_cursors(user_id, job_start, content_start, updated_at)
+                    VALUES (?, 0, 0, CURRENT_TIMESTAMP)
+                    ON CONFLICT(user_id) DO UPDATE SET
+                      job_start=0,
+                      content_start=0,
+                      updated_at=CURRENT_TIMESTAMP
+                    """,
+                    (user["id"],),
+                )
             conn.execute("INSERT INTO events(user_id, event_type) VALUES (?, ?)", (user["id"], "profile_onboarding_saved"))
             updated = dict(conn.execute("SELECT * FROM users WHERE id=?", (user["id"],)).fetchone())
         auth_cache_clear(user_id=user["id"])
+        if profile_changed:
+            clear_lead_cache(user["id"])
         return json_response(self, 200, {"ok": True, "user": public_user(updated)})
 
     def update_linkedin_cookie(self, user, body):
@@ -957,6 +980,7 @@ def create_session_response(handler, user_id):
 
 
 def public_user(user):
+    cookie_plain = reveal_text(user.get("linkedin_cookie_cipher") or "") if user.get("linkedin_cookie_cipher") else ""
     return {
         "id": user["id"],
         "first_name": user["first_name"],
@@ -975,7 +999,7 @@ def public_user(user):
         "experience_detail": user.get("experience_detail", ""),
         "avatar_image": user.get("avatar_image", ""),
         "cover_image": user.get("cover_image", ""),
-        "cookie_connected": bool(user.get("linkedin_cookie_cipher")),
+        "cookie_connected": bool(cookie_plain and "li_at=" in cookie_plain),
         "role": user.get("role", "user"),
     }
 
@@ -1111,6 +1135,15 @@ def cookie_status(user):
     cipher = user.get("linkedin_cookie_cipher") or ""
     if not cipher:
         return {"connected": False, "masked": "", "updated_hint": ""}
+    plain = reveal_text(cipher)
+    if not plain or "li_at=" not in plain:
+        return {"connected": False, "masked": "", "updated_hint": ""}
+    suffix = plain[-6:] if len(plain) >= 6 else "saved"
+    return {
+        "connected": True,
+        "masked": "li_at=" + ("*" * 18) + suffix,
+        "updated_hint": "Saved encrypted",
+    }
     try:
         plain = reveal_text(cipher)
     except Exception:
@@ -1119,7 +1152,7 @@ def cookie_status(user):
     return {
         "connected": True,
         "masked": "li_at=" + ("â€¢" * 18) + suffix,
-        "updated_hint": "Saved encrypted in SQLite",
+        "updated_hint": "Saved encrypted",
     }
 
 

@@ -240,15 +240,31 @@ def split_csv(value):
     return [item.strip() for item in (value or "").split(",") if item.strip()]
 
 
+TECH_PROFILE_TERMS = {
+    "ai", "artificial intelligence", "machine learning", "ml", "data", "software",
+    "developer", "engineer", "programming", "python", "javascript", "react",
+    "backend", "frontend", "full stack", "cloud", "cyber", "devops", "qa",
+}
+
+
+def is_technical_profile(roles, skills, interests):
+    profile_text = " ".join(list(roles or []) + list(skills or []) + list(interests or [])).lower()
+    return any(term in profile_text for term in TECH_PROFILE_TERMS)
+
+
 def build_keywords(roles, skills, interests):
     terms = []
+    technical = is_technical_profile(roles, skills, interests)
     for role in roles:
         terms.append(f"{role} hiring")
         terms.append(f"{role} remote")
+        terms.append(f"{role} internship")
         terms.append(f'"{role}" "we are hiring"')
     for skill in skills[:5]:
-        terms.append(f"{skill} developer hiring")
+        terms.append(f"{skill} jobs hiring")
         terms.append(f"{skill} internship hiring")
+        if technical:
+            terms.append(f"{skill} developer hiring")
     for interest in interests[:3]:
         terms.append(f"{interest} internship")
     return list(dict.fromkeys([term for term in terms if term.strip()]))

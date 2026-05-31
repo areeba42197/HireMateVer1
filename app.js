@@ -533,8 +533,8 @@ function hmTimeAgo(iso) {
   const raw = String(iso || '').trim();
   const normalized = raw && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(raw) ? raw.replace(' ', 'T') + 'Z' : raw;
   const dt = new Date(normalized);
-  if (Number.isNaN(dt.getTime())) return 'recently';
-  const minutes = Math.max(1, Math.floor((Date.now() - dt.getTime()) / 60000));
+  if (Number.isNaN(dt.getTime())) return '1 min ago';
+  const minutes = Math.max(1, Math.floor(Math.abs(Date.now() - dt.getTime()) / 60000));
   if (minutes < 60) return minutes + ' min ago';
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return hours + ' hrs ago';
@@ -795,9 +795,8 @@ async function hmLoadLeadStream(options) {
   if (cached) {
     if (requestSeq !== hmLeadsRequestSeq) return;
     hmRenderLeadPageData(cached, true);
-    hmSetLeadLoader(hmLeadsState.done ? 'All current leads loaded.' : 'Scroll for more leads', false);
+    hmSetLeadLoader('Refreshing quietly...', true);
     hmFinishDataBoot();
-    if (!opts.background) return;
   } else if (requestOffset === 0) {
     const quickLeads = hmCachedLeadSubset().slice(0, hmLeadsState.limit);
     if (quickLeads.length) {
@@ -813,10 +812,9 @@ async function hmLoadLeadStream(options) {
       }, true);
       hmSetLeadLoader('Refreshing quietly...', true);
       hmFinishDataBoot();
-      if (!opts.background) return;
     }
   }
-  if (hmLeadsState.done) return;
+  if (hmLeadsState.done && !cached) return;
   hmLeadsState.loading = true;
   const loader = hmLeadLoader(grid);
   hmSetLeadLoader(hmLeadsState.offset === 0 ? 'Loading leads...' : 'Loading more leads...', true);
@@ -1008,10 +1006,9 @@ async function hmLoadSavedLeadsPanel() {
 async function hmLoadSidebarCounts() {
   if (!hmToken() || !document.querySelector('.sidebar-item')) return;
   const path = '/api/leads?limit=1';
-  const cached = hmReadCache(path, 5 * 60 * 1000);
-  if (cached) hmUpdateSidebarCounts(cached.today_counts || {});
   try {
-    const data = cached ? await hmRefreshCache(path) : await hmCachedApi(path, 5 * 60 * 1000);
+    const data = await hmApi(path);
+    hmWriteCache(path, data);
     hmUpdateSidebarCounts(data.today_counts || {});
   } catch (err) {}
 }
@@ -1020,8 +1017,12 @@ async function hmLoadDashboardPage() {
   if (!document.title.includes('Dashboard')) return;
   const path = '/api/dashboard';
   const cached = hmReadCache(path, 10 * 60 * 1000);
-  if (cached) {
+  const snapshot = hmReadDashboardSnapshot();
+  if (cached && hmDashboardHasUsefulData(cached)) {
     hmRenderDashboardData(cached);
+    hmFinishDataBoot();
+  } else if (snapshot) {
+    hmRenderDashboardData(snapshot);
     hmFinishDataBoot();
   } else {
     hmRenderDashboardFromLocalCache();
@@ -1080,6 +1081,18 @@ function hmWriteDashboardSnapshot(data) {
   } catch (e) {}
 }
 
+function hmDashboardHasUsefulData(data) {
+  const d = (data && data.data) || {};
+  const counts = d.today_counts || d.counts || {};
+  return Boolean(
+    Number(counts.total || 0) ||
+    Number(counts.hot || 0) ||
+    Number(d.pending_drafts || 0) ||
+    Number(d.approved_drafts || 0) ||
+    ((d.recent_leads || []).length)
+  );
+}
+
 function hmRenderDashboardFromLocalCache() {
   const leads = hmUniqueLeads(hmCachedLeadPool());
   const drafts = hmReadCache('/api/drafts', 30 * 60 * 1000);
@@ -1112,7 +1125,7 @@ function hmRenderDashboardFromLocalCache() {
 
 function hmRenderDashboardData(data) {
   const d = (data && data.data) || {};
-  if (d && (d.counts || d.recent_leads || typeof d.pending_drafts !== 'undefined')) hmWriteDashboardSnapshot(data);
+  if (hmDashboardHasUsefulData(data)) hmWriteDashboardSnapshot(data);
   const grid = document.querySelector('.leads-grid');
   document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('hm-loading-card'));
   const values = document.querySelectorAll('.stat-value');

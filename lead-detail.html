@@ -665,8 +665,8 @@ function hmFindCachedLead(id) {
 }
 function hmTimeAgo(iso) {
   const dt = new Date(iso);
-  if (Number.isNaN(dt.getTime())) return 'recently';
-  const minutes = Math.max(1, Math.floor((Date.now() - dt.getTime()) / 60000));
+  if (Number.isNaN(dt.getTime())) return '1 min ago';
+  const minutes = Math.max(1, Math.floor(Math.abs(Date.now() - dt.getTime()) / 60000));
   if (minutes < 60) return minutes + ' min ago';
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return hours + ' hrs ago';
@@ -711,12 +711,21 @@ function hmSetHtml(selector, value) {
   const el = document.querySelector(selector);
   if (el) el.innerHTML = value;
 }
+function hmCleanExpandedText(text, fallback) {
+  return String(text || fallback || '')
+    .replace(/\r/g, '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\.\.\.\s*(more|see more)\b/gi, '')
+    .replace(/\b(show more show less|see more|show more)\b/gi, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
+}
 function hmFormatPost(text) {
-  const safe = hmEsc(text || 'Post content is being prepared from LinkedIn.');
-  return safe
-    .split(/\n+/)
+  const raw = hmCleanExpandedText(text, 'Post content is being prepared from LinkedIn.');
+  return raw
+    .split(/\n{2,}/)
     .filter(p => !/^About this job:?$/i.test(p.trim()))
-    .map(p => `<p>${p}</p>`)
+    .map(p => `<p>${hmEsc(p).replace(/\n/g, '<br>')}</p>`)
     .join('');
 }
 function hmFormatLeadText(lead) {
@@ -732,7 +741,7 @@ function hmJobDescriptionMissing(lead) {
     || text.includes('open the linkedin job page to view the complete description');
 }
 function hmFormatJobDescription(text) {
-  let raw = String(text || 'Job description is being prepared from LinkedIn.').replace(/\r/g, '').trim();
+  let raw = hmCleanExpandedText(text, 'Job description is being prepared from LinkedIn.');
   const missing = /detailed job description will appear|could not read the full linkedin job description|open the linkedin job page to view the complete description/i.test(raw);
   if (missing) {
     const location = (raw.match(/Location:\s*([^\n]+)/i) || [])[1];
@@ -744,7 +753,6 @@ function hmFormatJobDescription(text) {
   }
   raw = raw.replace(/\s+(Seniority level:|Employment type:|Job function:|Industries:)/g, '\n\n$1');
   raw = raw.replace(/\s+(Responsibilities|Requirements|Qualifications|What you will do|What you’ll do|What we need|Key Responsibilities|Skills Required|About the job|About this job)\s*:?/gi, '\n\n$1:');
-  raw = raw.replace(/\s+(Show more Show less)\s*$/i, '');
   const lines = raw.split(/\n+/).map(line => line.trim()).filter(line => line && !/^About this job:?$/i.test(line));
   return lines.map(line => {
     const safe = hmEsc(line.replace(/^\*\*(.+)\*\*$/, '$1'));
@@ -759,6 +767,39 @@ function hmFormatJobDescription(text) {
     }
     return `<p>${safe}</p>`;
   }).join('');
+}
+function hmDetailIcon() {
+  return '<span class="ii"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect></svg></span>';
+}
+function hmRenderJobDetails(lead, isJob, applicantText) {
+  const wrap = document.querySelector('.il');
+  if (!wrap) return;
+  const reaction = lead.reaction_items || {};
+  const rows = isJob
+    ? [
+        ['Company', lead.company],
+        ['Role', lead.role_title],
+        ['Location', lead.location],
+        ['Work mode', lead.work_type],
+        ['Employment type', lead.employment_type],
+        ['Experience', lead.experience],
+        ['Salary', lead.salary],
+        ['Applicants', applicantText],
+        ['Posted', hmPostedLabel(lead)]
+      ]
+    : [
+        ['Posted by', lead.author_name || lead.company],
+        ['Headline', lead.author_title],
+        ['Post title', lead.role_title],
+        ['Posted', hmPostedLabel(lead)],
+        ['Reactions', reaction.reaction_text || (Number(lead.likes || 0) + ' reactions')],
+        ['Comments', Number(lead.comments || 0) + ' comments'],
+        ['Reposts', Number(lead.reposts || 0) + ' reposts']
+      ];
+  wrap.innerHTML = rows
+    .filter(row => row[1])
+    .map(row => `<div class="ir">${hmDetailIcon()}<div><span class="ilbl">${hmEsc(row[0])}</span><span class="ival">${hmEsc(row[1])}</span></div></div>`)
+    .join('');
 }
 async function hmLoadLeadDetail() {
   if (!hmToken()) {
@@ -1309,9 +1350,11 @@ hmRenderLeadDetail = function(lead) {
   hmRenderSourceButton(lead);
   const logo = document.querySelector('.co-logo');
   if (logo) logo.textContent = hmInitials(lead.company);
-  const detailValues = document.querySelectorAll('.il .ival');
-  [lead.company, lead.role_title, lead.work_type, lead.location, lead.employment_type, lead.experience, lead.salary]
-    .forEach((value, index) => { if (detailValues[index]) detailValues[index].textContent = value || 'Not mentioned'; });
+  const detailTitle = document.querySelector('.sc .sc-title');
+  if (detailTitle && detailTitle.textContent.includes('Job Details')) {
+    detailTitle.lastChild.textContent = isJob ? 'Job Details' : 'Post Details';
+  }
+  hmRenderJobDetails(lead, isJob, applicantText);
   if (missingJobDescription) {
     hmRenderProfileMatchUnavailable(lead);
   } else {

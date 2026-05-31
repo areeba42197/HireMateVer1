@@ -585,21 +585,12 @@ def list_leads(user_id, temperature=None, search=None, limit=50, offset=0, statu
         q = f"%{search}%"
         params.extend([q, q, q, q])
     with db() as conn:
-        order_by = (
-            """
-            posted_at DESC,
+        order_by = """
             created_at DESC,
+            posted_at DESC,
             CASE lead_kind WHEN 'post' THEN 0 ELSE 1 END,
             score DESC
             """
-            if temperature and temperature != "all"
-            else """
-            created_at DESC,
-            CASE lead_kind WHEN 'post' THEN 0 ELSE 1 END,
-            posted_at DESC,
-            score DESC
-            """
-        )
         max_fetch_limit = 300 if status == "saved" else 80
         fetch_limit = min(max_fetch_limit, offset + limit * 3 + 24)
         rows = conn.execute(
@@ -633,6 +624,7 @@ def list_leads(user_id, temperature=None, search=None, limit=50, offset=0, statu
             "cold": sum(1 for row in unique_rows if row["temperature"] == "cold"),
             "saved": sum(1 for row in unique_rows if row["status"] == "saved"),
         }
+        live_today_counts = today_lead_counts(conn, user_id)
         result = {
             "items": items,
             "total": visible_total,
@@ -648,7 +640,7 @@ def list_leads(user_id, temperature=None, search=None, limit=50, offset=0, statu
                 "jobs": sum(1 for row in unique_rows if row["lead_kind"] == "job"),
                 "posts": sum(1 for row in unique_rows if row["lead_kind"] == "post"),
             },
-            "today_counts": visible_counts,
+            "today_counts": live_today_counts,
         }
         _lead_cache_set(_lead_list_cache, cache_key, result)
         return result
@@ -689,25 +681,27 @@ def update_lead_status(user_id, lead_id, status):
 
 def today_lead_counts(conn, user_id):
     start_utc, end_utc = daily_count_window_utc()
-    row = conn.execute(
+    rows = conn.execute(
         """
-        SELECT
-          COUNT(*) total,
-          SUM(CASE WHEN temperature='hot' THEN 1 ELSE 0 END) hot,
-          SUM(CASE WHEN temperature='warm' THEN 1 ELSE 0 END) warm,
-          SUM(CASE WHEN temperature='cold' THEN 1 ELSE 0 END) cold,
-          SUM(CASE WHEN status='saved' THEN 1 ELSE 0 END) saved
-        FROM leads
+        SELECT {columns} FROM leads
         WHERE user_id=? AND datetime(created_at) >= datetime(?) AND datetime(created_at) < datetime(?)
-        """,
+        ORDER BY created_at DESC, posted_at DESC, score DESC
+        """.format(columns=LEAD_LIST_COLUMNS),
         (user_id, start_utc, end_utc),
-    ).fetchone()
+    ).fetchall()
+    by_key = {}
+    for row in rows:
+        key = lead_display_key(row)
+        current = by_key.get(key)
+        if current is None or lead_quality(row) > lead_quality(current):
+            by_key[key] = row
+    unique_rows = list(by_key.values())
     return {
-        "total": row["total"] or 0,
-        "hot": row["hot"] or 0,
-        "warm": row["warm"] or 0,
-        "cold": row["cold"] or 0,
-        "saved": row["saved"] or 0,
+        "total": len(unique_rows),
+        "hot": sum(1 for row in unique_rows if row["temperature"] == "hot"),
+        "warm": sum(1 for row in unique_rows if row["temperature"] == "warm"),
+        "cold": sum(1 for row in unique_rows if row["temperature"] == "cold"),
+        "saved": sum(1 for row in unique_rows if row["status"] == "saved"),
     }
 
 
