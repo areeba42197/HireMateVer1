@@ -1,18 +1,17 @@
 services:
   - type: web
-    name: hiremate
-    runtime: python
+    name: hiremate-post-worker
+    runtime: docker
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && python run.py
+    dockerfilePath: ./Dockerfile.render
     envVars:
       - key: APP_HOST
         value: 0.0.0.0
+      - key: AI_PROVIDER
+        value: groq
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
-        generateValue: true
+        sync: false
       - key: GROQ_API_KEY
         sync: false
-      - key: AI_PROVIDER
-        value: groq

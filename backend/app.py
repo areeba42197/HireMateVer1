@@ -8,6 +8,7 @@ import time
 from copy import deepcopy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib import error as urlerror, request
 from urllib.parse import parse_qs, unquote, urlparse
 
 from core.config import (
@@ -94,6 +95,42 @@ def read_json(handler):
         return {}
     raw = handler.rfile.read(length).decode("utf-8")
     return json.loads(raw or "{}")
+
+
+def post_worker_url():
+    return os.getenv("POST_WORKER_URL", "").strip().rstrip("/")
+
+
+def proxy_post_worker(handler, path, body):
+    worker = post_worker_url()
+    if not worker:
+        return False
+    token = handler.headers.get("Authorization", "")
+    payload = json.dumps(body or {}).encode("utf-8")
+    req = request.Request(
+        worker + path,
+        data=payload,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": token,
+        },
+    )
+    try:
+        with request.urlopen(req, timeout=58) as response:
+            raw = response.read()
+            status = response.getcode()
+    except urlerror.HTTPError as exc:
+        raw = exc.read()
+        status = exc.code
+    except Exception as exc:
+        return error(handler, 502, f"Collect Posts worker is not reachable yet: {exc}")
+    handler.send_response(status)
+    handler.send_header("Content-Type", "application/json; charset=utf-8")
+    handler.send_header("Content-Length", str(len(raw)))
+    handler.end_headers()
+    handler.wfile.write(raw)
+    return True
 
 
 def normalize_linkedin_cookie(cookie):
@@ -466,6 +503,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
                     )
                 return
             if path == "/api/linkedin/sync-posts-browser":
+                if proxy_post_worker(self, path, body):
+                    return
                 user = require_user(self)
                 if user:
                     if not profile_complete(user):

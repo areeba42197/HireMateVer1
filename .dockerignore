@@ -1,0 +1,10 @@
+.git
+backend/data
+backend/secure
+secure
+installers
+**/__pycache__
+**/*.pyc
+**/*.db
+**/*.log
+node_modules

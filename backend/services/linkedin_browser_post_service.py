@@ -137,7 +137,16 @@ def make_driver(webdriver, options_cls, user):
     options.add_argument("--disable-dev-shm-usage")
     if user.get("linkedin_user_agent"):
         options.add_argument(f"--user-agent={user['linkedin_user_agent']}")
-    driver = webdriver.Chrome(options=options)
+    chrome_bin = os.environ.get("CHROME_BIN", "").strip()
+    if chrome_bin:
+        options.binary_location = chrome_bin
+    driver_path = os.environ.get("CHROMEDRIVER_PATH", "").strip()
+    if driver_path:
+        from selenium.webdriver.chrome.service import Service
+
+        driver = webdriver.Chrome(service=Service(driver_path), options=options)
+    else:
+        driver = webdriver.Chrome(options=options)
     driver.set_page_load_timeout(16)
     driver.set_script_timeout(15)
     return driver
