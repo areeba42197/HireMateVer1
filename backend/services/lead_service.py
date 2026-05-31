@@ -25,6 +25,30 @@ HIRING_TERMS = {
     "vacancy",
 }
 
+HIRING_INTENT_TERMS = {
+    "hiring",
+    "we're hiring",
+    "we are hiring",
+    "looking for",
+    "seeking",
+    "need a",
+    "need an",
+    "opening",
+    "open role",
+    "position",
+    "vacancy",
+    "apply",
+    "job opportunity",
+    "internship opportunity",
+}
+
+TECH_DOMAIN_TERMS = {
+    "ai", "artificial intelligence", "machine learning", "ml", "data science",
+    "software", "developer", "engineer", "programming", "python", "javascript",
+    "typescript", "react", "node", "backend", "frontend", "full stack", "cloud",
+    "devops", "cyber", "qa", "database", "api", "django", "flask", "next.js",
+}
+
 SKILL_TERMS = {
     "react": "React.js",
     "react.js": "React.js",
@@ -175,6 +199,77 @@ def extract_tags(text):
         if key in lower and label not in found:
             found.append(label)
     return found[:8]
+
+
+def profile_text(user):
+    return " ".join(
+        str(user.get(key, "") or "")
+        for key in (
+            "headline", "about", "skills", "interests", "target_roles",
+            "education", "experience_detail", "experience_level"
+        )
+    ).lower()
+
+
+def profile_is_technical(user):
+    text = profile_text(user)
+    return any(term in text for term in TECH_DOMAIN_TERMS)
+
+
+def lead_is_technical(lead):
+    text = " ".join(
+        str(lead.get(key, "") or "")
+        for key in ("company", "role_title", "post_text", "tags")
+    ).lower()
+    return any(term in text for term in TECH_DOMAIN_TERMS)
+
+
+def profile_domain_terms(user):
+    values = []
+    for key in ("target_roles", "skills", "interests", "headline", "education"):
+        values.extend(split_csv(user.get(key, "")))
+        values.extend(re.findall(r"[A-Za-z][A-Za-z0-9.+#-]{2,}", str(user.get(key, "") or "")))
+    blocked = {
+        "and", "the", "for", "with", "from", "student", "graduate", "fresh", "remote",
+        "full", "time", "part", "job", "jobs", "role", "roles", "internship", "hiring",
+    }
+    clean = []
+    for value in values:
+        term = canonical_part(value)
+        if len(term) < 3 or term in blocked:
+            continue
+        clean.append(term)
+    return list(dict.fromkeys(clean))[:40]
+
+
+def has_hiring_intent(text):
+    lower = (text or "").lower()
+    return any(term in lower for term in HIRING_INTENT_TERMS)
+
+
+def matches_profile_domain(lead, user):
+    combined = canonical_part(
+        " ".join(
+            str(lead.get(key, "") or "")
+            for key in ("company", "role_title", "post_text", "tags", "author_title")
+        )
+    )
+    terms = profile_domain_terms(user)
+    if not terms:
+        return True
+    return any(term in combined for term in terms)
+
+
+def should_import_lead(lead, user):
+    if lead.get("lead_kind") == "post" and not has_hiring_intent(lead.get("post_text", "")):
+        return False
+    user_technical = profile_is_technical(user)
+    lead_technical = lead_is_technical(lead)
+    if lead_technical and not user_technical:
+        return False
+    if user_technical and not lead_technical and not matches_profile_domain(lead, user):
+        return False
+    return matches_profile_domain(lead, user)
 
 
 def score_post(text, skills_csv, likes=0, comments=0, posted_at=None):
@@ -490,6 +585,8 @@ def import_posts(user_id, posts):
         imported = []
         for post in posts:
             lead = normalize_post(post, user)
+            if not should_import_lead(lead, user):
+                continue
             existing = find_existing_lead(conn, user_id, lead)
             if existing:
                 refresh_existing_lead(conn, existing["id"], lead)

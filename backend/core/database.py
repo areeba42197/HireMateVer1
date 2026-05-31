@@ -12,6 +12,8 @@ except ImportError:  # PostgreSQL is optional until DATABASE_URL is set.
     psycopg2 = None
 
 POSTGRES_POOL = None
+OLD_DEFAULT_SKILLS = "React, JavaScript, Python, Django, Node, CSS, HTML"
+OLD_DEFAULT_INTERESTS = "Remote, Internship, Frontend, AI, Freelance"
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -28,8 +30,8 @@ CREATE TABLE IF NOT EXISTS users (
   headline TEXT DEFAULT '',
   location TEXT DEFAULT '',
   about TEXT DEFAULT '',
-  skills TEXT DEFAULT 'React, JavaScript, Python, Django, Node, CSS, HTML',
-  interests TEXT DEFAULT 'Remote, Internship, Frontend, AI, Freelance',
+  skills TEXT DEFAULT '',
+  interests TEXT DEFAULT '',
   target_roles TEXT DEFAULT '',
   preferred_locations TEXT DEFAULT '',
   work_modes TEXT DEFAULT '',
@@ -194,6 +196,8 @@ MIGRATIONS = [
     "ALTER TABLE users ADD COLUMN experience_detail TEXT DEFAULT ''",
     "ALTER TABLE users ADD COLUMN avatar_image TEXT DEFAULT ''",
     "ALTER TABLE users ADD COLUMN cover_image TEXT DEFAULT ''",
+    "ALTER TABLE users ALTER COLUMN skills SET DEFAULT ''",
+    "ALTER TABLE users ALTER COLUMN interests SET DEFAULT ''",
     """CREATE TABLE IF NOT EXISTS ai_profile_matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -295,7 +299,24 @@ def init_sqlite_db():
                 conn.execute(sql)
             except sqlite3.OperationalError:
                 pass
+        cleanup_old_profile_defaults_sqlite(conn)
         conn.commit()
+
+
+def cleanup_old_profile_defaults_sqlite(conn):
+    conn.execute(
+        """
+        UPDATE users
+        SET skills='', interests=''
+        WHERE skills=? AND interests=?
+          AND COALESCE(headline, '')=''
+          AND COALESCE(about, '')=''
+          AND COALESCE(target_roles, '')=''
+          AND COALESCE(education, '')=''
+          AND COALESCE(experience_detail, '')=''
+        """,
+        (OLD_DEFAULT_SKILLS, OLD_DEFAULT_INTERESTS),
+    )
 
 
 def postgres_connect():
@@ -370,6 +391,8 @@ def run_postgres_schema(conn):
             if sql:
                 cur.execute(sql)
     conn.commit()
+    run_postgres_migrations(conn)
+    cleanup_old_profile_defaults_postgres(conn)
 
 
 def run_postgres_migrations(conn):
@@ -389,6 +412,24 @@ def run_postgres_migrations(conn):
             conn.commit()
         except Exception:
             conn.rollback()
+
+
+def cleanup_old_profile_defaults_postgres(conn):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            UPDATE users
+            SET skills='', interests=''
+            WHERE skills=%s AND interests=%s
+              AND COALESCE(headline, '')=''
+              AND COALESCE(about, '')=''
+              AND COALESCE(target_roles, '')=''
+              AND COALESCE(education, '')=''
+              AND COALESCE(experience_detail, '')=''
+            """,
+            (OLD_DEFAULT_SKILLS, OLD_DEFAULT_INTERESTS),
+        )
+    conn.commit()
 
 
 class PostgresCursor:

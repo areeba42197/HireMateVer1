@@ -356,10 +356,24 @@ function showDeleteModal() {
     </div>`;
   document.getElementById('modal').classList.add('open');
 }
-function confirmDelete() {
+async function confirmDelete() {
   const v = document.getElementById('delete-confirm').value;
-  if (v === 'DELETE') { closeModal(); showToast('success', 'Account permanently deleted.'); setTimeout(() => { window.location.href = 'landing.html'; }, 1200); }
-  else { document.getElementById('delete-err').textContent = 'You must type DELETE exactly (all caps) to confirm.'; document.getElementById('delete-confirm').classList.add('is-error'); }
+  if (v !== 'DELETE') {
+    document.getElementById('delete-err').textContent = 'You must type DELETE exactly (all caps) to confirm.';
+    document.getElementById('delete-confirm').classList.add('is-error');
+    return;
+  }
+  try {
+    await hmApi('/api/account', { method: 'DELETE' });
+    localStorage.clear();
+    sessionStorage.clear();
+    closeModal();
+    showToast('success', 'Account permanently deleted.');
+    setTimeout(() => { window.location.href = 'landing.html'; }, 900);
+  } catch (err) {
+    document.getElementById('delete-err').textContent = err.message || 'Account could not be deleted. Please try again.';
+    document.getElementById('delete-confirm').classList.add('is-error');
+  }
 }
 
 // ========== SCROLL ==========
@@ -498,6 +512,14 @@ function hmRefreshCache(path, onFresh) {
   });
 }
 function hmCurrentUser() { try { return JSON.parse(localStorage.getItem('hm_user') || '{}'); } catch (e) { return {}; } }
+function hmProfileComplete(user) {
+  const account = user || hmCurrentUser();
+  if (account.profile_complete === true) return true;
+  return Boolean(String(account.skills || '').trim() && String(account.target_roles || '').trim());
+}
+function hmProfileRequiredCard() {
+  return '<div class="section-card empty-state"><strong>Complete your profile first.</strong><br>Add your skills and target roles so HireMate can find opportunities that match your background.<br><button class="btn btn-primary" style="margin-top:14px;" onclick="window.location.href=&quot;onboarding.html&quot;">Complete Profile</button></div>';
+}
 function hmFinishDataBoot() {
   if (document.body) document.body.classList.remove('hm-data-booting');
 }
@@ -772,6 +794,11 @@ function hmUpdateLeadCounts(data) {
 async function hmLoadLeadStream(options) {
   const grid = document.querySelector('.leads-grid');
   if (!grid || !document.title.includes('Leads') || document.title.includes('Saved Leads')) return;
+  if (!hmProfileComplete()) {
+    grid.innerHTML = hmProfileRequiredCard();
+    hmFinishDataBoot();
+    return;
+  }
   const opts = options || {};
   if (opts.force) hmLeadsState.loading = false;
   if (hmLeadsState.loading) return;
@@ -890,6 +917,12 @@ async function hmLoadSavedLeadsPage() {
 function hmRenderLeadPageData(data, replace) {
   const grid = document.querySelector('.leads-grid');
   if (!grid) return;
+  if (data && data.profile_required) {
+    grid.innerHTML = hmProfileRequiredCard();
+    hmUpdateSidebarCounts(data.today_counts || {});
+    hmFinishDataBoot();
+    return;
+  }
   let loader = hmLeadLoader(grid);
   if (replace) {
     grid.innerHTML = '';
@@ -1015,6 +1048,11 @@ async function hmLoadSidebarCounts() {
 
 async function hmLoadDashboardPage() {
   if (!document.title.includes('Dashboard')) return;
+  if (!hmProfileComplete()) {
+    hmRenderDashboardData({ profile_required: true, data: { today_counts: {} } });
+    hmFinishDataBoot();
+    return;
+  }
   const path = '/api/dashboard';
   const cached = hmReadCache(path, 10 * 60 * 1000);
   const snapshot = hmReadDashboardSnapshot();
@@ -1124,6 +1162,14 @@ function hmRenderDashboardFromLocalCache() {
 }
 
 function hmRenderDashboardData(data) {
+  if (data && data.profile_required) {
+    const grid = document.querySelector('.leads-grid');
+    document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('hm-loading-card'));
+    document.querySelectorAll('.stat-value').forEach(value => { value.textContent = '0'; });
+    if (grid) grid.innerHTML = hmProfileRequiredCard();
+    hmUpdateSidebarCounts((data.data && data.data.today_counts) || {});
+    return;
+  }
   const d = (data && data.data) || {};
   if (hmDashboardHasUsefulData(data)) hmWriteDashboardSnapshot(data);
   const grid = document.querySelector('.leads-grid');

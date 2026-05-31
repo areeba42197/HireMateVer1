@@ -223,6 +223,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/dashboard":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return json_response(self, 200, {"ok": True, "profile_required": True, "data": empty_dashboard_data()})
                     return json_response(self, 200, {"ok": True, "data": dashboard(user["id"])})
                 return
             if path == "/api/admin/summary":
@@ -250,6 +252,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/leads":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return json_response(self, 200, {"ok": True, "profile_required": True, **empty_leads_result()})
                     result = list_leads(
                         user["id"],
                         temperature=query.get("temperature", ["all"])[0],
@@ -366,12 +370,16 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/linkedin/import-sample":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
                     imported = import_posts(user["id"], sample_posts())
                     return json_response(self, 200, {"ok": True, "imported": len(imported)})
                 return
             if path == "/api/linkedin/import-posts":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
                     posts = parse_manual_posts(body.get("posts", []))
                     imported = import_posts(user["id"], posts)
                     return json_response(self, 200, {"ok": True, "imported": len(imported), "leads": imported})
@@ -379,6 +387,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/linkedin/collect-visible":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
                     posts = parse_manual_posts(body.get("posts", []))
                     if not posts:
                         return error(self, 400, "No visible LinkedIn posts were received.")
@@ -391,6 +401,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/linkedin/sync-posts":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
                     sync_user = dict(user)
                     cipher = sync_user.get("linkedin_cookie_cipher") or ""
                     sync_user["linkedin_cookie"] = reveal_text(cipher) if cipher else ""
@@ -456,6 +468,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/linkedin/sync-posts-browser":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
                     sync_user = dict(user)
                     cipher = sync_user.get("linkedin_cookie_cipher") or ""
                     sync_user["linkedin_cookie"] = reveal_text(cipher) if cipher else ""
@@ -502,6 +516,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/linkedin/sync":
                 user = require_user(self)
                 if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
                     sync_user = dict(user)
                     cipher = sync_user.get("linkedin_cookie_cipher") or ""
                     sync_user["linkedin_cookie"] = reveal_text(cipher) if cipher else ""
@@ -656,6 +672,14 @@ class HireMateHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         try:
+            if path == "/api/account":
+                user = require_user(self)
+                if user:
+                    token = self.headers.get("Authorization", "").replace("Bearer ", "", 1)
+                    delete_account(user["id"])
+                    auth_cache_clear(token=token, user_id=user["id"])
+                    return json_response(self, 200, {"ok": True})
+                return
             if path.startswith("/api/drafts/"):
                 user = require_user(self)
                 if user:
@@ -682,8 +706,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 return error(self, 409, "An account with this email already exists.")
             cur = conn.execute(
                 """
-                INSERT INTO users(first_name, last_name, email, password_hash, linkedin_cookie_cipher, linkedin_user_agent, linkedin_accept_language)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO users(first_name, last_name, email, password_hash, linkedin_cookie_cipher, linkedin_user_agent, linkedin_accept_language, skills, interests)
+                VALUES (?, ?, ?, ?, ?, ?, ?, '', '')
                 """,
                 (
                     body["first_name"].strip(),
@@ -979,6 +1003,33 @@ def create_session_response(handler, user_id):
     return json_response(handler, 200, {"ok": True, "token": token, "expires_at": expires_at, "user": public_user(user)})
 
 
+def profile_complete(user):
+    return bool(
+        str(user.get("skills", "") or "").strip()
+        and str(user.get("target_roles", "") or "").strip()
+    )
+
+
+def empty_leads_result():
+    counts = {"total": 0, "hot": 0, "warm": 0, "cold": 0, "saved": 0, "all_kinds_total": 0, "jobs": 0, "posts": 0}
+    today = {"total": 0, "hot": 0, "warm": 0, "cold": 0, "saved": 0}
+    return {"items": [], "leads": [], "total": 0, "next_offset": 0, "has_more": False, "counts": counts, "today_counts": today}
+
+
+def empty_dashboard_data():
+    return {
+        "counts": {"total": 0, "hot": 0, "warm": 0, "cold": 0, "saved": 0},
+        "today_counts": {"total": 0, "hot": 0, "warm": 0, "cold": 0, "saved": 0},
+        "pending_drafts": 0,
+        "approved_drafts": 0,
+        "approved_week_delta": 0,
+        "recent_leads": [],
+        "hot_leads": [],
+        "drafts": [],
+        "skills": [],
+    }
+
+
 def public_user(user):
     cookie_plain = reveal_text(user.get("linkedin_cookie_cipher") or "") if user.get("linkedin_cookie_cipher") else ""
     return {
@@ -999,6 +1050,7 @@ def public_user(user):
         "experience_detail": user.get("experience_detail", ""),
         "avatar_image": user.get("avatar_image", ""),
         "cover_image": user.get("cover_image", ""),
+        "profile_complete": profile_complete(user),
         "cookie_connected": bool(cookie_plain and "li_at=" in cookie_plain),
         "role": user.get("role", "user"),
     }
@@ -1105,6 +1157,23 @@ def admin_reset_password(user_id, password):
             (user_id, "admin_password_reset", json.dumps({"policy": "minimum_8_characters"}, ensure_ascii=False)),
         )
     return admin_user_by_id(user_id)
+
+
+def delete_account(user_id):
+    with db() as conn:
+        conn.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM drafts WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM ai_profile_matches WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM ai_keyword_profiles WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM notification_preferences WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM password_reset_tokens WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM leads WHERE user_id=?", (user_id,))
+        conn.execute("UPDATE events SET user_id=NULL WHERE user_id=?", (user_id,))
+        conn.execute("UPDATE email_notifications SET user_id=NULL WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM linkedin_cursors WHERE user_id=?", (user_id,))
+        conn.execute("DELETE FROM users WHERE id=?", (user_id,))
+    clear_lead_cache(user_id)
+    auth_cache_clear(user_id=user_id)
 
 
 def admin_user_by_id(user_id):
@@ -1528,10 +1597,20 @@ def seed_demo_account():
         else:
             cur = conn.execute(
                 """
-                INSERT INTO users(first_name, last_name, email, password_hash, headline, location)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO users(first_name, last_name, email, password_hash, headline, location, skills, interests, target_roles)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                ("Demo", "User", "demo@hiremate.local", hash_password("Demo@123"), "Final year software engineering student", "Islamabad, Pakistan"),
+                (
+                    "Demo",
+                    "User",
+                    "demo@hiremate.local",
+                    hash_password("Demo@123"),
+                    "Final year software engineering student",
+                    "Islamabad, Pakistan",
+                    "React, JavaScript, Python, Django, Node, CSS, HTML",
+                    "Remote, Internship, Frontend, AI, Freelance",
+                    "Frontend Developer, Python Developer",
+                ),
             )
             user_id = cur.lastrowid
         count = conn.execute("SELECT COUNT(*) c FROM leads WHERE user_id=?", (user_id,)).fetchone()["c"]
