@@ -1032,6 +1032,18 @@ def empty_dashboard_data():
 
 def public_user(user):
     cookie_plain = reveal_text(user.get("linkedin_cookie_cipher") or "") if user.get("linkedin_cookie_cipher") else ""
+    skills = user.get("skills", "")
+    interests = user.get("interests", "")
+    old_defaults_only = (
+        skills == "React, JavaScript, Python, Django, Node, CSS, HTML"
+        and interests == "Remote, Internship, Frontend, AI, Freelance"
+        and not str(user.get("headline", "") or "").strip()
+        and not str(user.get("about", "") or "").strip()
+        and not str(user.get("target_roles", "") or "").strip()
+    )
+    if old_defaults_only:
+        skills = ""
+        interests = ""
     return {
         "id": user["id"],
         "first_name": user["first_name"],
@@ -1040,8 +1052,8 @@ def public_user(user):
         "headline": user.get("headline", ""),
         "location": user.get("location", ""),
         "about": user.get("about", ""),
-        "skills": user.get("skills", ""),
-        "interests": user.get("interests", ""),
+        "skills": skills,
+        "interests": interests,
         "target_roles": user.get("target_roles", ""),
         "preferred_locations": user.get("preferred_locations", ""),
         "work_modes": user.get("work_modes", ""),

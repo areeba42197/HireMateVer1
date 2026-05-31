@@ -391,8 +391,6 @@ def run_postgres_schema(conn):
             if sql:
                 cur.execute(sql)
     conn.commit()
-    run_postgres_migrations(conn)
-    cleanup_old_profile_defaults_postgres(conn)
 
 
 def run_postgres_migrations(conn):
