@@ -1446,14 +1446,13 @@ async function hmCollectLinkedInPosts() {
   const original = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = hmInlineIcon('posts') + '<span>Collecting...</span>'; }
   try {
-    const endpoint = hmUseBrowserPostCollector() ? '/api/linkedin/sync-posts-browser' : '/api/linkedin/sync-posts';
     const batches = [];
     let totalImported = 0;
     let totalChecked = 0;
     let lastData = null;
     for (let batch = 1; batch <= 3; batch += 1) {
       if (btn) btn.innerHTML = hmInlineIcon('posts') + '<span>' + (batch === 1 ? 'Collecting...' : 'Checking next keywords...') + '</span>';
-      const data = await hmApi(endpoint, { method: 'POST', body: '{}' });
+      const data = await hmCollectPostsBatch();
       lastData = data;
       batches.push(data);
       totalImported += Number(data.imported || 0);
@@ -1489,9 +1488,20 @@ async function hmCollectLinkedInPosts() {
   }
 }
 
-function hmUseBrowserPostCollector() {
-  const host = window.location.hostname;
-  return host === 'localhost' || host === '127.0.0.1';
+async function hmCollectPostsBatch() {
+  const browserData = await hmApi('/api/linkedin/sync-posts-browser', { method: 'POST', body: '{}' });
+  const imported = Number(browserData.imported || 0);
+  const checked = Number(browserData.checked_post_count || 0);
+  const errors = Array.isArray(browserData.errors) ? browserData.errors.join(' | ').toLowerCase() : '';
+  if (imported > 0 || checked > 0 || !hmShouldFallbackPostCollector(errors)) return browserData;
+  return hmApi('/api/linkedin/sync-posts', { method: 'POST', body: '{}' });
+}
+
+function hmShouldFallbackPostCollector(errorText) {
+  return errorText.includes('selenium is not ready')
+    || errorText.includes('chrome')
+    || errorText.includes('driver')
+    || errorText.includes('rendered posts');
 }
 
 function hmShortKeyword(value) {
