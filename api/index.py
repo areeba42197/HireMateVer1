@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -18,6 +19,9 @@ _db_ready = False
 def ensure_database():
     global _db_ready
     if _db_ready:
+        return
+    if os.environ.get("VERCEL") and os.environ.get("DATABASE_URL"):
+        _db_ready = True
         return
     init_db()
     seed_demo_account()
