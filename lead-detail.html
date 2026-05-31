@@ -768,37 +768,39 @@ function hmFormatJobDescription(text) {
     return `<p>${safe}</p>`;
   }).join('');
 }
-function hmDetailIcon() {
-  return '<span class="ii"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect></svg></span>';
+function hmDetailIcon(label) {
+  const key = String(label || '').toLowerCase();
+  const icons = {
+    company: '<path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"></path>',
+    role: '<path d="M4 7h16"></path><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect>',
+    location: '<path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle>',
+    work: '<path d="M3 12h18"></path><path d="M5 12V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6"></path><path d="M7 12v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6"></path>',
+    employment: '<path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path>',
+    experience: '<path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 3Z"></path>',
+    salary: '<path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"></path>',
+    applicants: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
+    posted: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>'
+  };
+  const path = icons[key] || icons.role;
+  return `<span class="ii"><svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg></span>`;
 }
 function hmRenderJobDetails(lead, isJob, applicantText) {
   const wrap = document.querySelector('.il');
   if (!wrap) return;
-  const reaction = lead.reaction_items || {};
-  const rows = isJob
-    ? [
-        ['Company', lead.company],
-        ['Role', lead.role_title],
-        ['Location', lead.location],
-        ['Work mode', lead.work_type],
-        ['Employment type', lead.employment_type],
-        ['Experience', lead.experience],
-        ['Salary', lead.salary],
-        ['Applicants', applicantText],
-        ['Posted', hmPostedLabel(lead)]
-      ]
-    : [
-        ['Posted by', lead.author_name || lead.company],
-        ['Headline', lead.author_title],
-        ['Post title', lead.role_title],
-        ['Posted', hmPostedLabel(lead)],
-        ['Reactions', reaction.reaction_text || (Number(lead.likes || 0) + ' reactions')],
-        ['Comments', Number(lead.comments || 0) + ' comments'],
-        ['Reposts', Number(lead.reposts || 0) + ' reposts']
-      ];
+  const rows = [
+    ['Company', lead.company],
+    ['Role', lead.role_title],
+    ['Location', lead.location],
+    ['Work mode', lead.work_type],
+    ['Employment type', lead.employment_type],
+    ['Experience', lead.experience],
+    ['Salary', lead.salary],
+    ['Applicants', applicantText],
+    ['Posted', hmPostedLabel(lead)]
+  ];
   wrap.innerHTML = rows
     .filter(row => row[1])
-    .map(row => `<div class="ir">${hmDetailIcon()}<div><span class="ilbl">${hmEsc(row[0])}</span><span class="ival">${hmEsc(row[1])}</span></div></div>`)
+    .map(row => `<div class="ir">${hmDetailIcon(row[0])}<div><span class="ilbl">${hmEsc(row[0])}</span><span class="ival">${hmEsc(row[1])}</span></div></div>`)
     .join('');
 }
 async function hmLoadLeadDetail() {
@@ -1352,7 +1354,7 @@ hmRenderLeadDetail = function(lead) {
   if (logo) logo.textContent = hmInitials(lead.company);
   const detailTitle = document.querySelector('.sc .sc-title');
   if (detailTitle && detailTitle.textContent.includes('Job Details')) {
-    detailTitle.lastChild.textContent = isJob ? 'Job Details' : 'Post Details';
+    detailTitle.lastChild.textContent = 'Job Details';
   }
   hmRenderJobDetails(lead, isJob, applicantText);
   if (missingJobDescription) {
