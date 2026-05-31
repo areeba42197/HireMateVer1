@@ -1452,13 +1452,13 @@ async function hmCollectLinkedInPosts() {
     let lastData = null;
     for (let batch = 1; batch <= 3; batch += 1) {
       if (btn) btn.innerHTML = hmInlineIcon('posts') + '<span>' + (batch === 1 ? 'Collecting...' : 'Checking next keywords...') + '</span>';
-      const data = await hmCollectPostsBatch();
+      const data = await hmApi('/api/linkedin/sync-posts-browser', { method: 'POST', body: '{}' });
       lastData = data;
       batches.push(data);
       totalImported += Number(data.imported || 0);
       totalChecked += Number(data.checked_post_count || 0);
       if (Number(data.imported || 0) > 0) {
-        hmPrependNewLeads(data.leads || []);
+        await hmLoadLeadStream({ reset: true, force: true });
         await hmLoadSidebarCounts();
       }
       if (Number(data.imported || 0) > 0 || batch === 3) break;
@@ -1476,8 +1476,7 @@ async function hmCollectLinkedInPosts() {
       showToast('info', 'Read ' + totalChecked + ' LinkedIn post result(s), but all were already saved.');
     }
     hmShowAllLeadsView();
-    hmPrependNewLeads(batches.flatMap(item => item.leads || []));
-    if (!totalImported) await hmLoadLeadStream({ reset: true, background: true });
+    await hmLoadLeadStream({ reset: true, force: true });
     await hmLoadSidebarCounts();
     await hmLoadDashboardPage();
     await hmLoadSyncStatus();
@@ -1486,22 +1485,6 @@ async function hmCollectLinkedInPosts() {
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = original || (hmInlineIcon('posts') + '<span>Collect Posts</span>'); }
   }
-}
-
-async function hmCollectPostsBatch() {
-  const browserData = await hmApi('/api/linkedin/sync-posts-browser', { method: 'POST', body: '{}' });
-  const imported = Number(browserData.imported || 0);
-  const checked = Number(browserData.checked_post_count || 0);
-  const errors = Array.isArray(browserData.errors) ? browserData.errors.join(' | ').toLowerCase() : '';
-  if (imported > 0 || checked > 0 || !hmShouldFallbackPostCollector(errors)) return browserData;
-  return hmApi('/api/linkedin/sync-posts', { method: 'POST', body: '{}' });
-}
-
-function hmShouldFallbackPostCollector(errorText) {
-  return errorText.includes('selenium is not ready')
-    || errorText.includes('chrome')
-    || errorText.includes('driver')
-    || errorText.includes('rendered posts');
 }
 
 function hmShortKeyword(value) {

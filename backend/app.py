@@ -477,25 +477,24 @@ class HireMateHandler(BaseHTTPRequestHandler):
                     posts, errors = collect_posts_with_browser(
                         sync_user,
                         keyword_offset=int(cursor.get("content_start") or 0),
-                        max_posts=8,
-                        scrolls=3,
-                        exact_link_limit=8,
+                        max_posts=4,
+                        scrolls=1,
+                        exact_link_limit=0,
                     )
                     imported = import_posts(user["id"], posts) if posts else []
                     next_keyword_offset = int(cursor.get("content_start") or 0) + 1
                     save_linkedin_cursor(user["id"], int(cursor.get("job_start") or 0), next_keyword_offset)
                     previous = sync_status(user["id"])
                     previous_jobs = int(previous.get("job_count") or 0)
-                    if imported or posts:
-                        record_sync_event(
-                            user["id"],
-                            len(imported),
-                            len(imported),
-                            previous_jobs,
-                            errors,
-                            checked_post_count=len(posts),
-                            checked_job_count=0,
-                        )
+                    record_sync_event(
+                        user["id"],
+                        len(imported),
+                        len(imported),
+                        previous_jobs,
+                        errors,
+                        checked_post_count=len(posts),
+                        checked_job_count=0,
+                    )
                     return json_response(
                         self,
                         200,
