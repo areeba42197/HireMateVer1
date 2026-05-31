@@ -1452,7 +1452,7 @@ async function hmCollectLinkedInPosts() {
     let lastData = null;
     for (let batch = 1; batch <= 3; batch += 1) {
       if (btn) btn.innerHTML = hmInlineIcon('posts') + '<span>' + (batch === 1 ? 'Collecting...' : 'Checking next keywords...') + '</span>';
-      const data = await hmApi('/api/linkedin/sync-posts-browser', { method: 'POST', body: '{}' });
+      const data = await hmApi('/api/linkedin/sync-posts', { method: 'POST', body: '{}' });
       lastData = data;
       batches.push(data);
       totalImported += Number(data.imported || 0);
