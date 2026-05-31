@@ -1004,10 +1004,13 @@ def create_session_response(handler, user_id):
 
 
 def profile_complete(user):
-    return bool(
-        str(user.get("skills", "") or "").strip()
-        and str(user.get("target_roles", "") or "").strip()
+    skills = str(user.get("skills", "") or "").strip()
+    roles = str(user.get("target_roles", "") or "").strip()
+    context = any(
+        str(user.get(key, "") or "").strip()
+        for key in ("headline", "about", "education", "experience_detail", "interests")
     )
+    return bool((skills or roles) and (roles or context))
 
 
 def empty_leads_result():

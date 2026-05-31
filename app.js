@@ -515,7 +515,16 @@ function hmCurrentUser() { try { return JSON.parse(localStorage.getItem('hm_user
 function hmProfileComplete(user) {
   const account = user || hmCurrentUser();
   if (account.profile_complete === true) return true;
-  return Boolean(String(account.skills || '').trim() && String(account.target_roles || '').trim());
+  const skills = String(account.skills || '').trim();
+  const roles = String(account.target_roles || '').trim();
+  const context = [
+    account.headline,
+    account.about,
+    account.education,
+    account.experience_detail,
+    account.interests
+  ].some(value => String(value || '').trim());
+  return Boolean((skills || roles) && (roles || context));
 }
 function hmProfileRequiredCard() {
   return '<div class="section-card empty-state"><strong>Complete your profile first.</strong><br>Add your skills and target roles so HireMate can find opportunities that match your background.<br><button class="btn btn-primary" style="margin-top:14px;" onclick="window.location.href=&quot;onboarding.html&quot;">Complete Profile</button></div>';
@@ -551,12 +560,25 @@ function hmApplyNavAvatar(user) {
     }
   });
 }
+function hmParseDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  let normalized = raw.replace(/^(.{10})\s+(\d{2}:\d{2}:\d{2})/, '$1T$2');
+  normalized = normalized.replace(/\.(\d{3})\d+/, '.$1');
+  normalized = normalized.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized) && !/(Z|[+-]\d{2}:?\d{2})$/i.test(normalized)) {
+    normalized += 'Z';
+  }
+  const dt = new Date(normalized);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
 function hmTimeAgo(iso) {
   const raw = String(iso || '').trim();
-  const normalized = raw && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(raw) ? raw.replace(' ', 'T') + 'Z' : raw;
-  const dt = new Date(normalized);
-  if (Number.isNaN(dt.getTime())) return '1 min ago';
-  const minutes = Math.max(1, Math.floor(Math.abs(Date.now() - dt.getTime()) / 60000));
+  const dt = hmParseDate(raw);
+  if (!dt) return '';
+  const diffMs = Math.max(0, Date.now() - dt.getTime());
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return 'Just now';
   if (minutes < 60) return minutes + ' min ago';
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return hours + ' hrs ago';
@@ -1202,8 +1224,8 @@ function hmRenderDashboardData(data) {
 function hmLeadIsToday(lead) {
   const raw = lead && (lead.created_at || lead.posted_at);
   if (!raw) return false;
-  const dt = new Date(String(raw).replace(' ', 'T'));
-  if (Number.isNaN(dt.getTime())) return false;
+  const dt = hmParseDate(raw);
+  if (!dt) return false;
   const now = new Date();
   return dt.getFullYear() === now.getFullYear()
     && dt.getMonth() === now.getMonth()
