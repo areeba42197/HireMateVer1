@@ -477,9 +477,9 @@ class HireMateHandler(BaseHTTPRequestHandler):
                     posts, errors = collect_posts_with_browser(
                         sync_user,
                         keyword_offset=int(cursor.get("content_start") or 0),
-                        max_posts=4,
-                        scrolls=1,
-                        exact_link_limit=0,
+                        max_posts=8,
+                        scrolls=3,
+                        exact_link_limit=8,
                     )
                     imported = import_posts(user["id"], posts) if posts else []
                     next_keyword_offset = int(cursor.get("content_start") or 0) + 1

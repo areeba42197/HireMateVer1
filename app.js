@@ -1446,13 +1446,14 @@ async function hmCollectLinkedInPosts() {
   const original = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = hmInlineIcon('posts') + '<span>Collecting...</span>'; }
   try {
+    const endpoint = hmUseBrowserPostCollector() ? '/api/linkedin/sync-posts-browser' : '/api/linkedin/sync-posts';
     const batches = [];
     let totalImported = 0;
     let totalChecked = 0;
     let lastData = null;
     for (let batch = 1; batch <= 3; batch += 1) {
       if (btn) btn.innerHTML = hmInlineIcon('posts') + '<span>' + (batch === 1 ? 'Collecting...' : 'Checking next keywords...') + '</span>';
-      const data = await hmApi('/api/linkedin/sync-posts', { method: 'POST', body: '{}' });
+      const data = await hmApi(endpoint, { method: 'POST', body: '{}' });
       lastData = data;
       batches.push(data);
       totalImported += Number(data.imported || 0);
@@ -1486,6 +1487,11 @@ async function hmCollectLinkedInPosts() {
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = original || (hmInlineIcon('posts') + '<span>Collect Posts</span>'); }
   }
+}
+
+function hmUseBrowserPostCollector() {
+  const host = window.location.hostname;
+  return host === 'localhost' || host === '127.0.0.1';
 }
 
 function hmShortKeyword(value) {
