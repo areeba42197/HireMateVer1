@@ -9,6 +9,7 @@ on a local browser/driver being available on the user's PC.
 """
 
 import hashlib
+import os
 import re
 import time
 from datetime import datetime, timezone
@@ -110,6 +111,10 @@ def browser_post_keywords(user):
 
 
 def import_selenium():
+    try:
+        import chromedriver_binary  # noqa: F401
+    except Exception:
+        pass
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
@@ -124,6 +129,11 @@ def make_driver(webdriver, options_cls, user):
     options.add_argument("--window-size=1365,900")
     options.set_capability("pageLoadStrategy", "eager")
     options.add_argument("--lang=en-US")
+    if os.environ.get("VERCEL") or os.environ.get("CI"):
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-setuid-sandbox")
+        options.add_argument("--single-process")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-dev-shm-usage")
