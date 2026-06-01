@@ -2308,7 +2308,7 @@ async function handleOnboarding(e) {
     target_roles: document.getElementById('ob-roles').value.trim(),
     preferred_locations: document.getElementById('ob-locations').value.trim(),
     work_modes: document.getElementById('ob-work-modes').value,
-    experience_level: document.getElementById('ob-experience').value,
+    experience_level: (document.getElementById('ob-experience-custom')?.value || '').trim() || document.getElementById('ob-experience').value,
     education: document.getElementById('ob-education').value.trim(),
     experience_detail: document.getElementById('ob-experience-detail').value.trim(),
     linkedin_cookie: document.getElementById('ob-cookie').value.trim()
