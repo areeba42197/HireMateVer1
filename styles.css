@@ -1225,6 +1225,224 @@ body:not(.hm-data-booting) .main-content {
   visibility: visible;
 }
 
+/* Mobile app shell */
+@media (max-width: 920px) {
+  .navbar {
+    height: auto;
+    min-height: 64px;
+    padding: 12px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .nav-logo {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .nav-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-link {
+    flex: 0 0 auto;
+  }
+  .nav-actions {
+    flex: 0 0 auto;
+  }
+  .app-layout {
+    display: block;
+    min-height: auto;
+  }
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: rgba(15,17,22,0.96);
+    backdrop-filter: blur(18px);
+  }
+  .sidebar-section {
+    display: none;
+  }
+  .sidebar-item {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 42px;
+    white-space: nowrap;
+    padding: 9px 12px;
+  }
+  .sidebar-badge {
+    margin-left: 4px;
+  }
+  .main-content {
+    width: 100%;
+    max-width: none;
+    padding: 20px 16px 28px;
+    overflow: visible;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .profile-grid,
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+  .settings-nav {
+    position: static;
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+  .settings-nav-item {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+  }
+  .section-card,
+  .chart-card,
+  .detail-post {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  .lead-card {
+    padding: 18px;
+  }
+  .lead-header,
+  .section-card-header,
+  .draft-box-header {
+    align-items: flex-start;
+  }
+  .lead-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .profile-cover {
+    height: 142px;
+  }
+  .profile-bottom {
+    padding: 0 20px 22px;
+  }
+  .profile-avatar-xl {
+    width: 82px;
+    height: 82px;
+    font-size: 30px;
+  }
+  .auth-card {
+    max-width: none;
+    padding: 28px 22px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    padding: 10px 12px;
+  }
+  .nav-logo {
+    font-size: 18px;
+  }
+  .nav-logo-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .main-content {
+    padding: 16px 12px 24px;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-card {
+    padding: 18px;
+  }
+  .stat-value {
+    font-size: 30px;
+  }
+  .leads-header,
+  .filter-row,
+  .lead-filter-control,
+  .dashboard-header-actions,
+  .draft-actions {
+    width: 100%;
+  }
+  .filter-row,
+  .draft-actions {
+    align-items: stretch;
+  }
+  .filter-btn,
+  .lead-kind-dropdown,
+  .draft-actions .btn,
+  .profile-cover-actions .btn {
+    flex: 1 1 auto;
+  }
+  .lead-filter-control {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+  .lead-kind-dropdown {
+    width: 100%;
+  }
+  .lead-footer,
+  .detail-meta-row {
+    gap: 8px;
+  }
+  .section-card,
+  .chart-card,
+  .detail-post,
+  .lead-card {
+    padding: 16px;
+  }
+  .section-card-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .section-card-header .edit-btn,
+  .section-card-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .settings-nav {
+    margin: 0 -2px;
+  }
+  .profile-cover-actions {
+    left: 10px;
+    right: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .profile-row {
+    display: block;
+  }
+  .btn {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+  }
+}
+
 /* Professional loading states: show structure, never fake stats. */
 .hm-skeleton {
   display: inline-block;

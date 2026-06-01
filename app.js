@@ -135,7 +135,6 @@ function togglePw(btnId, inputId) {
 }
 
 // ========== AUTH HANDLERS ==========
-const ADMIN_PIN = '7391';
 const ADMIN_FAIL_KEY = 'hm_admin_fail_count';
 const ADMIN_LOCK_KEY = 'hm_admin_lock_until';
 const ADMIN_MAX_ATTEMPTS = 5;
@@ -202,7 +201,7 @@ function handleLogin(e) {
   setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
 }
 
-function handleAdminLogin(e) {
+async function handleAdminLogin(e) {
   e.preventDefault();
   const lockRemaining = getAdminLockRemainingMs();
   if (lockRemaining > 0) {
@@ -227,7 +226,22 @@ function handleAdminLogin(e) {
   else setFieldValid('admin-pin','admin-pin-err');
 
   if (!valid) { showToast('error', 'Invalid credentials. Please try again.'); return; }
-  if (pin.value.trim() !== ADMIN_PIN) {
+  try {
+    const data = await hmApi('/api/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email.value.trim(),
+        password: pw.value,
+        pin: pin.value.trim()
+      })
+    });
+    hmSetSession(data);
+    localStorage.setItem('hm_admin_token', data.token || '');
+    sessionStorage.setItem('hm_admin_auth', 'ok');
+    clearAdminFailures();
+    showToast('success', 'Admin access granted.');
+    setTimeout(() => { window.location.href = 'secure/ops-portal-7h9k.html'; }, 700);
+  } catch (err) {
     registerAdminFailure();
     const left = Number(localStorage.getItem(ADMIN_FAIL_KEY) || 0);
     if (left === 0 && getAdminLockRemainingMs() > 0) {
@@ -235,15 +249,10 @@ function handleAdminLogin(e) {
       showToast('error', 'Too many failed attempts. Login locked.');
       return;
     }
-    setFieldError('admin-pin', 'admin-pin-err', `Incorrect PIN. ${Math.max(0, ADMIN_MAX_ATTEMPTS - left)} attempt(s) left.`);
-    showToast('error', 'Invalid admin PIN.');
-    return;
+    const message = err.message || 'Admin sign in failed. Please try again.';
+    setFieldError('admin-pin', 'admin-pin-err', `${message} ${Math.max(0, ADMIN_MAX_ATTEMPTS - left)} attempt(s) left.`);
+    showToast('error', message);
   }
-
-  clearAdminFailures();
-  sessionStorage.setItem('hm_admin_auth', 'ok');
-  showToast('success', 'Admin access granted.');
-  setTimeout(() => { window.location.href = 'secure/ops-portal-7h9k.html'; }, 700);
 }
 
 // ========== DRAFTS ==========
@@ -333,6 +342,7 @@ function confirmLogout() {
     } catch (e) {}
     localStorage.removeItem('hm_token');
     localStorage.removeItem('hm_user');
+    localStorage.removeItem('hm_admin_token');
     sessionStorage.removeItem('hm_admin_auth');
     showToast('success', 'Signed out.');
     setTimeout(() => { window.location.href = 'landing.html'; }, 1200);
@@ -1620,6 +1630,22 @@ async function hmSaveLinkedInCookie(cookieValue) {
   return data;
 }
 
+async function hmDisconnectLinkedInCookie() {
+  const data = await hmApi('/api/linkedin/cookie', { method: 'DELETE' });
+  if (data.user) {
+    localStorage.setItem('hm_user', JSON.stringify(data.user));
+    hmApplyNavAvatar(data.user);
+  }
+  const settingsInput = document.getElementById('set-cookie');
+  const profileInput = document.getElementById('cookie-input');
+  if (settingsInput) settingsInput.value = '';
+  if (profileInput) profileInput.value = '';
+  if (window.hmLoadCookieStatus) await hmLoadCookieStatus();
+  if (window.hmLoadProfileCookieStatus) await hmLoadProfileCookieStatus();
+  showToast('success', 'LinkedIn disconnected. Your saved session cookie has been removed.');
+  return data;
+}
+
 async function hmSyncAfterCookieSave() {
   const data = await hmApi('/api/linkedin/sync', { method: 'POST', body: '{}' });
   const posts = Number(data.post_count || 0);
@@ -2336,6 +2362,13 @@ async function saveCookie() {
     if (input) input.value = '';
     toggleEdit('cookie');
     await hmLoadProfileCookieStatus();
+    try {
+      showToast('info', 'Checking your LinkedIn connection...');
+      await hmSyncAfterCookieSave();
+      await hmLoadProfileCookieStatus();
+    } catch (syncErr) {
+      showToast('warning', syncErr.message || 'Saved securely. HireMate will check for leads shortly.');
+    }
   } catch (e) {
     if (err) err.textContent = e.message || 'Unable to save LinkedIn session cookie';
     showToast('error', err ? err.textContent : 'Unable to save LinkedIn session cookie');

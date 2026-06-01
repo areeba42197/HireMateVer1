@@ -1,41 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    (function () {
-      try {
-        var mode = localStorage.getItem('hm-theme') || 'dark';
-        document.documentElement.classList.toggle('light-mode', mode === 'light');
-        document.documentElement.setAttribute('data-theme', mode);
-      } catch (e) {}
-    })();
-  </script>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Page Not Found</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireMate Admin</title>
+  <meta http-equiv="refresh" content="0; url=admin-login.html">
+  <script>window.location.replace('admin-login.html');</script>
 </head>
-<body>
-  <div class="auth-page">
-    <div class="auth-card">
-      <div class="auth-title">404</div>
-      <div class="auth-subtitle">The page you are looking for was not found.</div>
-      <div class="auth-footer"><a href="login.html">Go to Sign In</a></div>
-    </div>
-  </div>
-<button class="theme-toggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:18px;z-index:999;" title="Toggle theme">??</button>
-<script src="app.js"></script>
-</body>
+<body></body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-

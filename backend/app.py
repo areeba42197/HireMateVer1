@@ -13,6 +13,9 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from core.config import (
     ALLOWED_STATIC_EXTENSIONS,
+    ADMIN_EMAIL,
+    ADMIN_PASSWORD,
+    ADMIN_PIN,
     APP_HOST,
     APP_PORT,
     LINKEDIN_AUTO_SYNC_ENABLED,
@@ -219,9 +222,13 @@ def require_user(handler):
 
 
 def require_admin(handler):
-    """Validate the lightweight admin gate used by the local admin portal."""
-    if handler.headers.get("X-HireMate-Admin") == "ok":
+    """Validate a signed admin session for the admin portal."""
+    user = current_user(handler)
+    if user and str(user.get("role", "user")).lower() == "admin":
         return True
+    if os.getenv("ALLOW_LEGACY_ADMIN_HEADER", "").strip().lower() in {"1", "true", "yes"}:
+        if handler.headers.get("X-HireMate-Admin") == "ok":
+            return True
     error(handler, 401, "Administrator access required.")
     return False
 
@@ -387,6 +394,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 return self.forgot_password(body)
             if path == "/api/auth/reset-password":
                 return self.reset_password(body)
+            if path == "/api/admin/login":
+                return self.admin_login(body)
             if path == "/api/auth/logout":
                 user = current_user(self)
                 token = self.headers.get("Authorization", "").replace("Bearer ", "", 1)
@@ -710,6 +719,11 @@ class HireMateHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         try:
+            if path == "/api/linkedin/cookie":
+                user = require_user(self)
+                if user:
+                    return self.disconnect_linkedin_cookie(user)
+                return
             if path == "/api/account":
                 user = require_user(self)
                 if user:
@@ -865,6 +879,31 @@ class HireMateHandler(BaseHTTPRequestHandler):
         auth_cache_clear(user_id=user["id"])
         return json_response(self, 200, {"ok": True, "user": public_user(updated), "cookie_connected": True})
 
+    def disconnect_linkedin_cookie(self, user):
+        with db() as conn:
+            conn.execute(
+                """
+                UPDATE users
+                SET linkedin_cookie_cipher='', linkedin_user_agent='', linkedin_accept_language=''
+                WHERE id=?
+                """,
+                (user["id"],),
+            )
+            conn.execute("DELETE FROM linkedin_cursors WHERE user_id=?", (user["id"],))
+            conn.execute("INSERT INTO events(user_id, event_type) VALUES (?, ?)", (user["id"], "linkedin_cookie_disconnected"))
+            updated = dict(conn.execute("SELECT * FROM users WHERE id=?", (user["id"],)).fetchone())
+        auth_cache_clear(user_id=user["id"])
+        return json_response(
+            self,
+            200,
+            {
+                "ok": True,
+                "user": public_user(updated),
+                "cookie": {"connected": False, "masked": "", "updated_hint": ""},
+                "cookie_connected": False,
+            },
+        )
+
     def update_password(self, user, body):
         current_password = str(body.get("current_password", ""))
         new_password = str(body.get("new_password", ""))
@@ -893,6 +932,21 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if not row or not verify_password(body.get("password", ""), row["password_hash"]):
                 return error(self, 401, "Invalid email or password.")
             conn.execute("INSERT INTO events(user_id, event_type) VALUES (?, ?)", (row["id"], "login"))
+        return create_session_response(self, row["id"])
+
+    def admin_login(self, body):
+        email = str(body.get("email", "")).strip().lower()
+        password = str(body.get("password", ""))
+        pin = str(body.get("pin", "")).strip()
+        if not email or not password or not pin:
+            return error(self, 400, "Admin email, password, and security PIN are required.")
+        if pin != ADMIN_PIN:
+            return error(self, 401, "Admin security PIN is incorrect.")
+        with db() as conn:
+            row = conn.execute("SELECT * FROM users WHERE lower(email)=lower(?) AND is_active=1", (email,)).fetchone()
+            if not row or str(row["role"] or "user").lower() != "admin" or not verify_password(password, row["password_hash"]):
+                return error(self, 401, "Admin sign in failed. Please check your details.")
+            conn.execute("INSERT INTO events(user_id, event_type) VALUES (?, ?)", (row["id"], "admin_login"))
         return create_session_response(self, row["id"])
 
     def forgot_password(self, body):
@@ -1674,6 +1728,44 @@ def seed_demo_account():
         import_posts(user_id, sample_posts())
 
 
+def ensure_admin_account():
+    if not ADMIN_EMAIL or not ADMIN_PASSWORD:
+        return
+    with db() as conn:
+        row = conn.execute("SELECT id FROM users WHERE lower(email)=lower(?)", (ADMIN_EMAIL,)).fetchone()
+        if row:
+            params = ["admin", 1]
+            sql = "UPDATE users SET role=?, is_active=?"
+            if ADMIN_PASSWORD:
+                sql += ", password_hash=?"
+                params.append(hash_password(ADMIN_PASSWORD))
+            sql += " WHERE id=?"
+            params.append(row["id"])
+            conn.execute(sql, params)
+            return
+        first_name = os.getenv("ADMIN_FIRST_NAME", "HireMate").strip() or "HireMate"
+        last_name = os.getenv("ADMIN_LAST_NAME", "Admin").strip() or "Admin"
+        cur = conn.execute(
+            """
+            INSERT INTO users(first_name, last_name, email, password_hash, headline, role, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                first_name,
+                last_name,
+                ADMIN_EMAIL,
+                hash_password(ADMIN_PASSWORD),
+                "HireMate administrator",
+                "admin",
+                1,
+            ),
+        )
+        conn.execute(
+            "INSERT INTO events(user_id, event_type, details) VALUES (?, ?, ?)",
+            (cur.lastrowid, "admin_account_ready", json.dumps({"source": "environment"}, ensure_ascii=False)),
+        )
+
+
 def _build_reset_link(token):
     """Build a full URL for the password reset page, detecting the current deployment origin."""
     # Check for explicit FRONTEND_URL or VERCEL_URL env vars first
@@ -1748,6 +1840,7 @@ def _send_password_reset_email(user, reset_link):
 def run():
     init_db()
     seed_demo_account()
+    ensure_admin_account()
     if LINKEDIN_AUTO_SYNC_ENABLED:
         threading.Thread(target=auto_sync_loop, daemon=True).start()
     server = ThreadingHTTPServer((APP_HOST, APP_PORT), HireMateHandler)

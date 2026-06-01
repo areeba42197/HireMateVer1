@@ -36,6 +36,9 @@ APP_NAME = "HireMate API"
 # Change this before real deployment. It is used for local token signing and
 # reversible cookie protection in this FYP prototype.
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-local-development-secret")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "").strip().lower()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+ADMIN_PIN = os.getenv("ADMIN_PIN", "7391").strip()
 
 # Conservative LinkedIn collection limits for academic/local testing.
 # Small batches and random delays reduce load and make failures easier to audit.

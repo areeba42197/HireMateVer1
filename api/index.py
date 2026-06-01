@@ -9,7 +9,7 @@ BACKEND_DIR = ROOT_DIR / "backend"
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app import HireMateHandler, seed_demo_account  # noqa: E402
+from app import HireMateHandler, ensure_admin_account, seed_demo_account  # noqa: E402
 from core.database import init_db  # noqa: E402
 
 
@@ -20,11 +20,9 @@ def ensure_database():
     global _db_ready
     if _db_ready:
         return
-    if os.environ.get("VERCEL") and os.environ.get("DATABASE_URL"):
-        _db_ready = True
-        return
     init_db()
     seed_demo_account()
+    ensure_admin_account()
     _db_ready = True
 
 

@@ -196,6 +196,8 @@ MIGRATIONS = [
     "ALTER TABLE users ADD COLUMN experience_detail TEXT DEFAULT ''",
     "ALTER TABLE users ADD COLUMN avatar_image TEXT DEFAULT ''",
     "ALTER TABLE users ADD COLUMN cover_image TEXT DEFAULT ''",
+    "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'",
+    "ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1",
     "ALTER TABLE users ALTER COLUMN skills SET DEFAULT ''",
     "ALTER TABLE users ALTER COLUMN interests SET DEFAULT ''",
     """CREATE TABLE IF NOT EXISTS ai_profile_matches (
@@ -249,6 +251,8 @@ def init_db():
         conn = postgres_connect()
         try:
             run_postgres_schema(conn)
+            run_postgres_migrations(conn)
+            cleanup_old_profile_defaults_postgres(conn)
         finally:
             postgres_release(conn)
         return
