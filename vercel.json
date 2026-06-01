@@ -3,17 +3,13 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 60,
-      "excludeFiles": "{backend/data/**,backend/secure/**,installers/**,**/__pycache__/**,**/*.db,**/*.log}"
+      "excludeFiles": "{backend/data/**,backend/secure/**,secure/**,installers/**,**/__pycache__/**,**/*.db,**/*.log}"
     }
   },
   "rewrites": [
     {
       "source": "/api/:path*",
       "destination": "/api/index.py?hm_path=:path*"
-    },
-    {
-      "source": "/secure/:path*",
-      "destination": "/api/index.py?hm_path=secure/:path*"
     },
     {
       "source": "/",

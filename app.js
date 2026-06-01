@@ -240,7 +240,7 @@ async function handleAdminLogin(e) {
     sessionStorage.setItem('hm_admin_auth', 'ok');
     clearAdminFailures();
     showToast('success', 'Admin access granted.');
-    setTimeout(() => { window.location.href = 'secure/ops-portal-7h9k.html'; }, 700);
+    setTimeout(() => { window.location.href = 'ops-portal-7h9k.html'; }, 700);
   } catch (err) {
     registerAdminFailure();
     const left = Number(localStorage.getItem(ADMIN_FAIL_KEY) || 0);

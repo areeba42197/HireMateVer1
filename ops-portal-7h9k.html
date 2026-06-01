@@ -1,11 +1,448 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem('hm-theme') || 'dark';
+        document.documentElement.classList.toggle('light-mode', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HireMate Admin</title>
-  <meta http-equiv="refresh" content="0; url=secure/ops-portal-7h9k.html">
-  <script>window.location.replace('secure/ops-portal-7h9k.html');</script>
+  <title>HireMate - Admin Control Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .admin-shell { max-width: 1220px; margin: 0 auto; padding: 32px; }
+    .admin-hero { display: flex; justify-content: space-between; gap: 22px; align-items: center; margin-bottom: 24px; padding: 22px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(0,196,255,.08), rgba(255,255,255,.025)); }
+    .admin-kicker { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+    .admin-kicker::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 12px rgba(74,255,160,.55); }
+    .admin-heading { font-family: Syne, sans-serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; margin: 0 0 8px; }
+    .admin-copy { color: var(--text2); max-width: 680px; line-height: 1.55; margin: 0; }
+    .admin-quick-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .admin-hero-note { color: var(--text3); font-size: 12px; text-align: right; margin-top: 8px; }
+    .admin-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .admin-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
+    .admin-table { width: 100%; border-collapse: collapse; min-width: 900px; background: rgba(255,255,255,.02); }
+    .admin-table th { text-align: left; padding: 14px 16px; color: var(--text3); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+    .admin-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 14px; vertical-align: middle; }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-user { display: flex; align-items: center; gap: 10px; min-width: 210px; }
+    .admin-avatar { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), var(--cold)); color: #061018; font-family: Syne, sans-serif; font-weight: 800; }
+    .admin-name { color: var(--text); font-family: Syne, sans-serif; font-weight: 700; }
+    .admin-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); }
+    .admin-pill.active { color: var(--success); background: rgba(74,255,160,.1); border-color: rgba(74,255,160,.28); }
+    .admin-pill.inactive { color: var(--hot); background: rgba(255,107,107,.1); border-color: rgba(255,107,107,.28); }
+    .admin-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .admin-actions { display: inline-grid; grid-template-columns: 88px 132px 106px; gap: 8px; align-items: center; }
+    .admin-actions .btn { justify-content: center; min-height: 34px; white-space: nowrap; }
+    .admin-stat-icon svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .admin-tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .admin-tab { border: 1px solid var(--border); background: var(--card); color: var(--text2); border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 700; }
+    .admin-tab.active { color: var(--accent); border-color: rgba(0,196,255,.45); background: rgba(0,196,255,.08); }
+    .admin-log-list { display: grid; gap: 12px; }
+    .admin-log-card { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+    .admin-log-card:hover { transform: translateY(-1px); border-color: rgba(0,196,255,.35); background: linear-gradient(135deg, rgba(0,196,255,.07), rgba(255,255,255,.018)); }
+    .admin-log-icon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(0,196,255,.12); color: var(--accent); border: 1px solid rgba(0,196,255,.28); }
+    .admin-log-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .admin-log-icon.warning { background: rgba(255,179,71,.12); color: var(--warm); border-color: rgba(255,179,71,.28); }
+    .admin-log-icon.danger { background: rgba(255,107,107,.12); color: var(--hot); border-color: rgba(255,107,107,.28); }
+    .admin-log-icon.ended { background: rgba(148,163,184,.12); color: var(--text3); border-color: rgba(148,163,184,.28); }
+    .admin-log-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .admin-log-event { color: var(--text); font-family: Syne, sans-serif; font-weight: 800; }
+    .admin-log-badge { padding: 4px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border: 1px solid rgba(0,196,255,.25); color: var(--accent); background: rgba(0,196,255,.08); }
+    .admin-log-badge.warning { border-color: rgba(255,179,71,.3); color: var(--warm); background: rgba(255,179,71,.09); }
+    .admin-log-badge.danger { border-color: rgba(255,107,107,.3); color: var(--hot); background: rgba(255,107,107,.09); }
+    .admin-log-badge.ended { border-color: rgba(148,163,184,.3); color: var(--text3); background: rgba(148,163,184,.09); }
+    .admin-log-meta { text-align: right; min-width: 190px; }
+    .admin-log-actor { color: var(--text); font-weight: 700; margin-bottom: 3px; }
+    .admin-log-empty { border: 1px dashed var(--border); border-radius: 14px; padding: 28px; text-align: center; color: var(--text2); background: rgba(255,255,255,.025); }
+    .admin-muted { color: var(--text3); font-size: 13px; }
+    .admin-modal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 760px) {
+      .admin-shell { padding: 20px; }
+      .admin-hero { display: block; }
+      .admin-quick-actions { justify-content: flex-start; margin-top: 16px; }
+      .admin-hero-note { text-align: left; }
+      .admin-modal-grid, .admin-log-card { grid-template-columns: 1fr; }
+      .admin-log-meta { text-align: left; min-width: 0; }
+      .admin-actions { grid-template-columns: 1fr; width: 100%; }
+    }
+  </style>
+  <script>
+    if (sessionStorage.getItem('hm_admin_auth') !== 'ok' || !localStorage.getItem('hm_admin_token')) {
+      window.location.replace('admin-login.html');
+    }
+  </script>
 </head>
-<body></body>
+<body>
+<div class="toast-container" id="toasts"></div>
+<div class="modal-overlay" id="modal"><div class="modal"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-content"></div></div></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-sub" id="confirm-sub"></div>
+    <div class="confirm-actions"><button class="btn btn-ghost" id="confirm-no">Cancel</button><button class="btn" id="confirm-yes">Confirm</button></div>
+  </div>
+</div>
+
+<div class="page active">
+  <nav class="navbar admin-nav">
+    <div class="nav-logo"><div class="nav-logo-icon" style="background:var(--hot);">H</div>HireMate <span style="background:rgba(255,107,107,0.15);color:var(--hot);border:1px solid rgba(255,107,107,0.3);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;font-family:Syne,sans-serif;text-transform:uppercase;letter-spacing:0.08em;margin-left:8px;">Admin</span></div>
+    <div class="nav-links">
+      <button class="nav-link active" id="tab-accounts" onclick="hmAdminSwitch('accounts')">Manage User Accounts</button>
+      <button class="nav-link" id="tab-audit" onclick="hmAdminSwitch('audit')">Audit Logs</button>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+      <button class="btn btn-danger btn-sm" onclick="hmAdminSignOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="admin-shell">
+    <section class="admin-hero">
+      <div>
+        <div class="admin-kicker">Administrator Console</div>
+        <h1 class="admin-heading">User Account Management</h1>
+        <p class="admin-copy">Manage registered HireMate users, review account status, apply secure account changes, and keep administrative activity traceable from one control panel.</p>
+      </div>
+      <div>
+        <div class="admin-quick-actions">
+          <button class="btn btn-primary" onclick="hmAdminLoadAll()">Refresh Data</button>
+          <button class="btn btn-ghost" onclick="hmAdminSwitch('audit')">View Audit Logs</button>
+        </div>
+        <div class="admin-hero-note">Restricted access for authorized administrators.</div>
+      </div>
+    </section>
+
+    <section class="stats-grid" style="margin-bottom:24px;">
+      <div class="stat-card s1"><div class="stat-icon admin-stat-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div><div class="stat-value" id="admin-total-users">0</div><div class="stat-label">Total Users</div><div class="stat-change">Registered accounts</div></div>
+      <div class="stat-card s2"><div class="stat-icon admin-stat-icon"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg></div><div class="stat-value" id="admin-active-users">0</div><div class="stat-label">Active Users</div><div class="stat-change">Allowed to sign in</div></div>
+      <div class="stat-card s3"><div class="stat-icon admin-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 22h8"></path><path d="M12 18v4"></path></svg></div><div class="stat-value" id="admin-active-sessions">0</div><div class="stat-label">Active Sessions</div><div class="stat-change">Valid sessions</div></div>
+      <div class="stat-card s4"><div class="stat-icon admin-stat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h6"></path></svg></div><div class="stat-value" id="admin-actions">0</div><div class="stat-label">Admin Actions</div><div class="stat-change">Stored in logs</div></div>
+    </section>
+
+    <section class="section-card admin-tab-panel" id="panel-accounts">
+      <div class="section-card-header">
+        <div>
+          <div class="section-title">Registered Users</div>
+          <div class="admin-muted">Search, filter, update, reset passwords, and activate or deactivate accounts.</div>
+        </div>
+        <div class="admin-toolbar">
+          <input class="form-input" id="admin-search" placeholder="Search name, email, title..." oninput="hmAdminDebouncedLoad()" style="width:260px;padding:9px 13px;">
+          <select class="form-select" id="admin-status" onchange="hmAdminLoadUsers()" style="width:150px;padding:9px 12px;">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>User</th><th>Email</th><th>Joined</th><th>Leads</th><th>Drafts</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="admin-users-body"><tr><td colspan="7">Loading users...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-card admin-tab-panel" id="panel-audit" style="display:none;">
+      <div class="section-card-header">
+        <div>
+          <div class="section-title">System Audit Logs</div>
+          <div class="admin-muted">Administrative account changes and access-related events are recorded here.</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="hmAdminLoadLogs()">Reload Logs</button>
+      </div>
+      <div id="admin-logs-list">Loading logs...</div>
+    </section>
+  </main>
+</div>
+
+<script>
+let hmAdminUsers = [];
+let hmAdminTimer = null;
+
+function hmAdminApi(path, options) {
+  const token = localStorage.getItem('hm_admin_token') || localStorage.getItem('hm_token') || '';
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, (options && options.headers) || {});
+  if (token) headers.Authorization = 'Bearer ' + token;
+  return fetch(path, Object.assign({}, options || {}, { headers: headers })).then(async function(res) {
+    const data = await res.json().catch(function() { return {}; });
+    if (res.status === 401 || res.status === 403) {
+      sessionStorage.removeItem('hm_admin_auth');
+      localStorage.removeItem('hm_admin_token');
+      window.location.href = 'admin-login.html';
+      return;
+    }
+    if (!res.ok || data.ok === false) throw new Error(data.error || 'Admin request failed.');
+    return data;
+  });
+}
+
+function hmAdminSwitch(tab) {
+  document.querySelectorAll('.nav-links .nav-link').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.admin-tab-panel').forEach(function(panel) { panel.style.display = 'none'; });
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).style.display = 'block';
+  if (tab === 'audit') hmAdminLoadLogs();
+}
+
+function hmAdminLoadAll() {
+  hmAdminLoadSummary();
+  hmAdminLoadUsers();
+  hmAdminLoadLogs();
+}
+
+function hmAdminLoadSummary() {
+  hmAdminApi('/api/admin/summary').then(function(data) {
+    const s = data.summary || {};
+    hmSetAdminText('admin-total-users', s.total_users || 0);
+    hmSetAdminText('admin-active-users', s.active_users || 0);
+    hmSetAdminText('admin-active-sessions', s.active_sessions || 0);
+    hmSetAdminText('admin-actions', s.admin_actions || 0);
+  }).catch(function(err) { showToast('error', err.message); });
+}
+
+function hmAdminDebouncedLoad() {
+  clearTimeout(hmAdminTimer);
+  hmAdminTimer = setTimeout(hmAdminLoadUsers, 250);
+}
+
+function hmAdminLoadUsers() {
+  const search = encodeURIComponent(document.getElementById('admin-search').value.trim());
+  const status = encodeURIComponent(document.getElementById('admin-status').value);
+  hmAdminApi('/api/admin/users?search=' + search + '&status=' + status).then(function(data) {
+    hmAdminUsers = data.users || [];
+    hmAdminRenderUsers();
+  }).catch(function(err) { showToast('error', err.message); });
+}
+
+function hmAdminRenderUsers() {
+  const body = document.getElementById('admin-users-body');
+  if (!hmAdminUsers.length) {
+    body.innerHTML = '<tr><td colspan="7">No user accounts matched this filter.</td></tr>';
+    return;
+  }
+  body.innerHTML = hmAdminUsers.map(function(user) {
+    const name = hmAdminName(user);
+    const initials = name.split(' ').map(function(x) { return x[0]; }).join('').slice(0, 2).toUpperCase();
+    const active = Number(user.is_active) === 1;
+    return '<tr>' +
+      '<td><div class="admin-user"><div class="admin-avatar">' + hmEscape(initials || 'U') + '</div><div><div class="admin-name">' + hmEscape(name) + '</div><div class="admin-muted">' + hmEscape(user.headline || 'No title added') + '</div></div></div></td>' +
+      '<td>' + hmEscape(user.email || '') + '</td>' +
+      '<td>' + hmFormatDate(user.created_at) + '</td>' +
+      '<td><strong style="color:var(--accent)">' + Number(user.lead_count || 0) + '</strong></td>' +
+      '<td><strong style="color:var(--cold)">' + Number(user.draft_count || 0) + '</strong></td>' +
+      '<td><span class="admin-pill ' + (active ? 'active' : 'inactive') + '"><span class="admin-dot"></span>' + (active ? 'Active' : 'Inactive') + '</span></td>' +
+      '<td><div class="admin-actions"><button class="btn btn-ghost btn-sm" onclick="hmAdminOpenUser(' + user.id + ')">Details</button><button class="btn btn-primary btn-sm" onclick="hmAdminOpenReset(' + user.id + ')">Reset Password</button><button class="btn btn-danger btn-sm" onclick="hmAdminToggleUser(' + user.id + ')">' + (active ? 'Deactivate' : 'Activate') + '</button></div></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function hmAdminOpenUser(userId) {
+  const user = hmAdminUsers.find(function(item) { return Number(item.id) === Number(userId); });
+  if (!user) return showToast('error', 'User account not found.');
+  document.getElementById('modal-content').innerHTML =
+    '<div class="modal-title">Update User Account</div>' +
+    '<div class="modal-sub">Changes are validated and recorded in the system audit logs.</div>' +
+    '<div class="admin-modal-grid" style="margin-bottom:18px;">' +
+      hmAdminField('First Name', 'adm-first', user.first_name || '') +
+      hmAdminField('Last Name', 'adm-last', user.last_name || '') +
+      hmAdminField('Email', 'adm-email', user.email || '') +
+      hmAdminField('Professional Title', 'adm-headline', user.headline || '') +
+      hmAdminField('Location', 'adm-location', user.location || '') +
+      '<div class="form-group"><label class="form-label">Account Status</label><select class="form-select" id="adm-active"><option value="1">Active</option><option value="0">Inactive</option></select></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-primary" style="flex:1;" onclick="hmAdminSaveUser(' + user.id + ')">Save Changes</button></div>';
+  document.getElementById('adm-active').value = Number(user.is_active) === 1 ? '1' : '0';
+  document.getElementById('modal').classList.add('open');
+}
+
+function hmAdminSaveUser(userId) {
+  const payload = {
+    first_name: hmVal('adm-first'),
+    last_name: hmVal('adm-last'),
+    email: hmVal('adm-email'),
+    headline: hmVal('adm-headline'),
+    location: hmVal('adm-location'),
+    is_active: hmVal('adm-active')
+  };
+  if (!payload.first_name || !payload.last_name || !payload.email) {
+    showToast('error', 'First name, last name and email are required.');
+    return;
+  }
+  hmAdminApi('/api/admin/users/' + userId, { method: 'PATCH', body: JSON.stringify(payload) }).then(function() {
+    closeModal();
+    showToast('success', 'User account updated.');
+    hmAdminLoadAll();
+  }).catch(function(err) { showToast('error', err.message); });
+}
+
+function hmAdminToggleUser(userId) {
+  const user = hmAdminUsers.find(function(item) { return Number(item.id) === Number(userId); });
+  if (!user) return;
+  const nextActive = Number(user.is_active) === 1 ? 0 : 1;
+  showConfirm(
+    nextActive ? 'AC' : 'DC',
+    nextActive ? 'Activate User?' : 'Deactivate User?',
+    nextActive ? 'The user will be allowed to access HireMate again.' : 'The user will not be able to access HireMate until reactivated.',
+    nextActive ? 'Activate' : 'Deactivate',
+    nextActive ? 'btn-primary' : 'btn-danger',
+    function() {
+      const payload = Object.assign({}, user, { is_active: nextActive });
+      hmAdminApi('/api/admin/users/' + userId, { method: 'PATCH', body: JSON.stringify(payload) }).then(function() {
+        showToast('success', nextActive ? 'User activated.' : 'User deactivated.');
+        hmAdminLoadAll();
+      }).catch(function(err) { showToast('error', err.message); });
+    }
+  );
+}
+
+function hmAdminOpenReset(userId) {
+  const user = hmAdminUsers.find(function(item) { return Number(item.id) === Number(userId); });
+  if (!user) return;
+  document.getElementById('modal-content').innerHTML =
+    '<div class="modal-title">Reset Password</div>' +
+    '<div class="modal-sub">Set a temporary password for ' + hmEscape(hmAdminName(user)) + '. The password must follow the secure minimum length rule.</div>' +
+    '<div class="form-group" style="margin-bottom:18px;"><label class="form-label">Temporary Password</label><input class="form-input" id="adm-reset-password" type="password" placeholder="At least 8 characters"></div>' +
+    '<div style="display:flex;gap:10px;"><button class="btn btn-ghost" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-primary" style="flex:1;" onclick="hmAdminResetPassword(' + user.id + ')">Reset Password</button></div>';
+  document.getElementById('modal').classList.add('open');
+}
+
+function hmAdminResetPassword(userId) {
+  const password = hmVal('adm-reset-password');
+  if (password.length < 8) {
+    showToast('error', 'Password must be at least 8 characters.');
+    return;
+  }
+  hmAdminApi('/api/admin/users/' + userId + '/reset-password', { method: 'POST', body: JSON.stringify({ password: password }) }).then(function() {
+    closeModal();
+    showToast('success', 'Password reset successfully.');
+    hmAdminLoadAll();
+  }).catch(function(err) { showToast('error', err.message); });
+}
+
+function hmAdminLoadLogs() {
+  hmAdminApi('/api/admin/logs').then(function(data) {
+    const logs = data.logs || [];
+    const box = document.getElementById('admin-logs-list');
+    if (!logs.length) {
+      box.innerHTML = '<div class="admin-log-empty"><div class="admin-log-icon" style="margin:0 auto 10px;">OK</div><strong>No audit logs yet</strong><div class="admin-muted" style="margin-top:6px;">Administrative actions will appear here after user updates, password resets, or account status changes.</div></div>';
+      return;
+    }
+    box.className = 'admin-log-list';
+    box.innerHTML = logs.map(function(log) {
+      const actor = log.email || [log.first_name, log.last_name].filter(Boolean).join(' ') || 'System';
+      const meta = hmAdminLogMeta(log.event_type || '');
+      return '<div class="admin-log-card">' +
+        '<div class="admin-log-icon ' + meta.level + '">' + meta.icon + '</div>' +
+        '<div><div class="admin-log-title"><span class="admin-log-event">' + hmEscape(meta.label) + '</span><span class="admin-log-badge ' + meta.level + '">' + meta.badge + '</span></div><div class="admin-muted">' + hmEscape(hmAdminLogDetails(log.event_type, log.details)) + '</div></div>' +
+        '<div class="admin-log-meta"><div class="admin-log-actor">' + hmEscape(actor) + '</div><div class="admin-muted">' + hmFormatDateTime(log.created_at) + '</div></div>' +
+      '</div>';
+    }).join('');
+  }).catch(function(err) { showToast('error', err.message); });
+}
+
+function hmAdminLogMeta(type) {
+  const map = {
+    admin_user_updated: { label: 'Account record updated', badge: 'Account Management', icon: hmAdminIcon('user'), level: '' },
+    admin_password_reset: { label: 'Password reset performed', badge: 'Security Control', icon: hmAdminIcon('key'), level: 'warning' },
+    register: { label: 'New user account created', badge: 'Account Lifecycle', icon: hmAdminIcon('plus'), level: '' },
+    login: { label: 'Authenticated session started', badge: 'Access Activity', icon: hmAdminIcon('login'), level: '' },
+    logout: { label: 'Authenticated session ended', badge: 'Access Activity', icon: hmAdminIcon('logout'), level: 'ended' }
+  };
+  return map[type] || { label: hmTitleCase(type || 'System event'), badge: 'System Event', icon: hmAdminIcon('log'), level: type && type.indexOf('error') >= 0 ? 'danger' : '' };
+}
+
+function hmAdminLogDetails(type, details) {
+  if (!details) {
+    const defaults = {
+      login: 'A valid user session was created after successful authentication.',
+      logout: 'The session was closed and access tokens were cleared.',
+      register: 'A new account was added to the HireMate user database.',
+      admin_user_updated: 'An administrator changed account profile or status information.',
+      admin_password_reset: 'An administrator reset the account password under security policy.'
+    };
+    return defaults[type] || 'The event was recorded successfully for audit tracking.';
+  }
+  try {
+    const parsed = JSON.parse(details);
+    return Object.keys(parsed).map(function(key) {
+      return hmTitleCase(key) + ': ' + parsed[key];
+    }).join(' | ');
+  } catch (e) {
+    return details;
+  }
+}
+
+function hmTitleCase(value) {
+  return String(value || '').replace(/_/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+}
+
+function hmAdminIcon(type) {
+  const icons = {
+    user: '<svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+    key: '<svg viewBox="0 0 24 24"><circle cx="7.5" cy="14.5" r="3.5"></circle><path d="M10 12l10-10"></path><path d="M16 6l2 2"></path><path d="M13 9l2 2"></path></svg>',
+    plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>',
+    login: '<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path></svg>',
+    logout: '<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>',
+    log: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h6"></path></svg>'
+  };
+  return icons[type] || icons.log;
+}
+
+function hmAdminField(label, id, value) {
+  return '<div class="form-group"><label class="form-label">' + label + '</label><input class="form-input" id="' + id + '" value="' + hmEscape(value) + '"></div>';
+}
+
+function hmAdminSignOut() {
+  showConfirm('SO', 'Sign Out?', 'You will return to the admin login page.', 'Sign Out', 'btn-danger', function() {
+    sessionStorage.removeItem('hm_admin_auth');
+    localStorage.removeItem('hm_admin_token');
+    window.location.href = 'admin-login.html';
+  });
+}
+
+function hmAdminName(user) {
+  return [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Unnamed User';
+}
+
+function hmSetAdminText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function hmVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function hmEscape(value) {
+  return String(value || '').replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+
+function hmFormatDate(value) {
+  if (!value) return 'Not recorded';
+  const date = new Date(String(value).replace(' ', 'T') + 'Z');
+  return isNaN(date.getTime()) ? value : date.toLocaleDateString();
+}
+
+function hmFormatDateTime(value) {
+  if (!value) return 'Not recorded';
+  const date = new Date(String(value).replace(' ', 'T') + 'Z');
+  return isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+document.addEventListener('DOMContentLoaded', hmAdminLoadAll);
+</script>
+<script src="app.js"></script>
+</body>
 </html>
+
