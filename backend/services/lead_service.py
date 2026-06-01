@@ -96,6 +96,30 @@ HIGH_SIGNAL_SINGLE_TERMS = {
     "sales", "law", "legal", "nlp", "llm", "django", "react", "cybersecurity",
 }
 
+AI_PROFILE_FOCUS_TERMS = {
+    "ai", "artificial intelligence", "machine learning", "ml", "data science",
+    "nlp", "natural language processing", "llm", "large language model",
+    "large language models", "conversational ai", "generative ai", "agentic ai",
+}
+
+AI_LEAD_ROLE_TERMS = {
+    "ai", "artificial intelligence", "machine learning", "ml", "data science",
+    "data scientist", "data engineer", "nlp", "natural language processing",
+    "llm", "large language model", "large language models", "conversational ai",
+    "generative ai", "agentic ai", "python engineer", "python developer",
+}
+
+CROSS_DOMAIN_ROLE_TERMS = {
+    "business division", "b2b", "fintech", "finance", "fraud", "assurance",
+    "marketing", "sales", "e-commerce", "shopify", "accounting", "tax",
+}
+
+GENERIC_TECH_ROLE_TERMS = {
+    "software engineer", "software development engineer", "full stack engineer",
+    "full stack developer", "web developer", "web dev", "frontend developer",
+    "backend developer", "devops engineer",
+}
+
 
 def _lead_cache_now():
     return monotonic_time.monotonic()
@@ -275,6 +299,30 @@ def lead_is_technical(lead):
     return contains_domain_term(text, TECH_DOMAIN_TERMS)
 
 
+def profile_is_ai_focused(user):
+    return contains_domain_term(profile_text(user), AI_PROFILE_FOCUS_TERMS)
+
+
+def lead_matches_ai_focus(lead, user):
+    if not profile_is_ai_focused(user):
+        return True
+    role_text = " ".join(
+        str(lead.get(key, "") or "")
+        for key in ("role_title", "company")
+    )
+    full_text = " ".join(
+        str(lead.get(key, "") or "")
+        for key in ("role_title", "company", "post_text", "tags")
+    )
+    if contains_domain_term(role_text, AI_LEAD_ROLE_TERMS):
+        return True
+    if contains_domain_term(role_text, GENERIC_TECH_ROLE_TERMS):
+        return False
+    if contains_domain_term(role_text, CROSS_DOMAIN_ROLE_TERMS):
+        return False
+    return contains_domain_term(full_text, AI_LEAD_ROLE_TERMS) and not contains_domain_term(role_text, CROSS_DOMAIN_ROLE_TERMS)
+
+
 def profile_domain_terms(user):
     values = []
     for key in ("target_roles", "skills", "interests", "headline", "about", "education", "experience_detail"):
@@ -334,6 +382,10 @@ def matches_profile_domain(lead, user):
 def should_import_lead(lead, user):
     if lead.get("lead_kind") == "post" and not has_hiring_intent(lead.get("post_text", "")):
         return False
+    if not lead_matches_ai_focus(lead, user):
+        return False
+    if profile_is_ai_focused(user):
+        return True
     user_technical = profile_is_technical(user)
     lead_technical = lead_is_technical(lead)
     if lead_technical and not user_technical:
