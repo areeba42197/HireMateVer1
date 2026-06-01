@@ -246,6 +246,12 @@ TECH_PROFILE_TERMS = {
     "backend", "frontend", "full stack", "cloud", "cyber", "devops", "qa",
 }
 
+TERM_ALIASES = {
+    "pharmasist": "pharmacist",
+    "pharmacyst": "pharmacist",
+    "teching": "teaching",
+}
+
 
 def is_technical_profile(roles, skills, interests):
     profile_text = " ".join(list(roles or []) + list(skills or []) + list(interests or [])).lower()
@@ -262,32 +268,48 @@ def is_technical_profile(roles, skills, interests):
     return False
 
 
+def normalize_keyword_term(value):
+    text = str(value or "").strip()
+    for typo, replacement in TERM_ALIASES.items():
+        text = re.sub(rf"\b{re.escape(typo)}\b", replacement, text, flags=re.I)
+    return text
+
+
 def build_keywords(roles, skills, interests, experience_level="", work_modes="", preferred_locations="", education="", experience_detail="", headline="", about=""):
     terms = []
     technical = is_technical_profile(roles, skills, interests)
+    clean_roles = [normalize_keyword_term(role) for role in roles if role and len(role) <= 70]
+    clean_skills = [normalize_keyword_term(skill) for skill in skills if skill and len(skill) <= 45]
+    ignored_interests = {"remote", "onsite", "on-site", "hybrid", "freelance", "internship"}
     modifiers = []
     for value in split_csv(work_modes)[:2]:
         modifiers.append(value)
     if experience_level:
         modifiers.append(experience_level)
-    for role in roles:
+    for role in clean_roles:
         terms.append(f"{role} hiring")
         terms.append(f'"{role}" "we are hiring"')
         for modifier in modifiers[:3]:
             terms.append(f"{role} {modifier} hiring")
-    for skill in skills[:5]:
-        terms.append(f"{skill} jobs hiring")
-        if experience_level:
-            terms.append(f"{skill} {experience_level} hiring")
-        if technical:
-            terms.append(f"{skill} developer hiring")
+        for skill in clean_skills[:4]:
+            terms.append(f"{role} {skill}")
+    if not clean_roles:
+        for skill in clean_skills[:5]:
+            terms.append(f"{skill} jobs hiring")
+            if experience_level:
+                terms.append(f"{skill} {experience_level} hiring")
+            if technical:
+                terms.append(f"{skill} developer hiring")
     for interest in interests[:3]:
-        if roles:
-            terms.append(f"{roles[0]} {interest}")
-        else:
+        interest_clean = normalize_keyword_term(interest)
+        if interest_clean.lower() in ignored_interests:
+            continue
+        if clean_roles:
+            terms.append(f"{clean_roles[0]} {interest_clean}")
+        elif interest_clean:
             terms.append(f"{interest} opportunity")
     for location in split_csv(preferred_locations)[:2]:
-        for role in roles[:2]:
+        for role in clean_roles[:2]:
             terms.append(f"{role} {location}")
     return list(dict.fromkeys([term for term in terms if term.strip()]))
 

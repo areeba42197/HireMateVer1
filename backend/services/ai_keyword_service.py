@@ -33,6 +33,8 @@ PROFILE_TERM_ALIASES = {
     "pharmacyst": "pharmacist",
 }
 
+KEYWORD_PROMPT_VERSION = "domain-precision-v2"
+
 
 HIREMATE_AI_PROMPT = """You are HireMate AI — an advanced AI-powered LinkedIn job and hiring-post matching engine.
 
@@ -99,12 +101,20 @@ Your objective is to:
 * Generate roles based on user's profile
 * Generate semantic and intent-based keywords
 * Generate negative filters to avoid irrelevant jobs
-* Maximize relevant job and post discovery on LinkedIn
+* Maximize relevant job and post discovery on LinkedIn without leaving the user's career domain
 
 You must intelligently analyze ALL profile sections together.
 Do NOT generate random or unrelated keywords.
 
 All outputs must come from the user's actual profile.
+
+Precision is more important than volume. Do not generate broad adjacent-domain jobs just because one skill appears in the profile.
+
+Examples of mistakes to avoid:
+* A pharmacist profile must not produce generic healthcare, ophthalmology, medical laboratory, sales, marketing, or hospital administration jobs unless the role is clearly pharmacist/pharmacy/medication/prescription focused.
+* An AI/Data/NLP profile must not produce generic software, generic web development, business, fintech, fraud, marketing analytics, or manager roles unless the role itself clearly says AI, ML, NLP, LLM, Data Science, Data Scientist, Data Engineer, or Python Developer/Engineer.
+* An education profile must not produce technical jobs just because the user wrote "Teching" or "communication"; it should stay in teaching, tutoring, lecturer, school, education, curriculum, and student-learning roles.
+* A skill should support the user's target role; it should not become a separate unrelated job domain.
 
 ---
 
@@ -924,6 +934,22 @@ Do NOT skip any category.
 
 Generate advanced LinkedIn search queries.
 
+Search queries must be domain-locked. Prefer exact role + domain-skill + location combinations over broad one-word skill searches.
+
+Do:
+* "Clinical Pharmacist Islamabad"
+* "Hospital Pharmacist hiring"
+* "AI Engineer NLP internship"
+* "LLM Developer remote"
+* "Teaching Assistant school"
+
+Do not:
+* "Healthcare jobs" for a pharmacist profile
+* "Medical Laboratory jobs" for a pharmacist profile
+* "Software Engineer" for an AI/NLP profile unless the profile explicitly asks for general software engineering
+* "Business Analytics" for an AI/Data Science profile unless the profile explicitly asks for business analytics
+* "Management Trainee" for a teaching profile
+
 Queries must include combinations of:
 
 * role
@@ -1031,11 +1057,14 @@ Negative keywords should filter:
 10. Output ONLY valid JSON.
 11. Do NOT include explanations outside JSON.
 12. Every keyword must have a purpose.
-13. Optimize for maximum LinkedIn hiring-post discovery.
+13. Optimize for precise LinkedIn hiring-post discovery, not generic volume.
 14. Optimize for AI-powered ranking systems.
 15. Prioritize realistic and achievable opportunities.
 16. If a field has spelling mistakes, infer the closest intended term only when the profile context clearly supports it.
-"""
+17. Never use location, work mode, or seniority words as the career domain.
+18. Never generate a role from an adjacent industry unless the user's profile explicitly supports that industry.
+19. Keep primary_roles narrow and profile-specific; do not include broad umbrella roles.
+""" 
 
 
 REQUIRED_LIST_FIELDS = [
@@ -1075,6 +1104,7 @@ def profile_data(user):
         "education": user.get("education", ""),
         "work_modes": user.get("work_modes", ""),
         "preferred_locations": user.get("preferred_locations", ""),
+        "keyword_prompt_version": KEYWORD_PROMPT_VERSION,
     }
 
 

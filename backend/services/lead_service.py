@@ -117,7 +117,28 @@ CROSS_DOMAIN_ROLE_TERMS = {
 GENERIC_TECH_ROLE_TERMS = {
     "software engineer", "software development engineer", "full stack engineer",
     "full stack developer", "web developer", "web dev", "frontend developer",
-    "backend developer", "devops engineer",
+    "backend developer", "devops engineer", "software engineering intern",
+}
+
+EARLY_CAREER_LEVEL_TERMS = {
+    "student", "fresh graduate", "intern", "internship", "entry", "entry-level",
+    "junior", "beginner",
+}
+
+SENIOR_ROLE_TERMS = {
+    "senior", "sr.", "sr ", "principal", "lead", "manager", "director",
+    "head", "expert", "architect", "professor", "associate professor",
+}
+
+PHARMACY_PROFILE_TERMS = {
+    "pharmacist", "pharmacy", "clinical pharmacist", "hospital pharmacist",
+    "telemedicine pharmacist", "doctor of pharmacy",
+}
+
+PHARMACY_LEAD_TERMS = {
+    "pharmacist", "pharmacy", "clinical pharmacist", "hospital pharmacist",
+    "pharmacy manager", "pharmacist intern", "pharmacist assistant",
+    "prescription", "medication therapy", "pharmaceutical care",
 }
 
 
@@ -323,6 +344,34 @@ def lead_matches_ai_focus(lead, user):
     return contains_domain_term(full_text, AI_LEAD_ROLE_TERMS) and not contains_domain_term(role_text, CROSS_DOMAIN_ROLE_TERMS)
 
 
+def profile_is_early_career(user):
+    return contains_domain_term(
+        " ".join(str(user.get(key, "") or "") for key in ("experience_level", "headline", "about", "target_roles")),
+        EARLY_CAREER_LEVEL_TERMS,
+    )
+
+
+def lead_matches_seniority(lead, user):
+    if not profile_is_early_career(user):
+        return True
+    role_text = " ".join(str(lead.get(key, "") or "") for key in ("role_title", "company"))
+    return not contains_domain_term(role_text, SENIOR_ROLE_TERMS)
+
+
+def profile_is_pharmacy_focused(user):
+    return contains_domain_term(profile_text(user), PHARMACY_PROFILE_TERMS)
+
+
+def lead_matches_pharmacy_focus(lead, user):
+    if not profile_is_pharmacy_focused(user):
+        return True
+    combined = " ".join(
+        str(lead.get(key, "") or "")
+        for key in ("role_title", "company", "post_text", "tags")
+    )
+    return contains_domain_term(combined, PHARMACY_LEAD_TERMS)
+
+
 def profile_domain_terms(user):
     values = []
     for key in ("target_roles", "skills", "interests", "headline", "about", "education", "experience_detail"):
@@ -381,6 +430,10 @@ def matches_profile_domain(lead, user):
 
 def should_import_lead(lead, user):
     if lead.get("lead_kind") == "post" and not has_hiring_intent(lead.get("post_text", "")):
+        return False
+    if not lead_matches_seniority(lead, user):
+        return False
+    if not lead_matches_pharmacy_focus(lead, user):
         return False
     if not lead_matches_ai_focus(lead, user):
         return False
