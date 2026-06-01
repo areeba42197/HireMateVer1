@@ -90,34 +90,12 @@ LOW_SIGNAL_DOMAIN_TERMS = {
 }
 
 HIGH_SIGNAL_SINGLE_TERMS = {
-    "pharmacist", "pharmacy", "clinical", "hospital", "medical", "prescription",
-    "medication", "telemedicine", "healthcare", "patient", "nurse", "doctor",
-    "teacher", "teaching", "education", "accounting", "finance", "marketing",
-    "sales", "law", "legal", "nlp", "llm", "django", "react", "cybersecurity",
-}
-
-AI_PROFILE_FOCUS_TERMS = {
-    "ai", "artificial intelligence", "machine learning", "ml", "data science",
-    "nlp", "natural language processing", "llm", "large language model",
-    "large language models", "conversational ai", "generative ai", "agentic ai",
-}
-
-AI_LEAD_ROLE_TERMS = {
-    "ai", "artificial intelligence", "machine learning", "ml", "data science",
-    "data scientist", "data engineer", "nlp", "natural language processing",
-    "llm", "large language model", "large language models", "conversational ai",
-    "generative ai", "agentic ai", "python engineer", "python developer",
-}
-
-CROSS_DOMAIN_ROLE_TERMS = {
-    "business division", "b2b", "fintech", "finance", "fraud", "assurance",
-    "marketing", "sales", "e-commerce", "shopify", "accounting", "tax",
-}
-
-GENERIC_TECH_ROLE_TERMS = {
-    "software engineer", "software development engineer", "full stack engineer",
-    "full stack developer", "web developer", "web dev", "frontend developer",
-    "backend developer", "devops engineer", "software engineering intern",
+    "pharmacist", "pharmacy", "clinical", "medical", "prescription", "medication",
+    "telemedicine", "healthcare", "nurse", "doctor", "teacher", "teaching",
+    "education", "tutor", "lecturer", "accounting", "finance", "marketing",
+    "sales", "law", "legal", "designer", "design", "writer", "content",
+    "support", "customer", "hr", "recruitment", "operations", "management",
+    "nlp", "llm", "django", "react", "cybersecurity", "python",
 }
 
 EARLY_CAREER_LEVEL_TERMS = {
@@ -128,17 +106,6 @@ EARLY_CAREER_LEVEL_TERMS = {
 SENIOR_ROLE_TERMS = {
     "senior", "sr.", "sr ", "principal", "lead", "manager", "director",
     "head", "expert", "architect", "professor", "associate professor",
-}
-
-PHARMACY_PROFILE_TERMS = {
-    "pharmacist", "pharmacy", "clinical pharmacist", "hospital pharmacist",
-    "telemedicine pharmacist", "doctor of pharmacy",
-}
-
-PHARMACY_LEAD_TERMS = {
-    "pharmacist", "pharmacy", "clinical pharmacist", "hospital pharmacist",
-    "pharmacy manager", "pharmacist intern", "pharmacist assistant",
-    "prescription", "medication therapy", "pharmaceutical care",
 }
 
 
@@ -320,30 +287,6 @@ def lead_is_technical(lead):
     return contains_domain_term(text, TECH_DOMAIN_TERMS)
 
 
-def profile_is_ai_focused(user):
-    return contains_domain_term(profile_text(user), AI_PROFILE_FOCUS_TERMS)
-
-
-def lead_matches_ai_focus(lead, user):
-    if not profile_is_ai_focused(user):
-        return True
-    role_text = " ".join(
-        str(lead.get(key, "") or "")
-        for key in ("role_title", "company")
-    )
-    full_text = " ".join(
-        str(lead.get(key, "") or "")
-        for key in ("role_title", "company", "post_text", "tags")
-    )
-    if contains_domain_term(role_text, AI_LEAD_ROLE_TERMS):
-        return True
-    if contains_domain_term(role_text, GENERIC_TECH_ROLE_TERMS):
-        return False
-    if contains_domain_term(role_text, CROSS_DOMAIN_ROLE_TERMS):
-        return False
-    return contains_domain_term(full_text, AI_LEAD_ROLE_TERMS) and not contains_domain_term(role_text, CROSS_DOMAIN_ROLE_TERMS)
-
-
 def profile_is_early_career(user):
     return contains_domain_term(
         " ".join(str(user.get(key, "") or "") for key in ("experience_level", "headline", "about", "target_roles")),
@@ -356,20 +299,6 @@ def lead_matches_seniority(lead, user):
         return True
     role_text = " ".join(str(lead.get(key, "") or "") for key in ("role_title", "company"))
     return not contains_domain_term(role_text, SENIOR_ROLE_TERMS)
-
-
-def profile_is_pharmacy_focused(user):
-    return contains_domain_term(profile_text(user), PHARMACY_PROFILE_TERMS)
-
-
-def lead_matches_pharmacy_focus(lead, user):
-    if not profile_is_pharmacy_focused(user):
-        return True
-    combined = " ".join(
-        str(lead.get(key, "") or "")
-        for key in ("role_title", "company", "post_text", "tags")
-    )
-    return contains_domain_term(combined, PHARMACY_LEAD_TERMS)
 
 
 def profile_domain_terms(user):
@@ -385,13 +314,18 @@ def profile_domain_terms(user):
         "pakistan", "united", "states", "state", "city", "onsite", "management",
         "manager", "system", "systems", "operation", "operations", "support",
         "handling", "module", "workflow", "inventory", "billing", "registration",
-        "electronic", "records", "processing"
+        "electronic", "records", "processing", "division", "fellow", "fellows",
+        "emerging", "talent", "program", "assessment"
     }
     clean = []
     for value in values:
         term = canonical_part(value)
         for typo, replacement in DOMAIN_TERM_ALIASES.items():
             term = re.sub(rf"\b{re.escape(typo)}\b", replacement, term)
+        if term == "ai engineer":
+            clean.append("ai/ml engineer")
+        if term == "ui ux designer":
+            clean.append("ui/ux designer")
         if len(term) < 3 or term in blocked:
             continue
         clean.append(term)
@@ -413,19 +347,19 @@ def has_hiring_intent(text):
 
 
 def matches_profile_domain(lead, user):
-    combined = canonical_part(
-        " ".join(
-            str(lead.get(key, "") or "")
-            for key in ("company", "role_title", "post_text", "tags", "author_title")
-        )
-    )
+    role_text = canonical_part(" ".join(str(lead.get(key, "") or "") for key in ("company", "role_title", "author_title")))
+    combined = canonical_part(" ".join(str(lead.get(key, "") or "") for key in ("company", "role_title", "post_text", "tags", "author_title")))
     terms = profile_domain_terms(user)
     if not terms:
         return True
-    matched = [term for term in terms if term_matches_text(term, combined)]
-    if any(is_strong_domain_term(term) for term in matched):
+    strong_terms = [term for term in terms if is_strong_domain_term(term)]
+    role_matched = [term for term in strong_terms if term_matches_text(term, role_text)]
+    full_matched = [term for term in strong_terms if term_matches_text(term, combined)]
+    if any(is_strong_domain_term(term) for term in role_matched):
         return True
-    return len(matched) >= 2
+    if lead.get("lead_kind") == "job":
+        return False
+    return len(full_matched) >= 2
 
 
 def should_import_lead(lead, user):
@@ -433,12 +367,6 @@ def should_import_lead(lead, user):
         return False
     if not lead_matches_seniority(lead, user):
         return False
-    if not lead_matches_pharmacy_focus(lead, user):
-        return False
-    if not lead_matches_ai_focus(lead, user):
-        return False
-    if profile_is_ai_focused(user):
-        return True
     user_technical = profile_is_technical(user)
     lead_technical = lead_is_technical(lead)
     if lead_technical and not user_technical:
