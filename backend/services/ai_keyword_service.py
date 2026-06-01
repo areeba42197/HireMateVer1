@@ -27,10 +27,17 @@ from core.config import (
 from core.database import db
 
 
+PROFILE_TERM_ALIASES = {
+    "teching": "teaching",
+    "pharmasist": "pharmacist",
+    "pharmacyst": "pharmacist",
+}
+
+
 HIREMATE_AI_PROMPT = """You are HireMate AI — an advanced AI-powered LinkedIn job and hiring-post matching engine.
 
 Your task is to deeply analyze a user's profile and generate highly accurate, intelligent, LinkedIn-optimized keywords, search queries, semantic expansions, and matching signals to help the user discover the most relevant jobs, internships, freelance opportunities, research opportunities, startup roles, and hiring posts based on user's profile explicitly.
-The system must support BOTH technical and non-technical users.Always remain inside the domain of user.
+The system must support BOTH technical and non-technical users. Always remain inside the user's career domain.
 
 
 
@@ -61,11 +68,13 @@ Entrepreneurship
 Media & Communication
 
 Do not force technical interpretations of generic skills.
+Do not treat typos as a different domain. For example, "Teching" should be read as "Teaching" when the rest of the profile is education-related, and "pharmasist" should be read as "pharmacist".
+Never infer software, IT, AI, or data roles from a word that merely looks similar to "tech" unless the profile also contains clear technical skills such as programming, software engineering, web development, data science, cloud, DevOps, or AI/ML.
 
 For example:
 
 "Communication" does NOT always imply software engineering.
-"Research" does NOT alwasy imply AI research.
+"Research" does NOT always imply AI research.
 "Analysis" does NOT automatically imply Data Science.
 
 
@@ -1326,7 +1335,8 @@ def fallback_keyword_profile(user):
     interests = split_csv(data["interests"])
     roles = profile_terms(user.get("target_roles", "")) or profile_terms(data["title"])
     location_terms = profile_terms(data["location"])
-    work_modes = split_csv(data["work_preferences"])
+    work_modes = split_csv(data["work_modes"])
+    preferred_locations = profile_terms(data["preferred_locations"])
     experience_terms = profile_terms(data["experience"])[:8]
     education_terms = profile_terms(data["education"])[:8]
 
@@ -1344,14 +1354,14 @@ def fallback_keyword_profile(user):
     for role in primary:
         post_keywords.extend([f"hiring {role}", f"looking for {role}", f"{role} needed", f"{role} opportunity"])
         search_queries.extend([f"{role} hiring", f"{role} internship", f"{role} opportunity"])
-        for location in location_terms[:2]:
+        for location in unique_clean_strings(location_terms + preferred_locations)[:3]:
             search_queries.append(f"{role} {location}")
         for mode in work_modes[:3]:
             search_queries.append(f"{mode} {role}")
     for skill in skills[:10]:
         post_keywords.extend([f"{skill} hiring", f"{skill} internship", f"{skill} opportunity"])
         search_queries.extend([f"{skill} job", f"{skill} internship", f"{skill} opportunity"])
-        for location in location_terms[:2]:
+        for location in unique_clean_strings(location_terms + preferred_locations)[:3]:
             search_queries.append(f"{skill} {location}")
     for interest in interests[:6]:
         search_queries.append(f"{interest} opportunity")
@@ -1382,7 +1392,7 @@ def fallback_keyword_profile(user):
             "tools_and_libraries": skills,
             "industry_keywords": unique_clean_strings(interests + primary),
             "experience_level_keywords": unique_clean_strings(experience_terms + education_terms),
-            "location_keywords": unique_clean_strings(location_terms),
+            "location_keywords": unique_clean_strings(location_terms + preferred_locations),
             "work_preference_keywords": unique_clean_strings(work_modes + [f"{mode} job" for mode in work_modes]),
             "interest_based_keywords": unique_clean_strings(interests),
             "interest_based_search_queries": unique_clean_strings(search_queries),
@@ -1451,4 +1461,8 @@ def unique_clean_strings(values):
 def clean_keyword(value):
     value = re.sub(r"\s+", " ", str(value or "")).strip()
     value = value.strip(" -:;,.")
+    lowered = value.lower()
+    value = PROFILE_TERM_ALIASES.get(lowered, value)
+    for typo, replacement in PROFILE_TERM_ALIASES.items():
+        value = re.sub(rf"\b{re.escape(typo)}\b", replacement, value, flags=re.I)
     return value[:120]

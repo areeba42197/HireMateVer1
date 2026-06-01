@@ -249,7 +249,17 @@ TECH_PROFILE_TERMS = {
 
 def is_technical_profile(roles, skills, interests):
     profile_text = " ".join(list(roles or []) + list(skills or []) + list(interests or [])).lower()
-    return any(term in profile_text for term in TECH_PROFILE_TERMS)
+    for term in TECH_PROFILE_TERMS:
+        needle = re.sub(r"\s+", " ", str(term or "").strip().lower())
+        if not needle:
+            continue
+        if needle in {"ai", "ml"}:
+            pattern = rf"(?<![a-z0-9.]){re.escape(needle)}(?![a-z0-9.])"
+        else:
+            pattern = rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])"
+        if re.search(pattern, profile_text):
+            return True
+    return False
 
 
 def build_keywords(roles, skills, interests, experience_level="", work_modes="", preferred_locations="", education="", experience_detail="", headline="", about=""):

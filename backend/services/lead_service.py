@@ -76,6 +76,12 @@ _lead_list_cache = {}
 _lead_detail_cache = {}
 _dashboard_cache = {}
 
+DOMAIN_TERM_ALIASES = {
+    "pharmasist": "pharmacist",
+    "pharmacyst": "pharmacist",
+    "teching": "teaching",
+}
+
 
 def _lead_cache_now():
     return monotonic_time.monotonic()
@@ -196,7 +202,7 @@ def extract_tags(text):
     found = []
     lower = text.lower()
     for key, label in SKILL_TERMS.items():
-        if key in lower and label not in found:
+        if contains_domain_term(lower, [key]) and label not in found:
             found.append(label)
     return found[:8]
 
@@ -212,9 +218,23 @@ def profile_text(user):
     ).lower()
 
 
+def contains_domain_term(text, terms):
+    haystack = canonical_part(text)
+    for term in terms:
+        needle = canonical_part(term)
+        if not needle:
+            continue
+        if needle in {"ai", "ml"}:
+            pattern = rf"(?<![a-z0-9.]){re.escape(needle)}(?![a-z0-9.])"
+        else:
+            pattern = rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])"
+        if re.search(pattern, haystack):
+            return True
+    return False
+
+
 def profile_is_technical(user):
-    text = profile_text(user)
-    return any(term in text for term in TECH_DOMAIN_TERMS)
+    return contains_domain_term(profile_text(user), TECH_DOMAIN_TERMS)
 
 
 def lead_is_technical(lead):
@@ -222,30 +242,42 @@ def lead_is_technical(lead):
         str(lead.get(key, "") or "")
         for key in ("company", "role_title", "post_text", "tags")
     ).lower()
-    return any(term in text for term in TECH_DOMAIN_TERMS)
+    return contains_domain_term(text, TECH_DOMAIN_TERMS)
 
 
 def profile_domain_terms(user):
     values = []
-    for key in (
-        "target_roles", "skills", "headline", "about", "education",
-        "experience_detail", "experience_level", "work_modes", "preferred_locations", "location"
-    ):
+    for key in ("target_roles", "skills", "headline", "about", "education", "experience_detail"):
         values.extend(split_csv(user.get(key, "")))
         values.extend(re.findall(r"[A-Za-z][A-Za-z0-9.+#-]{2,}", str(user.get(key, "") or "")))
     blocked = {
         "and", "the", "for", "with", "from", "student", "graduate", "fresh", "remote",
         "full", "time", "part", "job", "jobs", "role", "roles", "internship", "hiring",
         "hybrid", "onsite", "on-site", "years", "year", "experience", "level", "junior",
-        "senior", "entry", "preferred", "location", "work", "mode"
+        "senior", "entry", "preferred", "location", "work", "mode", "islamabad",
+        "pakistan", "united", "states", "state", "city", "onsite", "management",
+        "manager", "system", "systems", "operation", "operations", "support",
+        "handling", "module", "workflow", "inventory", "billing", "registration",
+        "electronic", "records", "processing"
     }
     clean = []
     for value in values:
         term = canonical_part(value)
+        for typo, replacement in DOMAIN_TERM_ALIASES.items():
+            term = re.sub(rf"\b{re.escape(typo)}\b", replacement, term)
         if len(term) < 3 or term in blocked:
             continue
         clean.append(term)
     return list(dict.fromkeys(clean))[:40]
+
+
+def row_matches_current_profile(row, user):
+    if not user:
+        return True
+    try:
+        return should_import_lead(dict(row), user)
+    except Exception:
+        return False
 
 
 def has_hiring_intent(text):
@@ -688,13 +720,15 @@ def list_leads(user_id, temperature=None, search=None, limit=50, offset=0, statu
         q = f"%{search}%"
         params.extend([q, q, q, q])
     with db() as conn:
+        user_row = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+        user = dict(user_row) if user_row else {}
         order_by = """
             created_at DESC,
             posted_at DESC,
             CASE lead_kind WHEN 'post' THEN 0 ELSE 1 END,
             score DESC
             """
-        max_fetch_limit = 300 if status == "saved" else 80
+        max_fetch_limit = 300
         fetch_limit = min(max_fetch_limit, offset + limit * 3 + 24)
         rows = conn.execute(
             f"""
@@ -715,7 +749,7 @@ def list_leads(user_id, temperature=None, search=None, limit=50, offset=0, statu
                 by_key[key] = row
             elif lead_quality(row) > lead_quality(current):
                 by_key[key] = row
-        unique_rows = [by_key[key] for key in key_order]
+        unique_rows = [by_key[key] for key in key_order if row_matches_current_profile(by_key[key], user)]
         page_rows = unique_rows[offset:offset + limit]
         items = [format_lead(row) for row in page_rows]
         has_more = len(rows) >= fetch_limit and len(unique_rows) > offset + len(items)
@@ -727,7 +761,7 @@ def list_leads(user_id, temperature=None, search=None, limit=50, offset=0, statu
             "cold": sum(1 for row in unique_rows if row["temperature"] == "cold"),
             "saved": sum(1 for row in unique_rows if row["status"] == "saved"),
         }
-        live_today_counts = today_lead_counts(conn, user_id)
+        live_today_counts = today_lead_counts(conn, user_id, user)
         result = {
             "items": items,
             "total": visible_total,
@@ -755,7 +789,11 @@ def get_lead(user_id, lead_id):
     if cached is not None:
         return cached.get("lead")
     with db() as conn:
+        user_row = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+        user = dict(user_row) if user_row else {}
         row = conn.execute("SELECT * FROM leads WHERE user_id=? AND id=?", (user_id, lead_id)).fetchone()
+        if row and not row_matches_current_profile(row, user):
+            row = None
         lead = format_lead(row) if row else None
         if lead:
             _lead_cache_set(_lead_detail_cache, cache_key, {"ok": True, "lead": lead})
@@ -782,7 +820,7 @@ def update_lead_status(user_id, lead_id, status):
         return lead
 
 
-def today_lead_counts(conn, user_id):
+def today_lead_counts(conn, user_id, user=None):
     start_utc, end_utc = daily_count_window_utc()
     rows = conn.execute(
         """
@@ -798,7 +836,7 @@ def today_lead_counts(conn, user_id):
         current = by_key.get(key)
         if current is None or lead_quality(row) > lead_quality(current):
             by_key[key] = row
-    unique_rows = list(by_key.values())
+    unique_rows = [row for row in by_key.values() if row_matches_current_profile(row, user)]
     return {
         "total": len(unique_rows),
         "hot": sum(1 for row in unique_rows if row["temperature"] == "hot"),
@@ -881,20 +919,9 @@ def dashboard(user_id):
     if cached is not None:
         return cached
     with db() as conn:
+        user_row = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+        user = dict(user_row) if user_row else {}
         drafts = conn.execute("SELECT COUNT(*) pending FROM drafts WHERE user_id=? AND status='pending'", (user_id,)).fetchone()
-        counts_row = conn.execute(
-            """
-            SELECT
-              COUNT(*) total,
-              SUM(CASE WHEN temperature='hot' THEN 1 ELSE 0 END) hot,
-              SUM(CASE WHEN temperature='warm' THEN 1 ELSE 0 END) warm,
-              SUM(CASE WHEN temperature='cold' THEN 1 ELSE 0 END) cold,
-              SUM(CASE WHEN status='saved' THEN 1 ELSE 0 END) saved
-            FROM leads
-            WHERE user_id=?
-            """,
-            (user_id,),
-        ).fetchone()
         week_start, week_end = weekly_count_window_utc()
         last_week_start, last_week_end = weekly_count_window_utc(1)
         approved = conn.execute(
@@ -934,14 +961,31 @@ def dashboard(user_id):
                 recent_by_key[key] = row
             elif lead_quality(row) > lead_quality(current):
                 recent_by_key[key] = row
+        recent_order = [key for key in recent_order if row_matches_current_profile(recent_by_key[key], user)]
+        all_rows = conn.execute(
+            f"""
+            SELECT {LEAD_LIST_COLUMNS} FROM leads
+            WHERE user_id=?
+            ORDER BY created_at DESC, posted_at DESC, score DESC
+            LIMIT 500
+            """,
+            (user_id,),
+        ).fetchall()
+        all_by_key = {}
+        for row in all_rows:
+            key = lead_display_key(row)
+            current = all_by_key.get(key)
+            if current is None or lead_quality(row) > lead_quality(current):
+                all_by_key[key] = row
+        relevant_rows = [row for row in all_by_key.values() if row_matches_current_profile(row, user)]
         counts = {
-            "total": counts_row["total"] or 0,
-            "hot": counts_row["hot"] or 0,
-            "warm": counts_row["warm"] or 0,
-            "cold": counts_row["cold"] or 0,
-            "saved": counts_row["saved"] or 0,
+            "total": len(relevant_rows),
+            "hot": sum(1 for row in relevant_rows if row["temperature"] == "hot"),
+            "warm": sum(1 for row in relevant_rows if row["temperature"] == "warm"),
+            "cold": sum(1 for row in relevant_rows if row["temperature"] == "cold"),
+            "saved": sum(1 for row in relevant_rows if row["status"] == "saved"),
         }
-        today_counts = today_lead_counts(conn, user_id)
+        today_counts = today_lead_counts(conn, user_id, user)
         result = {
             "counts": counts,
             "today_counts": today_counts,
