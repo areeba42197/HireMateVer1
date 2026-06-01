@@ -102,11 +102,22 @@ def browser_post_keywords(user):
     roles = split_csv(user.get("target_roles", "")) or skills[:3]
     terms = []
     for role in roles[:4]:
-        terms.extend([role, f"{role} hiring", f"{role} internship"])
+        terms.extend([role, f"{role} hiring"])
+        if user.get("experience_level"):
+            terms.append(f"{role} {user.get('experience_level')} hiring")
+        for mode in split_csv(user.get("work_modes", ""))[:2]:
+            terms.append(f"{role} {mode} hiring")
+        for location in split_csv(user.get("preferred_locations", ""))[:2]:
+            terms.append(f"{role} {location}")
     for skill in skills[:5]:
-        terms.extend([skill, f"{skill} hiring", f"{skill} internship"])
+        terms.extend([skill, f"{skill} hiring"])
+        if roles:
+            terms.append(f"{roles[0]} {skill}")
     for interest in interests[:4]:
-        terms.append(interest)
+        if roles:
+            terms.append(f"{roles[0]} {interest}")
+        else:
+            terms.append(interest)
     return list(dict.fromkeys([term for term in terms if term.strip()]))
 
 

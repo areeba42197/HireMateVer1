@@ -206,7 +206,8 @@ def profile_text(user):
         str(user.get(key, "") or "")
         for key in (
             "headline", "about", "skills", "interests", "target_roles",
-            "education", "experience_detail", "experience_level"
+            "education", "experience_detail", "experience_level",
+            "work_modes", "preferred_locations", "location"
         )
     ).lower()
 
@@ -226,12 +227,17 @@ def lead_is_technical(lead):
 
 def profile_domain_terms(user):
     values = []
-    for key in ("target_roles", "skills", "interests", "headline", "education"):
+    for key in (
+        "target_roles", "skills", "headline", "about", "education",
+        "experience_detail", "experience_level", "work_modes", "preferred_locations", "location"
+    ):
         values.extend(split_csv(user.get(key, "")))
         values.extend(re.findall(r"[A-Za-z][A-Za-z0-9.+#-]{2,}", str(user.get(key, "") or "")))
     blocked = {
         "and", "the", "for", "with", "from", "student", "graduate", "fresh", "remote",
         "full", "time", "part", "job", "jobs", "role", "roles", "internship", "hiring",
+        "hybrid", "onsite", "on-site", "years", "year", "experience", "level", "junior",
+        "senior", "entry", "preferred", "location", "work", "mode"
     }
     clean = []
     for value in values:

@@ -89,7 +89,18 @@ def profile_keywords(user):
     skills = split_csv(user.get("skills", ""))
     interests = split_csv(user.get("interests", ""))
     roles = split_csv(user.get("target_roles", "")) or skills[:3]
-    return build_keywords(roles, skills, interests)
+    return build_keywords(
+        roles,
+        skills,
+        interests,
+        user.get("experience_level", ""),
+        user.get("work_modes", ""),
+        user.get("preferred_locations", ""),
+        user.get("education", ""),
+        user.get("experience_detail", ""),
+        user.get("headline", ""),
+        user.get("about", ""),
+    )
 
 
 def collect_posts_for_keyword(session, keyword, result_start=0):

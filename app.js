@@ -1976,6 +1976,7 @@ function hmRenderProfile(user) {
     hmRenderProfileImages(user);
     hmRenderTags('skills-container', user.skills, 'skill-tag');
     hmRenderTags('interests-container', user.interests, 'interest-tag');
+    hmRenderProfilePreferences(user);
     hmRenderProfileLongField('experience-card', user.experience_detail, 'No experience added yet. Add projects, internships, freelance work, or academic work.', hmProfileIcon('briefcase'));
     hmRenderProfileLongField('education-card', user.education, 'No education added yet. Add your degree, university, and dates.', hmProfileIcon('education'));
 }
@@ -2011,6 +2012,25 @@ function hmRenderProfileLongField(cardId, text, emptyText, icon) {
   item.className = 'exp-item';
   item.innerHTML = '<div class="exp-icon">' + (icon || hmProfileIcon('briefcase')) + '</div><div style="flex:1;"><div class="exp-desc ' + (!text ? 'profile-empty-hint' : '') + '">' + hmEscape(text || emptyText).replace(/\n/g, '<br>') + '</div></div>';
   card.appendChild(item);
+}
+
+function hmRenderProfilePreferences(user) {
+  const view = document.getElementById('profile-preferences-view');
+  if (!view) return;
+  const items = [
+    ['Target roles', user.target_roles],
+    ['Experience level', user.experience_level],
+    ['Work mode', user.work_modes],
+    ['Preferred locations', user.preferred_locations],
+  ];
+  const filled = items.filter(item => String(item[1] || '').trim());
+  if (!filled.length) {
+    view.innerHTML = '<div class="profile-empty-hint">Add target roles, experience level, work mode, and preferred locations so HireMate can find relevant opportunities.</div>';
+    return;
+  }
+  view.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">' + filled.map(item => (
+    '<div class="info-box" style="margin:0;"><span>' + hmProfileIcon('check') + '</span><div><strong style="color:var(--text);display:block;margin-bottom:4px;">' + hmEscape(item[0]) + '</strong><span>' + hmEscape(item[1]) + '</span></div></div>'
+  )).join('') + '</div>';
 }
 
 function hmRenderProfileImages(user) {
@@ -2109,6 +2129,37 @@ function showEditProfileModal() {
     '<button class="btn btn-primary" style="flex:1;" onclick="saveProfile()">Save</button>' +
     '</div>';
   document.getElementById('modal').classList.add('open');
+}
+
+function showEditPreferencesModal() {
+  const user = hmCurrentUser();
+  document.getElementById('modal-content').innerHTML =
+    '<div class="modal-title">Edit Search Preferences</div>' +
+    '<div class="modal-sub">These details guide job and post discovery.</div>' +
+    '<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">' +
+    '<input id="pref-roles" class="form-input" placeholder="Target roles" value="' + hmEscape(user.target_roles || '') + '">' +
+    '<input id="pref-experience" class="form-input" placeholder="Experience level" value="' + hmEscape(user.experience_level || '') + '">' +
+    '<input id="pref-work" class="form-input" placeholder="Work mode" value="' + hmEscape(user.work_modes || '') + '">' +
+    '<input id="pref-locations" class="form-input" placeholder="Preferred locations" value="' + hmEscape(user.preferred_locations || '') + '">' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;">' +
+    '<button class="btn btn-ghost" style="flex:1;" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="hmSavePreferences()">Save</button>' +
+    '</div>';
+  document.getElementById('modal').classList.add('open');
+}
+
+async function hmSavePreferences() {
+  try {
+    const user = await hmSaveProfilePatch({
+      target_roles: document.getElementById('pref-roles')?.value.trim() || '',
+      experience_level: document.getElementById('pref-experience')?.value.trim() || '',
+      work_modes: document.getElementById('pref-work')?.value.trim() || '',
+      preferred_locations: document.getElementById('pref-locations')?.value.trim() || ''
+    }, 'Search preferences saved.');
+    hmRenderProfilePreferences(user);
+    closeModal();
+  } catch (err) { showToast('error', err.message); }
 }
 
 function hmOpenTagModal(type) {

@@ -72,7 +72,18 @@ def public_post_keywords(user):
     skills = split_csv(user.get("skills", ""))
     interests = split_csv(user.get("interests", ""))
     roles = split_csv(user.get("target_roles", "")) or skills[:3]
-    base = build_keywords(roles, skills, interests)
+    base = build_keywords(
+        roles,
+        skills,
+        interests,
+        user.get("experience_level", ""),
+        user.get("work_modes", ""),
+        user.get("preferred_locations", ""),
+        user.get("education", ""),
+        user.get("experience_detail", ""),
+        user.get("headline", ""),
+        user.get("about", ""),
+    )
     focused = []
     for term in base:
         term = term.replace("<", " ").replace(">", " ")

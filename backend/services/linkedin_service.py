@@ -252,21 +252,33 @@ def is_technical_profile(roles, skills, interests):
     return any(term in profile_text for term in TECH_PROFILE_TERMS)
 
 
-def build_keywords(roles, skills, interests):
+def build_keywords(roles, skills, interests, experience_level="", work_modes="", preferred_locations="", education="", experience_detail="", headline="", about=""):
     terms = []
     technical = is_technical_profile(roles, skills, interests)
+    modifiers = []
+    for value in split_csv(work_modes)[:2]:
+        modifiers.append(value)
+    if experience_level:
+        modifiers.append(experience_level)
     for role in roles:
         terms.append(f"{role} hiring")
-        terms.append(f"{role} remote")
-        terms.append(f"{role} internship")
         terms.append(f'"{role}" "we are hiring"')
+        for modifier in modifiers[:3]:
+            terms.append(f"{role} {modifier} hiring")
     for skill in skills[:5]:
         terms.append(f"{skill} jobs hiring")
-        terms.append(f"{skill} internship hiring")
+        if experience_level:
+            terms.append(f"{skill} {experience_level} hiring")
         if technical:
             terms.append(f"{skill} developer hiring")
     for interest in interests[:3]:
-        terms.append(f"{interest} internship")
+        if roles:
+            terms.append(f"{roles[0]} {interest}")
+        else:
+            terms.append(f"{interest} opportunity")
+    for location in split_csv(preferred_locations)[:2]:
+        for role in roles[:2]:
+            terms.append(f"{role} {location}")
     return list(dict.fromkeys([term for term in terms if term.strip()]))
 
 
@@ -275,13 +287,24 @@ def ai_keywords(user, purpose="jobs"):
     skills = split_csv(user.get("skills", ""))
     interests = split_csv(user.get("interests", ""))
     roles = split_csv(user.get("target_roles", "")) or split_csv(user.get("headline", "")) or skills[:3]
-    profile_terms = build_keywords(roles, skills, interests)
+    profile_terms = build_keywords(
+        roles,
+        skills,
+        interests,
+        user.get("experience_level", ""),
+        user.get("work_modes", ""),
+        user.get("preferred_locations", ""),
+        user.get("education", ""),
+        user.get("experience_detail", ""),
+        user.get("headline", ""),
+        user.get("about", ""),
+    )
     try:
         from services.ai_keyword_service import keyword_queue
 
         keywords = keyword_queue(user, purpose=purpose)
         if keywords:
-            return list(dict.fromkeys([term for term in keywords + profile_terms if term.strip()]))
+            return list(dict.fromkeys([term for term in profile_terms + keywords if term.strip()]))
     except Exception:
         pass
     return profile_terms
