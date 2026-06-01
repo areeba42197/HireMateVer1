@@ -136,6 +136,29 @@ def proxy_post_worker(handler, path, body):
     return True
 
 
+def remote_origin_from_body(body):
+    origin = str((body or {}).get("remote_origin") or "").strip().rstrip("/")
+    if origin.startswith("https://") or origin.startswith("http://localhost") or origin.startswith("http://127.0.0.1"):
+        return origin
+    return ""
+
+
+def remote_api_json(origin, path, token, payload=None, timeout=58):
+    data = json.dumps(payload or {}).encode("utf-8")
+    req = request.Request(
+        origin.rstrip("/") + path,
+        data=data,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": token,
+        },
+    )
+    with request.urlopen(req, timeout=timeout) as response:
+        raw = response.read().decode("utf-8", errors="ignore")
+        return json.loads(raw or "{}")
+
+
 def normalize_linkedin_cookie(cookie):
     meta = parse_linkedin_session_input(cookie)
     cookie = meta["cookie"]
@@ -244,12 +267,14 @@ class HireMateHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Private-Network", "true")
         self.end_headers()
 
     def end_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Private-Network", "true")
         super().end_headers()
 
     def do_GET(self):
@@ -396,6 +421,69 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 return self.reset_password(body)
             if path == "/api/admin/login":
                 return self.admin_login(body)
+            if path == "/api/linkedin/local-collect-payload":
+                user = require_user(self)
+                if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
+                    sync_user = dict(user)
+                    cipher = sync_user.get("linkedin_cookie_cipher") or ""
+                    sync_user["linkedin_cookie"] = reveal_text(cipher) if cipher else ""
+                    return json_response(
+                        self,
+                        200,
+                        {
+                            "ok": True,
+                            "user": sync_user,
+                            "cursor": linkedin_cursor(user["id"]),
+                        },
+                    )
+                return
+            if path == "/api/linkedin/collect-browser-results":
+                user = require_user(self)
+                if user:
+                    if not profile_complete(user):
+                        return error(self, 400, "Complete your profile first so HireMate can find leads that match you.")
+                    posts = parse_manual_posts(body.get("posts", []))
+                    errors = body.get("errors", []) if isinstance(body.get("errors", []), list) else []
+                    imported = import_posts(user["id"], posts) if posts else []
+                    cursor = linkedin_cursor(user["id"])
+                    next_keyword_offset = int(body.get("next_keyword_offset") or (int(cursor.get("content_start") or 0) + 1))
+                    save_linkedin_cursor(user["id"], int(cursor.get("job_start") or 0), next_keyword_offset)
+                    previous = sync_status(user["id"])
+                    previous_jobs = int(previous.get("job_count") or 0)
+                    record_sync_event(
+                        user["id"],
+                        len(imported),
+                        len(imported),
+                        previous_jobs,
+                        errors,
+                        checked_post_count=len(posts),
+                        checked_job_count=0,
+                    )
+                    if imported:
+                        try:
+                            notify_hot_leads(dict(user), imported)
+                        except Exception:
+                            pass
+                    return json_response(
+                        self,
+                        200,
+                        {
+                            "ok": True,
+                            "imported": len(imported),
+                            "post_count": len(imported),
+                            "job_count": 0,
+                            "checked_post_count": len(posts),
+                            "checked_job_count": 0,
+                            "next_keyword_offset": next_keyword_offset,
+                            "source": "local-pc-browser",
+                            "keywords_used": body.get("keywords_used", []),
+                            "leads": imported,
+                            "errors": errors[:5],
+                        },
+                    )
+                return
             if path == "/api/auth/logout":
                 user = current_user(self)
                 token = self.headers.get("Authorization", "").replace("Bearer ", "", 1)
@@ -514,6 +602,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             if path == "/api/linkedin/sync-posts-browser":
                 if proxy_post_worker(self, path, body):
                     return
+                if remote_origin_from_body(body) and not os.environ.get("VERCEL"):
+                    return self.sync_posts_browser_as_local_worker(body)
                 user = require_user(self)
                 if user:
                     if not profile_complete(user):
@@ -949,6 +1039,45 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 return error(self, 401, "Admin sign in failed. Please check your details.")
             conn.execute("INSERT INTO events(user_id, event_type) VALUES (?, ?)", (row["id"], "admin_login"))
         return create_session_response(self, row["id"])
+
+    def sync_posts_browser_as_local_worker(self, body):
+        origin = remote_origin_from_body(body)
+        token = self.headers.get("Authorization", "")
+        if not origin or not token.startswith("Bearer "):
+            return error(self, 401, "Sign in again before collecting posts.")
+        try:
+            payload = remote_api_json(origin, "/api/linkedin/local-collect-payload", token, {})
+            sync_user = payload.get("user") or {}
+            cursor = payload.get("cursor") or {}
+            posts, errors = collect_posts_with_browser(
+                sync_user,
+                keyword_offset=int(cursor.get("content_start") or 0),
+                max_posts=4,
+                scrolls=1,
+                exact_link_limit=0,
+            )
+            next_keyword_offset = int(cursor.get("content_start") or 0) + 1
+            return_data = remote_api_json(
+                origin,
+                "/api/linkedin/collect-browser-results",
+                token,
+                {
+                    "posts": posts,
+                    "errors": errors,
+                    "next_keyword_offset": next_keyword_offset,
+                },
+            )
+            return_data["local_worker"] = True
+            return json_response(self, 200, return_data)
+        except urlerror.HTTPError as exc:
+            raw = exc.read().decode("utf-8", errors="ignore")
+            try:
+                payload = json.loads(raw or "{}")
+            except json.JSONDecodeError:
+                payload = {}
+            return error(self, exc.code, payload.get("error") or "Local post collector could not connect to HireMate.")
+        except Exception as exc:
+            return error(self, 502, f"Local post collector could not finish: {exc}")
 
     def forgot_password(self, body):
         email = str(body.get("email", "")).strip().lower()

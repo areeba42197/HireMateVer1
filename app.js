@@ -507,6 +507,29 @@ async function hmApi(path, options) {
   if (method === 'GET') hmApiInFlight[inFlightKey] = request;
   return request;
 }
+
+async function hmLocalPostWorkerApi(path, options) {
+  const bases = ['http://127.0.0.1:8000', 'http://localhost:8000'];
+  let lastError = null;
+  for (const base of bases) {
+    try {
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, (options && options.headers) || {});
+      if (hmToken()) headers.Authorization = 'Bearer ' + hmToken();
+      const res = await fetch(base + path, Object.assign({}, options || {}, { headers }));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) {
+        const err = new Error(data.error || 'Local post collector could not complete the request.');
+        err.status = res.status;
+        throw err;
+      }
+      data.local_worker = true;
+      return data;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('Local post collector is not running on this PC.');
+}
 async function hmCachedApi(path, maxAgeMs) {
   const cached = hmReadCache(path, maxAgeMs || 120000);
   if (cached) return cached;
@@ -1462,7 +1485,16 @@ async function hmCollectLinkedInPosts() {
     let lastData = null;
     for (let batch = 1; batch <= 3; batch += 1) {
       if (btn) btn.innerHTML = hmInlineIcon('posts') + '<span>' + (batch === 1 ? 'Collecting...' : 'Checking next keywords...') + '</span>';
-      const data = await hmApi('/api/linkedin/sync-posts-browser', { method: 'POST', body: '{}' });
+      let data;
+      try {
+        data = await hmLocalPostWorkerApi('/api/linkedin/sync-posts-browser', {
+          method: 'POST',
+          body: JSON.stringify({ remote_origin: hmApiBase() })
+        });
+      } catch (localErr) {
+        if (batch === 1) showToast('info', 'Local post collector is not open, using the online collector for now.');
+        data = await hmApi('/api/linkedin/sync-posts-browser', { method: 'POST', body: '{}' });
+      }
       lastData = data;
       batches.push(data);
       totalImported += Number(data.imported || 0);
