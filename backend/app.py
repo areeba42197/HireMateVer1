@@ -938,8 +938,13 @@ class HireMateHandler(BaseHTTPRequestHandler):
         try:
             _send_password_reset_email(user, reset_link)
         except Exception as exc:
-            # Log but still return success to prevent email enumeration
             print(f"[WARN] Password reset email failed for {email}: {exc}")
+            with db() as conn:
+                conn.execute(
+                    "UPDATE password_reset_tokens SET used=1 WHERE user_id=? AND used=0",
+                    (user["id"],),
+                )
+            return error(self, 503, "We couldn't send the reset email right now. Please try again in a few minutes.")
         return json_response(self, 200, {"ok": True, "message": success_msg})
 
     def reset_password(self, body):
