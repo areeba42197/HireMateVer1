@@ -903,10 +903,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
             return error(self, 400, "Please enter a valid email address.")
         if not email_is_configured():
             return error(self, 503, "Password reset email is not available yet. Please try again later or contact support.")
-        # Always return success to prevent email enumeration
         success_msg = (
-            "If an account with that email exists, we've sent a password reset link. "
-            "Please check your inbox and spam folder."
+            "We've sent a password reset link to your email. Please check your inbox and spam folder."
         )
         with db() as conn:
             row = conn.execute(
@@ -914,7 +912,7 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 (email,),
             ).fetchone()
             if not row:
-                return json_response(self, 200, {"ok": True, "message": success_msg})
+                return error(self, 404, "We couldn't find a HireMate account with that email address.")
             user = dict(row)
             # Invalidate any existing unused tokens for this user
             conn.execute(
