@@ -1060,9 +1060,12 @@ def profile_data(user):
         "about": user.get("about", ""),
         "skills": user.get("skills", ""),
         "interests": user.get("interests", ""),
-        "experience": user.get("experience_detail", "") or user.get("experience_level", ""),
+        "target_roles": user.get("target_roles", ""),
+        "experience": user.get("experience_detail", ""),
+        "experience_level": user.get("experience_level", ""),
         "education": user.get("education", ""),
-        "work_preferences": user.get("work_modes", "") or user.get("preferred_locations", ""),
+        "work_modes": user.get("work_modes", ""),
+        "preferred_locations": user.get("preferred_locations", ""),
     }
 
 
@@ -1077,9 +1080,12 @@ def profile_prompt(user):
         + f"About:\n{data['about']}\n\n"
         + f"Skills:\n{data['skills']}\n\n"
         + f"Interests:\n{data['interests']}\n\n"
+        + f"Target Roles:\n{data['target_roles']}\n\n"
         + f"Experience:\n{data['experience']}\n\n"
+        + f"Experience Level:\n{data['experience_level']}\n\n"
         + f"Education:\n{data['education']}\n\n"
-        + f"Work Preferences:\n{data['work_preferences']}\n"
+        + f"Work Mode:\n{data['work_modes']}\n\n"
+        + f"Preferred Locations:\n{data['preferred_locations']}\n"
     )
 
 
