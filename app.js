@@ -2015,22 +2015,21 @@ function hmRenderProfileLongField(cardId, text, emptyText, icon) {
 }
 
 function hmRenderProfilePreferences(user) {
-  const view = document.getElementById('profile-preferences-view');
-  if (!view) return;
-  const items = [
-    ['Target roles', user.target_roles],
-    ['Experience level', user.experience_level],
-    ['Work mode', user.work_modes],
-    ['Preferred locations', user.preferred_locations],
-  ];
-  const filled = items.filter(item => String(item[1] || '').trim());
-  if (!filled.length) {
-    view.innerHTML = '<div class="profile-empty-hint">Add target roles, experience level, work mode, and preferred locations so HireMate can find relevant opportunities.</div>';
+  hmRenderPreferenceTags('target-roles-container', user.target_roles, 'No target roles added yet.');
+  hmRenderPreferenceTags('experience-level-container', user.experience_level, 'No experience level selected yet.');
+  hmRenderPreferenceTags('work-modes-container', user.work_modes, 'No work mode selected yet.');
+  hmRenderPreferenceTags('preferred-locations-container', user.preferred_locations, 'No preferred locations added yet.');
+}
+
+function hmRenderPreferenceTags(id, value, emptyText) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const values = String(value || '').split(',').map(v => v.trim()).filter(Boolean);
+  if (!values.length) {
+    container.innerHTML = '<div class="profile-empty-hint">' + emptyText + '</div>';
     return;
   }
-  view.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">' + filled.map(item => (
-    '<div class="info-box" style="margin:0;"><span>' + hmProfileIcon('check') + '</span><div><strong style="color:var(--text);display:block;margin-bottom:4px;">' + hmEscape(item[0]) + '</strong><span>' + hmEscape(item[1]) + '</span></div></div>'
-  )).join('') + '</div>';
+  container.innerHTML = values.map(v => '<div class="skill-tag">' + hmEscape(v) + '</div>').join('');
 }
 
 function hmRenderProfileImages(user) {
@@ -2131,32 +2130,56 @@ function showEditProfileModal() {
   document.getElementById('modal').classList.add('open');
 }
 
-function showEditPreferencesModal() {
+function showEditPreferenceModal(field) {
   const user = hmCurrentUser();
+  const config = {
+    target_roles: {
+      title: 'Edit Target Roles',
+      body: '<input id="pref-value" class="form-input" placeholder="Frontend Developer, Python Intern" value="' + hmEscape(user.target_roles || '') + '">'
+    },
+    preferred_locations: {
+      title: 'Edit Preferred Locations',
+      body: '<input id="pref-value" class="form-input" placeholder="Pakistan, Remote, Islamabad" value="' + hmEscape(user.preferred_locations || '') + '">'
+    },
+    work_modes: {
+      title: 'Edit Work Mode',
+      body: '<select id="pref-value" class="form-select">' + hmOptionHtml(['Remote, Hybrid', 'Remote', 'Hybrid', 'On-site', 'Internship'], user.work_modes || '') + '</select>'
+    },
+    experience_level: {
+      title: 'Edit Experience Level',
+      body: '<select id="pref-value" class="form-select">' + hmOptionHtml(['Student / Fresh Graduate', 'Intern', 'Junior', '1-2 years', '2-3 years', '3+ years experience'], user.experience_level || '') + '</select>' +
+        '<input id="pref-custom-value" class="form-input" placeholder="Or write your experience level" value="' + (hmIsPresetExperience(user.experience_level) ? '' : hmEscape(user.experience_level || '')) + '" style="margin-top:10px;">'
+    }
+  }[field];
+  if (!config) return;
   document.getElementById('modal-content').innerHTML =
-    '<div class="modal-title">Edit Search Preferences</div>' +
-    '<div class="modal-sub">These details guide job and post discovery.</div>' +
+    '<div class="modal-title">' + config.title + '</div>' +
+    '<div class="modal-sub">This will update your profile and improve lead matching.</div>' +
     '<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">' +
-    '<input id="pref-roles" class="form-input" placeholder="Target roles" value="' + hmEscape(user.target_roles || '') + '">' +
-    '<input id="pref-experience" class="form-input" placeholder="Experience level" value="' + hmEscape(user.experience_level || '') + '">' +
-    '<input id="pref-work" class="form-input" placeholder="Work mode" value="' + hmEscape(user.work_modes || '') + '">' +
-    '<input id="pref-locations" class="form-input" placeholder="Preferred locations" value="' + hmEscape(user.preferred_locations || '') + '">' +
+    config.body +
     '</div>' +
     '<div style="display:flex;gap:10px;">' +
     '<button class="btn btn-ghost" style="flex:1;" onclick="closeModal()">Cancel</button>' +
-    '<button class="btn btn-primary" style="flex:1;" onclick="hmSavePreferences()">Save</button>' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="hmSavePreferenceField(\'' + field + '\')">Save</button>' +
     '</div>';
   document.getElementById('modal').classList.add('open');
 }
 
-async function hmSavePreferences() {
+function hmOptionHtml(options, current) {
+  const value = String(current || '').trim();
+  return options.map(option => '<option' + (option === value ? ' selected' : '') + '>' + hmEscape(option) + '</option>').join('');
+}
+
+function hmIsPresetExperience(value) {
+  return ['Student / Fresh Graduate', 'Intern', 'Junior', '1-2 years', '2-3 years', '3+ years experience'].includes(String(value || '').trim());
+}
+
+async function hmSavePreferenceField(field) {
   try {
-    const user = await hmSaveProfilePatch({
-      target_roles: document.getElementById('pref-roles')?.value.trim() || '',
-      experience_level: document.getElementById('pref-experience')?.value.trim() || '',
-      work_modes: document.getElementById('pref-work')?.value.trim() || '',
-      preferred_locations: document.getElementById('pref-locations')?.value.trim() || ''
-    }, 'Search preferences saved.');
+    let value = document.getElementById('pref-value')?.value.trim() || '';
+    const custom = document.getElementById('pref-custom-value')?.value.trim() || '';
+    if (custom) value = custom;
+    const user = await hmSaveProfilePatch({ [field]: value }, 'Profile updated.');
     hmRenderProfilePreferences(user);
     closeModal();
   } catch (err) { showToast('error', err.message); }
