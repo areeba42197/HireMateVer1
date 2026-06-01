@@ -82,6 +82,20 @@ DOMAIN_TERM_ALIASES = {
     "teching": "teaching",
 }
 
+LOW_SIGNAL_DOMAIN_TERMS = {
+    "ai", "data", "analysis", "analytics", "business", "software", "engineer",
+    "developer", "intern", "internship", "research", "project", "projects",
+    "startup", "startups", "opportunity", "opportunities", "large", "language",
+    "model", "models", "natural", "intelligence", "assistant", "specialist",
+}
+
+HIGH_SIGNAL_SINGLE_TERMS = {
+    "pharmacist", "pharmacy", "clinical", "hospital", "medical", "prescription",
+    "medication", "telemedicine", "healthcare", "patient", "nurse", "doctor",
+    "teacher", "teaching", "education", "accounting", "finance", "marketing",
+    "sales", "law", "legal", "nlp", "llm", "django", "react", "cybersecurity",
+}
+
 
 def _lead_cache_now():
     return monotonic_time.monotonic()
@@ -221,16 +235,32 @@ def profile_text(user):
 def contains_domain_term(text, terms):
     haystack = canonical_part(text)
     for term in terms:
-        needle = canonical_part(term)
-        if not needle:
-            continue
-        if needle in {"ai", "ml"}:
-            pattern = rf"(?<![a-z0-9.]){re.escape(needle)}(?![a-z0-9.])"
-        else:
-            pattern = rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])"
-        if re.search(pattern, haystack):
+        if term_matches_text(term, haystack):
             return True
     return False
+
+
+def term_matches_text(term, text):
+    needle = canonical_part(term)
+    if not needle:
+        return False
+    haystack = canonical_part(text)
+    if needle in {"ai", "ml"}:
+        pattern = rf"(?<![a-z0-9.]){re.escape(needle)}(?![a-z0-9.])"
+    else:
+        pattern = rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])"
+    return bool(re.search(pattern, haystack))
+
+
+def is_strong_domain_term(term):
+    value = canonical_part(term)
+    if not value or value in LOW_SIGNAL_DOMAIN_TERMS:
+        return False
+    if value in HIGH_SIGNAL_SINGLE_TERMS:
+        return True
+    if " " in value and len(value) >= 8:
+        return True
+    return len(value) >= 7
 
 
 def profile_is_technical(user):
@@ -247,7 +277,7 @@ def lead_is_technical(lead):
 
 def profile_domain_terms(user):
     values = []
-    for key in ("target_roles", "skills", "headline", "about", "education", "experience_detail"):
+    for key in ("target_roles", "skills", "interests", "headline", "about", "education", "experience_detail"):
         values.extend(split_csv(user.get(key, "")))
         values.extend(re.findall(r"[A-Za-z][A-Za-z0-9.+#-]{2,}", str(user.get(key, "") or "")))
     blocked = {
@@ -295,7 +325,10 @@ def matches_profile_domain(lead, user):
     terms = profile_domain_terms(user)
     if not terms:
         return True
-    return any(term in combined for term in terms)
+    matched = [term for term in terms if term_matches_text(term, combined)]
+    if any(is_strong_domain_term(term) for term in matched):
+        return True
+    return len(matched) >= 2
 
 
 def should_import_lead(lead, user):
