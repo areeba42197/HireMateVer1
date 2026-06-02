@@ -40,7 +40,12 @@ class handler(HireMateHandler):
             self.path = "/api/" + hm_path
             if query:
                 self.path += "?" + urlencode(query, doseq=True)
-        if self.path.split("?", 1)[0] not in {"/api/health", "/api/debug/db-mode", "/api/debug/db-ping"}:
+        if self.path.split("?", 1)[0] not in {
+            "/api/health",
+            "/api/debug/db-mode",
+            "/api/debug/db-ping",
+            "/api/debug/db-init",
+        }:
             ensure_database()
 
     def do_OPTIONS(self):
@@ -81,6 +86,22 @@ class handler(HireMateHandler):
                 return json_response(self, 200, {
                     "ok": True,
                     "mode": "sqlite",
+                    "elapsed_ms": int((time.monotonic() - started) * 1000),
+                })
+            except Exception as exc:
+                return json_response(self, 503, {
+                    "ok": False,
+                    "mode": "postgres" if using_postgres() else "sqlite",
+                    "error": str(exc),
+                    "elapsed_ms": int((time.monotonic() - started) * 1000),
+                })
+        if self.path.split("?", 1)[0] == "/api/debug/db-init":
+            started = time.monotonic()
+            try:
+                ensure_database()
+                return json_response(self, 200, {
+                    "ok": True,
+                    "mode": "postgres" if using_postgres() else "sqlite",
                     "elapsed_ms": int((time.monotonic() - started) * 1000),
                 })
             except Exception as exc:
