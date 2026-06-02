@@ -414,16 +414,20 @@ def normalize_post(post, user):
         tags = list(dict.fromkeys(tags + matched))
     if analysis.get("action_hint") and analysis["action_hint"] not in tags:
         tags = list(tags) + [analysis["action_hint"]]
+    lead_kind = post.get("lead_kind", "post")
+    post_url = post.get("post_url", "")
+    if lead_kind == "post":
+        post_url = normalize_post_permalink(post_url)
     return {
         "source_post_id": post.get("source_post_id") or post.get("id") or stable_post_id(text),
-        "lead_kind": post.get("lead_kind", "post"),
+        "lead_kind": lead_kind,
         "company": company,
         "role_title": role_title,
         "author_name": post.get("author_name", ""),
         "author_title": post.get("author_title", ""),
         "post_text": text,
-        "post_url": post.get("post_url", ""),
-        "location": post.get("location", "" if post.get("lead_kind", "post") == "post" else "Pakistan"),
+        "post_url": post_url,
+        "location": post.get("location", "" if lead_kind == "post" else "Pakistan"),
         "work_type": post.get("work_type", "Remote" if "remote" in text.lower() else ""),
         "employment_type": post.get("employment_type", "Full-time" if "full" in text.lower() else ""),
         "experience": post.get("experience", ""),
@@ -438,6 +442,20 @@ def normalize_post(post, user):
         "comments_json": json.dumps(post.get("comment_items", []), ensure_ascii=False),
         "reactions_json": json.dumps(post.get("reaction_items", {}), ensure_ascii=False),
     }
+
+
+def normalize_post_permalink(value):
+    """Only keep exact LinkedIn post URLs for post leads; never profile URLs."""
+    url = (value or "").split("?", 1)[0].strip()
+    activity = re.search(r"urn:li:activity:(\d+)", url)
+    if activity:
+        return "https://www.linkedin.com/feed/update/urn:li:activity:" + activity.group(1) + "/"
+    activity = re.search(r"/posts/[^/]*activity[-:](\d+)", url)
+    if activity:
+        return "https://www.linkedin.com/feed/update/urn:li:activity:" + activity.group(1) + "/"
+    if "/feed/update/" in url and "linkedin.com" in url:
+        return url.rstrip("/") + "/"
+    return ""
 
 
 def stable_post_id(text):
@@ -948,6 +966,8 @@ def format_lead(row):
     item = dict(row)
     if item.get("lead_kind") == "job":
         item["post_text"] = clean_legacy_job_text(item.get("post_text", ""))
+    if item.get("lead_kind") == "post":
+        item["post_url"] = normalize_post_permalink(item.get("post_url", ""))
     item["tags"] = split_csv(item.get("tags"))
     try:
         item["comment_items"] = json.loads(item.get("comments_json") or "[]")

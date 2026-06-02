@@ -613,7 +613,7 @@ class HireMateHandler(BaseHTTPRequestHandler):
                         keyword_offset=int(cursor.get("content_start") or 0),
                         max_posts=4,
                         scrolls=1,
-                        exact_link_limit=2,
+                        exact_link_limit=4,
                         include_meta=True,
                     )
                     imported = import_posts(user["id"], posts) if posts else []
@@ -1055,7 +1055,7 @@ class HireMateHandler(BaseHTTPRequestHandler):
                 keyword_offset=int(cursor.get("content_start") or 0),
                 max_posts=4,
                 scrolls=1,
-                exact_link_limit=2,
+                exact_link_limit=4,
                 include_meta=True,
             )
             keywords_used = post_meta.get("keywords_used", [])

@@ -243,6 +243,11 @@ def collect_keyword_cards(driver, by, wait, expected_conditions, keyword, max_po
             post = extract_card(card, by, keyword)
             if not post:
                 continue
+            if post.get("post_url") and resolved_links < exact_link_limit:
+                if not verify_exact_post_url_preserving_page(driver, by, post["post_url"], post["post_text"]):
+                    post["post_url"] = ""
+                    post["source_post_id"] = "linkedin-browser-" + stable_id(post["post_text"])
+                resolved_links += 1
             if (
                 not post.get("post_url")
                 and resolved_links < exact_link_limit
@@ -405,26 +410,12 @@ def extract_posts_from_visible_text(driver, by, keyword, max_posts=8, search_url
         body = driver.find_element(by.TAG_NAME, "body").text
     except Exception:
         return []
-    urls = visible_post_urls(driver, by)
-    author_urls = visible_author_profile_urls(driver, by)
     blocks = re.split(r"(?:^|\n)Feed post(?:\n|$)", body)
     posts = []
     for block in blocks:
         if len(posts) >= max_posts:
             break
-        post_url = urls[len(posts)] if len(posts) < len(urls) else ""
-        author_url = author_urls[len(posts)] if len(posts) < len(author_urls) else ""
-        post = extract_visible_text_block(block, keyword, post_url, search_url, author_url)
-        if (
-            post
-            and len(posts) < exact_link_limit
-            and not post.get("post_url")
-            and post.get("reaction_items", {}).get("author_profile_url")
-        ):
-            resolved = resolve_post_url_from_author_activity(driver, by, post["reaction_items"]["author_profile_url"], post["post_text"])
-            if resolved:
-                post["post_url"] = resolved
-                post["source_post_id"] = "linkedin-browser-text-" + stable_id(resolved)
+        post = extract_visible_text_block(block, keyword, "", search_url, "")
         if post:
             posts.append(post)
     return posts
@@ -438,8 +429,7 @@ def visible_post_urls(driver, by):
                 href = (anchor.get_attribute("href") or "").split("?")[0]
             except Exception:
                 href = ""
-            if "/posts/" in href and "activity" not in href:
-                continue
+            href = normalize_post_url(href)
             if href and href not in urls:
                 urls.append(href)
     return urls
@@ -525,12 +515,12 @@ def resolve_post_url_from_author_activity(driver, by, author_profile_url, post_t
         candidates = []
         for selector in ["a[href*='/feed/update/']", "a[href*='/posts/']", "a[href*='activity-']"]:
             for anchor in driver.find_elements(by.CSS_SELECTOR, selector):
-                href = (anchor.get_attribute("href") or "").split("?")[0]
+                href = normalize_post_url(anchor.get_attribute("href") or "")
                 if href and href not in candidates:
                     candidates.append(href)
         body = clean_text(driver.find_element(by.TAG_NAME, "body").text)
         exact = best_activity_url_for_text(body, driver.page_source or "", post_text, candidates)
-        if exact:
+        if exact and verify_exact_post_url_preserving_page(driver, by, exact, post_text):
             return exact
     except Exception:
         return ""
@@ -540,6 +530,34 @@ def resolve_post_url_from_author_activity(driver, by, author_profile_url, post_t
         except Exception:
             pass
     return ""
+
+
+def normalize_post_url(url):
+    """Return only exact LinkedIn post permalinks, never profile/search URLs."""
+    href = (url or "").split("?")[0].strip()
+    if href.startswith("/feed/update/") or href.startswith("/posts/"):
+        href = "https://www.linkedin.com" + href
+    activity = re.search(r"urn:li:activity:(\d+)", href)
+    if activity:
+        return "https://www.linkedin.com/feed/update/urn:li:activity:" + activity.group(1) + "/"
+    if re.search(r"/posts/[^/]*activity[-:](\d+)", href):
+        activity_id = re.search(r"/posts/[^/]*activity[-:](\d+)", href).group(1)
+        return "https://www.linkedin.com/feed/update/urn:li:activity:" + activity_id + "/"
+    if "/feed/update/" in href and "linkedin.com" in href:
+        return href.rstrip("/") + "/"
+    return ""
+
+
+def verify_exact_post_url_preserving_page(driver, by, url, post_text):
+    original_url = driver.current_url
+    try:
+        return verify_exact_post_url(driver, by, normalize_post_url(url), post_text)
+    finally:
+        try:
+            if original_url and driver.current_url != original_url:
+                safe_get(driver, original_url, 1.2)
+        except Exception:
+            pass
 
 
 def similar_post_text(page_text, post_text):
@@ -775,9 +793,9 @@ def first_href(card, by):
     selectors = ["a[href*='/feed/update/']", "a[href*='/posts/']", "a[href*='activity-']"]
     for selector in selectors:
         try:
-            href = card.find_element(by.CSS_SELECTOR, selector).get_attribute("href") or ""
+            href = normalize_post_url(card.find_element(by.CSS_SELECTOR, selector).get_attribute("href") or "")
             if href:
-                return href.split("?")[0]
+                return href
         except Exception:
             continue
     return ""
