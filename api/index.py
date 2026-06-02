@@ -9,8 +9,9 @@ BACKEND_DIR = ROOT_DIR / "backend"
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app import HireMateHandler, ensure_admin_account, seed_demo_account  # noqa: E402
-from core.database import init_db  # noqa: E402
+from app import HireMateHandler, ensure_admin_account, json_response, seed_demo_account  # noqa: E402
+from core.config import DATABASE_PATH, DATABASE_URL  # noqa: E402
+from core.database import init_db, using_postgres  # noqa: E402
 
 
 _db_ready = False
@@ -37,7 +38,7 @@ class handler(HireMateHandler):
             self.path = "/api/" + hm_path
             if query:
                 self.path += "?" + urlencode(query, doseq=True)
-        if self.path.split("?", 1)[0] != "/api/health":
+        if self.path.split("?", 1)[0] not in {"/api/health", "/api/debug/db-mode"}:
             ensure_database()
 
     def do_OPTIONS(self):
@@ -46,6 +47,17 @@ class handler(HireMateHandler):
 
     def do_GET(self):
         self._prepare_vercel_request()
+        if self.path.split("?", 1)[0] == "/api/debug/db-mode":
+            db_host = ""
+            if DATABASE_URL:
+                db_host = urlparse(DATABASE_URL).hostname or ""
+            return json_response(self, 200, {
+                "ok": True,
+                "mode": "postgres" if using_postgres() else "sqlite",
+                "database_url_present": bool(DATABASE_URL),
+                "database_host": db_host,
+                "sqlite_path": "" if using_postgres() else str(DATABASE_PATH),
+            })
         return super().do_GET()
 
     def do_POST(self):
