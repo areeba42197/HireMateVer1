@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -11,7 +12,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 from app import HireMateHandler, ensure_admin_account, json_response, seed_demo_account  # noqa: E402
 from core.config import DATABASE_PATH, DATABASE_URL  # noqa: E402
-from core.database import init_db, using_postgres  # noqa: E402
+from core.database import init_db, postgres_connect, postgres_release, using_postgres  # noqa: E402
 
 
 _db_ready = False
@@ -38,7 +39,7 @@ class handler(HireMateHandler):
             self.path = "/api/" + hm_path
             if query:
                 self.path += "?" + urlencode(query, doseq=True)
-        if self.path.split("?", 1)[0] not in {"/api/health", "/api/debug/db-mode"}:
+        if self.path.split("?", 1)[0] not in {"/api/health", "/api/debug/db-mode", "/api/debug/db-ping"}:
             ensure_database()
 
     def do_OPTIONS(self):
@@ -58,6 +59,36 @@ class handler(HireMateHandler):
                 "database_host": db_host,
                 "sqlite_path": "" if using_postgres() else str(DATABASE_PATH),
             })
+        if self.path.split("?", 1)[0] == "/api/debug/db-ping":
+            started = time.monotonic()
+            try:
+                if using_postgres():
+                    conn = postgres_connect()
+                    try:
+                        with conn.cursor() as cur:
+                            cur.execute("SELECT 1 AS ok")
+                            row = cur.fetchone()
+                        conn.rollback()
+                    finally:
+                        postgres_release(conn)
+                    return json_response(self, 200, {
+                        "ok": True,
+                        "mode": "postgres",
+                        "result": int(row["ok"]) if row else 0,
+                        "elapsed_ms": int((time.monotonic() - started) * 1000),
+                    })
+                return json_response(self, 200, {
+                    "ok": True,
+                    "mode": "sqlite",
+                    "elapsed_ms": int((time.monotonic() - started) * 1000),
+                })
+            except Exception as exc:
+                return json_response(self, 503, {
+                    "ok": False,
+                    "mode": "postgres" if using_postgres() else "sqlite",
+                    "error": str(exc),
+                    "elapsed_ms": int((time.monotonic() - started) * 1000),
+                })
         return super().do_GET()
 
     def do_POST(self):
