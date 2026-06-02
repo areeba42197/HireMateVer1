@@ -18,6 +18,10 @@ from core.database import init_db, postgres_connect, postgres_release, using_pos
 _db_ready = False
 
 
+def debug_endpoints_enabled():
+    return os.getenv("HIREMATE_DEBUG_ENDPOINTS", "").strip().lower() in {"1", "true", "yes"}
+
+
 def ensure_database():
     global _db_ready
     if _db_ready:
@@ -58,6 +62,8 @@ class handler(HireMateHandler):
 
     def do_GET(self):
         self._prepare_vercel_request()
+        if self.path.split("?", 1)[0].startswith("/api/debug/") and not debug_endpoints_enabled():
+            return json_response(self, 404, {"ok": False, "error": "API endpoint not found."})
         if self.path.split("?", 1)[0] == "/api/debug/db-mode":
             db_host = ""
             if DATABASE_URL:
