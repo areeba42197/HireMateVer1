@@ -458,6 +458,16 @@ def normalize_post_permalink(value):
     return ""
 
 
+def normalize_author_profile_url(value):
+    """Keep LinkedIn profile URLs separately from exact post permalinks."""
+    url = (value or "").split("?", 1)[0].strip()
+    if url.startswith("/in/"):
+        url = "https://www.linkedin.com" + url
+    if re.search(r"https://(?:www\.)?linkedin\.com/in/[^/\s]+/?$", url):
+        return url.rstrip("/") + "/"
+    return ""
+
+
 def stable_post_id(text):
     digest = hashlib.sha1((text or "").encode("utf-8", errors="ignore")).hexdigest()[:16]
     return "manual-" + digest
@@ -966,8 +976,6 @@ def format_lead(row):
     item = dict(row)
     if item.get("lead_kind") == "job":
         item["post_text"] = clean_legacy_job_text(item.get("post_text", ""))
-    if item.get("lead_kind") == "post":
-        item["post_url"] = normalize_post_permalink(item.get("post_url", ""))
     item["tags"] = split_csv(item.get("tags"))
     try:
         item["comment_items"] = json.loads(item.get("comments_json") or "[]")
@@ -977,6 +985,12 @@ def format_lead(row):
         item["reaction_items"] = json.loads(item.get("reactions_json") or "{}")
     except json.JSONDecodeError:
         item["reaction_items"] = {}
+    if item.get("lead_kind") == "post":
+        raw_url = item.get("post_url", "")
+        profile_url = normalize_author_profile_url(raw_url)
+        if profile_url and not item["reaction_items"].get("author_profile_url"):
+            item["reaction_items"]["author_profile_url"] = profile_url
+        item["post_url"] = normalize_post_permalink(raw_url)
     return item
 
 

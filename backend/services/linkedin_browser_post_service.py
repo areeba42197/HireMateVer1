@@ -410,12 +410,14 @@ def extract_posts_from_visible_text(driver, by, keyword, max_posts=8, search_url
         body = driver.find_element(by.TAG_NAME, "body").text
     except Exception:
         return []
+    author_profiles = visible_author_profile_candidates(driver, by)
     blocks = re.split(r"(?:^|\n)Feed post(?:\n|$)", body)
     posts = []
     for block in blocks:
         if len(posts) >= max_posts:
             break
-        post = extract_visible_text_block(block, keyword, "", search_url, "")
+        author_url = author_profile_url_for_block(block, author_profiles)
+        post = extract_visible_text_block(block, keyword, "", search_url, author_url)
         if post:
             posts.append(post)
     return posts
@@ -437,6 +439,15 @@ def visible_post_urls(driver, by):
 
 def visible_author_profile_urls(driver, by):
     urls = []
+    for candidate in visible_author_profile_candidates(driver, by):
+        href = candidate.get("href", "")
+        if href and href not in urls:
+            urls.append(href)
+    return urls
+
+
+def visible_author_profile_candidates(driver, by):
+    candidates = []
     for anchor in driver.find_elements(by.CSS_SELECTOR, "a[href*='linkedin.com/in/']"):
         try:
             href = (anchor.get_attribute("href") or "").split("?")[0]
@@ -444,9 +455,39 @@ def visible_author_profile_urls(driver, by):
         except Exception:
             href = ""
             text = ""
-        if href and text and href not in urls:
-            urls.append(href.rstrip("/") + "/")
-    return urls
+        if href and text:
+            candidates.append({"name": text, "href": href.rstrip("/") + "/"})
+    return candidates
+
+
+def author_profile_url_for_block(block, candidates):
+    author = visible_block_author(block)
+    if not author:
+        return ""
+    author_key = comparable_author(author)
+    for candidate in candidates:
+        if comparable_author(candidate.get("name", "")) == author_key:
+            return candidate.get("href", "")
+    for candidate in candidates:
+        name_key = comparable_author(candidate.get("name", ""))
+        if author_key and (author_key in name_key or name_key in author_key):
+            return candidate.get("href", "")
+    return ""
+
+
+def visible_block_author(block):
+    lines = [clean_line(line) for line in (block or "").splitlines()]
+    lines = [line for line in lines if line]
+    if not lines or looks_like_navigation_author(lines[0]):
+        return ""
+    return lines[0]
+
+
+def comparable_author(value):
+    value = clean_text(value).lower()
+    value = re.sub(r"\b(view|profile|follow|connect|message)\b", " ", value)
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    return clean_text(value)
 
 
 def extract_visible_text_block(block, keyword, post_url="", search_url="", author_profile_url=""):
