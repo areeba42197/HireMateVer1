@@ -391,11 +391,22 @@ def split_sql_script(script):
 
 def run_postgres_schema(conn):
     with conn.cursor() as cur:
-        for statement in split_sql_script(SCHEMA):
-            sql = postgres_sql(statement)
-            if sql:
-                cur.execute(sql)
-    conn.commit()
+        try:
+            cur.execute("SET lock_timeout TO '2s'")
+            cur.execute("SET statement_timeout TO '8s'")
+            conn.commit()
+            for statement in split_sql_script(SCHEMA):
+                sql = postgres_sql(statement)
+                if sql:
+                    cur.execute(sql)
+            conn.commit()
+        finally:
+            try:
+                cur.execute("RESET lock_timeout")
+                cur.execute("RESET statement_timeout")
+                conn.commit()
+            except Exception:
+                conn.rollback()
 
 
 def run_postgres_migrations(conn):

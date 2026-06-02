@@ -23,7 +23,8 @@ def ensure_database():
     if _db_ready:
         return
     init_db()
-    seed_demo_account()
+    if os.getenv("HIREMATE_SEED_DEMO", "").strip().lower() in {"1", "true", "yes"}:
+        seed_demo_account()
     ensure_admin_account()
     _db_ready = True
 
