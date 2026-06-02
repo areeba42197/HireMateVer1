@@ -332,6 +332,7 @@ def postgres_connect():
             1,
             20,
             DATABASE_URL,
+            connect_timeout=8,
             cursor_factory=psycopg2.extras.RealDictCursor,
         )
     return POSTGRES_POOL.getconn()

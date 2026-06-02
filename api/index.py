@@ -28,7 +28,6 @@ def ensure_database():
 
 class handler(HireMateHandler):
     def _prepare_vercel_request(self):
-        ensure_database()
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
         hm_path = (query.pop("hm_path", [""])[0] or "").strip("/")
@@ -38,6 +37,8 @@ class handler(HireMateHandler):
             self.path = "/api/" + hm_path
             if query:
                 self.path += "?" + urlencode(query, doseq=True)
+        if self.path.split("?", 1)[0] != "/api/health":
+            ensure_database()
 
     def do_OPTIONS(self):
         self._prepare_vercel_request()
