@@ -22,6 +22,10 @@ def ensure_database():
     global _db_ready
     if _db_ready:
         return
+    auto_init = os.getenv("HIREMATE_AUTO_INIT", "").strip().lower() in {"1", "true", "yes"}
+    if os.getenv("VERCEL", "").strip() and not auto_init:
+        _db_ready = True
+        return
     init_db()
     if os.getenv("HIREMATE_SEED_DEMO", "").strip().lower() in {"1", "true", "yes"}:
         seed_demo_account()
