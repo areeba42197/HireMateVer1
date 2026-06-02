@@ -608,15 +608,18 @@ class HireMateHandler(BaseHTTPRequestHandler):
                     cipher = sync_user.get("linkedin_cookie_cipher") or ""
                     sync_user["linkedin_cookie"] = reveal_text(cipher) if cipher else ""
                     cursor = linkedin_cursor(user["id"])
-                    posts, errors = collect_posts_with_browser(
+                    posts, errors, post_meta = collect_posts_with_browser(
                         sync_user,
                         keyword_offset=int(cursor.get("content_start") or 0),
                         max_posts=4,
                         scrolls=1,
-                        exact_link_limit=0,
+                        exact_link_limit=2,
+                        include_meta=True,
                     )
                     imported = import_posts(user["id"], posts) if posts else []
-                    next_keyword_offset = int(cursor.get("content_start") or 0) + 1
+                    keywords_used = post_meta.get("keywords_used", [])
+                    keyword_count = post_meta.get("keyword_count", 0)
+                    next_keyword_offset = int(cursor.get("content_start") or 0) + max(1, len(keywords_used))
                     save_linkedin_cursor(user["id"], int(cursor.get("job_start") or 0), next_keyword_offset)
                     previous = sync_status(user["id"])
                     previous_jobs = int(previous.get("job_count") or 0)
@@ -641,6 +644,8 @@ class HireMateHandler(BaseHTTPRequestHandler):
                             "checked_job_count": 0,
                             "next_keyword_offset": next_keyword_offset,
                             "source": "selenium-browser",
+                            "keywords_used": keywords_used,
+                            "keyword_count": keyword_count,
                             "leads": imported,
                             "errors": errors[:5],
                         },
@@ -1045,14 +1050,16 @@ class HireMateHandler(BaseHTTPRequestHandler):
             payload = remote_api_json(origin, "/api/linkedin/local-collect-payload", token, {})
             sync_user = payload.get("user") or {}
             cursor = payload.get("cursor") or {}
-            posts, errors = collect_posts_with_browser(
+            posts, errors, post_meta = collect_posts_with_browser(
                 sync_user,
                 keyword_offset=int(cursor.get("content_start") or 0),
                 max_posts=4,
                 scrolls=1,
-                exact_link_limit=0,
+                exact_link_limit=2,
+                include_meta=True,
             )
-            next_keyword_offset = int(cursor.get("content_start") or 0) + 1
+            keywords_used = post_meta.get("keywords_used", [])
+            next_keyword_offset = int(cursor.get("content_start") or 0) + max(1, len(keywords_used))
             return_data = remote_api_json(
                 origin,
                 "/api/linkedin/collect-browser-results",
@@ -1061,6 +1068,7 @@ class HireMateHandler(BaseHTTPRequestHandler):
                     "posts": posts,
                     "errors": errors,
                     "next_keyword_offset": next_keyword_offset,
+                    "keywords_used": keywords_used,
                 },
             )
             return_data["local_worker"] = True

@@ -27,7 +27,7 @@ HIRING_SIGNAL = re.compile(
 )
 
 
-def collect_posts_with_browser(user, keyword_offset=0, max_posts=8, scrolls=3, exact_link_limit=8):
+def collect_posts_with_browser(user, keyword_offset=0, max_posts=8, scrolls=3, exact_link_limit=8, include_meta=False):
     """Collect rendered LinkedIn post cards through Selenium.
 
     The function uses the user's encrypted cookie after the caller decrypts it.
@@ -36,28 +36,35 @@ def collect_posts_with_browser(user, keyword_offset=0, max_posts=8, scrolls=3, e
     """
     cookie_header = user.get("linkedin_cookie", "")
     if not cookie_header:
-        return [], ["No LinkedIn session cookie saved."]
+        result = ([], ["No LinkedIn session cookie saved."])
+        return (*result, {"keywords_used": [], "keyword_count": 0}) if include_meta else result
 
     keywords = browser_post_keywords(user)
     if not keywords:
-        return [], ["Add skills, interests, or target roles before collecting posts."]
+        result = ([], ["Add skills, interests, or target roles before collecting posts."])
+        return (*result, {"keywords_used": [], "keyword_count": 0}) if include_meta else result
 
     try:
         webdriver, by, wait, expected_conditions, options_cls = import_selenium()
     except Exception as exc:
-        return [], [f"Selenium is not ready on this PC: {exc}"]
+        result = ([], [f"Selenium is not ready on this PC: {exc}"])
+        return (*result, {"keywords_used": [], "keyword_count": len(keywords)}) if include_meta else result
 
     shift = int(keyword_offset or 0) % len(keywords)
-    keywords = keywords[shift:] + keywords[:shift]
+    all_keywords = keywords
+    keywords = all_keywords[shift:] + all_keywords[:shift]
+    selected_keywords = keywords[:LINKEDIN_MAX_SEARCH_QUERIES]
     driver = None
     posts = []
     errors = []
+    keywords_used = []
     try:
         driver = make_driver(webdriver, options_cls, user)
         seed_linkedin_cookies(driver, cookie_header)
-        for keyword in keywords[:2]:
+        for keyword in selected_keywords:
             if len(posts) >= max_posts:
                 break
+            keywords_used.append(keyword)
             try:
                 found = collect_keyword_cards(
                     driver,
@@ -89,7 +96,9 @@ def collect_posts_with_browser(user, keyword_offset=0, max_posts=8, scrolls=3, e
     deduped = {}
     for post in posts:
         deduped[post["source_post_id"]] = post
-    return list(deduped.values())[: min(max_posts, LINKEDIN_MAX_RESULTS_PER_SYNC)], errors
+    result = (list(deduped.values())[: min(max_posts, LINKEDIN_MAX_RESULTS_PER_SYNC)], errors)
+    meta = {"keywords_used": keywords_used, "keyword_count": len(all_keywords)}
+    return (*result, meta) if include_meta else result
 
 
 def browser_post_keywords(user):
