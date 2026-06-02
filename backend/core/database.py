@@ -333,6 +333,7 @@ def postgres_connect():
             20,
             DATABASE_URL,
             connect_timeout=8,
+            options="-c statement_timeout=8000 -c lock_timeout=2000 -c idle_in_transaction_session_timeout=8000",
             cursor_factory=psycopg2.extras.RealDictCursor,
         )
     return POSTGRES_POOL.getconn()
